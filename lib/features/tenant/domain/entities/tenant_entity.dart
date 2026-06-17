@@ -1,42 +1,45 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
+import '../../../../core/firebase/tenant_firebase_config.dart';
 
 class TenantEntity extends Equatable {
-  final String id;
-  final String name;
-  final Color primaryColor;
-  final Color secondaryColor;
-  final Color accentColor;
-  final Color backgroundColor;
+  final int tenantId;
+  final String tenantName;
   final String logoUrl;
+
+  final String primaryColor;
+  final String secondaryColor;
+  final String accentColor;
+
+  final FirebaseConfig firebase;
+  final FeatureFlags featureFlags;
+
+  final String? baseUrl;
   final List<String> supportedSports;
-  final bool enableRegistration;
-  final bool enableLiveTracking;
 
   const TenantEntity({
-    required this.id,
-    required this.name,
+    required this.tenantId,
+    required this.tenantName,
+    required this.logoUrl,
     required this.primaryColor,
     required this.secondaryColor,
     required this.accentColor,
-    required this.backgroundColor,
-    required this.logoUrl,
-    required this.supportedSports,
-    required this.enableRegistration,
-    required this.enableLiveTracking,
+    required this.firebase,
+    required this.featureFlags,
+    this.baseUrl,
+    this.supportedSports = const ['running', 'trailRunning', 'mtb', 'duathlon'],
   });
 
   @override
   List<Object?> get props => [
-        id,
-        name,
+        tenantId,
+        tenantName,
+        logoUrl,
         primaryColor,
         secondaryColor,
         accentColor,
-        backgroundColor,
-        logoUrl,
+        firebase,
+        featureFlags,
+        baseUrl,
         supportedSports,
-        enableRegistration,
-        enableLiveTracking,
       ];
 }

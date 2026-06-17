@@ -137,6 +137,7 @@ import '../../features/social/domain/repositories/social_repository.dart'
     as _i640;
 import '../../features/social/domain/usecases/get_social_links.dart' as _i650;
 import '../../features/social/presentation/bloc/social_bloc.dart' as _i17;
+import '../../features/tenant/data/api/tenant_api_service.dart' as _i351;
 import '../../features/tenant/data/repositories/tenant_repository_impl.dart'
     as _i981;
 import '../../features/tenant/domain/repositories/tenant_repository.dart'
@@ -151,7 +152,9 @@ import '../../features/tracks/domain/repositories/tracks_repository.dart'
 import '../../features/tracks/domain/usecases/get_tracks.dart' as _i547;
 import '../../features/tracks/presentation/bloc/tracks_bloc.dart' as _i271;
 import '../env/env_config.dart' as _i0;
-import '../firebase/firebase_service.dart' as _i842;
+import '../firebase/firebase_configuration_repository.dart' as _i322;
+import '../firebase/firebase_manager.dart' as _i352;
+import '../firebase/initialize_firebase_use_case.dart' as _i186;
 import '../firebase/notification_service.dart' as _i650;
 import '../network/dio_client.dart' as _i667;
 import '../network/interceptors/api_key_interceptor.dart' as _i102;
@@ -185,13 +188,13 @@ extension GetItInjectableX on _i174.GetIt {
     final emergencyApiModule = _$EmergencyApiModule();
     final documentsApiModule = _$DocumentsApiModule();
     final geographyApiModule = _$GeographyApiModule();
+    final tenantApiModule = _$TenantApiModule();
     gh.lazySingleton<_i914.RetryInterceptor>(() => _i914.RetryInterceptor());
     gh.lazySingleton<_i511.ErrorInterceptor>(() => _i511.ErrorInterceptor());
     gh.lazySingleton<_i238.LoggerInterceptor>(() => _i238.LoggerInterceptor());
     gh.lazySingleton<_i459.HiveService>(() => _i459.HiveService());
     gh.lazySingleton<_i666.SecureStorageService>(
         () => _i666.SecureStorageService());
-    gh.lazySingleton<_i842.FirebaseService>(() => _i842.FirebaseService());
     gh.lazySingleton<_i650.NotificationService>(
         () => _i650.NotificationService());
     gh.lazySingleton<_i121.ThemeManager>(() => _i121.ThemeManager());
@@ -201,15 +204,31 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i102.ApiKeyInterceptor>(
         () => _i102.ApiKeyInterceptor(gh<_i0.EnvConfig>()));
     gh.lazySingleton<_i769.MapsRepository>(() => _i368.MapsRepositoryImpl());
+    gh.lazySingleton<_i302.AboutRepository>(() => _i857.AboutRepositoryImpl());
+    gh.lazySingleton<_i640.SocialRepository>(() => _i5.SocialRepositoryImpl());
     gh.lazySingleton<_i667.DioClient>(() => _i667.DioClient(
           gh<_i0.EnvConfig>(),
           gh<_i102.ApiKeyInterceptor>(),
           gh<_i238.LoggerInterceptor>(),
           gh<_i914.RetryInterceptor>(),
           gh<_i511.ErrorInterceptor>(),
+          gh<_i476.TenantManager>(),
         ));
-    gh.lazySingleton<_i302.AboutRepository>(() => _i857.AboutRepositoryImpl());
-    gh.lazySingleton<_i640.SocialRepository>(() => _i5.SocialRepositoryImpl());
+    gh.lazySingleton<_i728.TenantRepository>(
+        () => _i981.TenantRepositoryImpl(gh<_i476.TenantManager>()));
+    gh.lazySingleton<_i508.GetMapSettings>(
+        () => _i508.GetMapSettings(gh<_i769.MapsRepository>()));
+    gh.lazySingleton<_i773.ChangeTenant>(
+        () => _i773.ChangeTenant(gh<_i728.TenantRepository>()));
+    gh.lazySingleton<_i637.GetActiveTenant>(
+        () => _i637.GetActiveTenant(gh<_i728.TenantRepository>()));
+    gh.lazySingleton<_i155.GetAboutInfo>(
+        () => _i155.GetAboutInfo(gh<_i302.AboutRepository>()));
+    gh.factory<_i1.MapsBloc>(() => _i1.MapsBloc(gh<_i508.GetMapSettings>()));
+    gh.lazySingleton<_i650.GetSocialLinks>(
+        () => _i650.GetSocialLinks(gh<_i640.SocialRepository>()));
+    gh.factory<_i17.SocialBloc>(
+        () => _i17.SocialBloc(gh<_i650.GetSocialLinks>()));
     gh.lazySingleton<_i998.EventsApiService>(
         () => eventsApiModule.provideEventsApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i337.TracksApiService>(
@@ -228,31 +247,27 @@ extension GetItInjectableX on _i174.GetIt {
         documentsApiModule.provideDocumentsApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i304.GeographyApiService>(() =>
         geographyApiModule.provideGeographyApiService(gh<_i667.DioClient>()));
+    gh.lazySingleton<_i351.TenantApiService>(
+        () => tenantApiModule.provideTenantApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i881.ParticipantRemoteDataSource>(() =>
         _i881.ParticipantRemoteDataSourceImpl(
             gh<_i280.ParticipantApiService>()));
-    gh.lazySingleton<_i728.TenantRepository>(
-        () => _i981.TenantRepositoryImpl(gh<_i476.TenantManager>()));
-    gh.lazySingleton<_i508.GetMapSettings>(
-        () => _i508.GetMapSettings(gh<_i769.MapsRepository>()));
+    gh.factory<_i161.AboutBloc>(
+        () => _i161.AboutBloc(gh<_i155.GetAboutInfo>()));
+    gh.factory<_i447.TenantBloc>(() => _i447.TenantBloc(
+          gh<_i637.GetActiveTenant>(),
+          gh<_i773.ChangeTenant>(),
+        ));
     gh.lazySingleton<_i911.ParticipantRepository>(() =>
         _i585.ParticipantRepositoryImpl(
             gh<_i881.ParticipantRemoteDataSource>()));
+    gh.lazySingleton<_i322.FirebaseConfigurationRepository>(() =>
+        _i322.FirebaseConfigurationRepositoryImpl(
+            gh<_i351.TenantApiService>()));
     gh.lazySingleton<_i14.CatalogRemoteDataSource>(
         () => _i14.CatalogRemoteDataSourceImpl(gh<_i636.CatalogApiService>()));
-    gh.lazySingleton<_i773.ChangeTenant>(
-        () => _i773.ChangeTenant(gh<_i728.TenantRepository>()));
-    gh.lazySingleton<_i637.GetActiveTenant>(
-        () => _i637.GetActiveTenant(gh<_i728.TenantRepository>()));
     gh.lazySingleton<_i361.DocumentsRemoteDataSource>(() =>
         _i361.DocumentsRemoteDataSourceImpl(gh<_i792.DocumentsApiService>()));
-    gh.lazySingleton<_i155.GetAboutInfo>(
-        () => _i155.GetAboutInfo(gh<_i302.AboutRepository>()));
-    gh.factory<_i1.MapsBloc>(() => _i1.MapsBloc(gh<_i508.GetMapSettings>()));
-    gh.lazySingleton<_i650.GetSocialLinks>(
-        () => _i650.GetSocialLinks(gh<_i640.SocialRepository>()));
-    gh.factory<_i17.SocialBloc>(
-        () => _i17.SocialBloc(gh<_i650.GetSocialLinks>()));
     gh.lazySingleton<_i345.DocumentsRepository>(() =>
         _i270.DocumentsRepositoryImpl(gh<_i361.DocumentsRemoteDataSource>()));
     gh.lazySingleton<_i488.CategoriesRepository>(() =>
@@ -297,15 +312,9 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i237.GetDocuments(gh<_i345.DocumentsRepository>()));
     gh.lazySingleton<_i982.UploadDocument>(
         () => _i982.UploadDocument(gh<_i345.DocumentsRepository>()));
-    gh.factory<_i161.AboutBloc>(
-        () => _i161.AboutBloc(gh<_i155.GetAboutInfo>()));
     gh.lazySingleton<_i980.RegistrationRepository>(() =>
         _i394.RegistrationRepositoryImpl(
             gh<_i382.RegistrationRemoteDataSource>()));
-    gh.factory<_i447.TenantBloc>(() => _i447.TenantBloc(
-          gh<_i637.GetActiveTenant>(),
-          gh<_i773.ChangeTenant>(),
-        ));
     gh.lazySingleton<_i480.GeographyRepository>(() =>
         _i771.GeographyRepositoryImpl(gh<_i635.GeographyRemoteDataSource>()));
     gh.lazySingleton<_i872.GetCategories>(
@@ -345,6 +354,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i279.ValidateDiscount(gh<_i980.RegistrationRepository>()));
     gh.lazySingleton<_i880.RegisterFirebaseToken>(
         () => _i880.RegisterFirebaseToken(gh<_i563.NotificationsRepository>()));
+    gh.lazySingleton<_i352.FirebaseManager>(() => _i352.FirebaseManager(
+          gh<_i0.EnvConfig>(),
+          gh<_i563.NotificationsRepository>(),
+        ));
     gh.lazySingleton<_i587.SendSOSPosition>(
         () => _i587.SendSOSPosition(gh<_i978.EmergencyRepository>()));
     gh.lazySingleton<_i317.GetStates>(
@@ -355,6 +368,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i953.GetCities(gh<_i480.GeographyRepository>()));
     gh.factory<_i1041.NotificationsBloc>(
         () => _i1041.NotificationsBloc(gh<_i880.RegisterFirebaseToken>()));
+    gh.lazySingleton<_i186.InitializeFirebaseUseCase>(
+        () => _i186.InitializeFirebaseUseCase(gh<_i352.FirebaseManager>()));
     gh.factory<_i921.EmergencyBloc>(
         () => _i921.EmergencyBloc(gh<_i587.SendSOSPosition>()));
     gh.factory<_i137.GeographyBloc>(() => _i137.GeographyBloc(
@@ -385,3 +400,5 @@ class _$EmergencyApiModule extends _i467.EmergencyApiModule {}
 class _$DocumentsApiModule extends _i792.DocumentsApiModule {}
 
 class _$GeographyApiModule extends _i304.GeographyApiModule {}
+
+class _$TenantApiModule extends _i351.TenantApiModule {}

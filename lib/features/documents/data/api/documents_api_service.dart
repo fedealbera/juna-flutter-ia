@@ -12,9 +12,9 @@ part 'documents_api_service.g.dart';
 abstract class DocumentsApiService {
   factory DocumentsApiService(Dio dio, {String baseUrl}) = _DocumentsApiService;
 
-  @GET('/api/participantes/{parti_id}/archivos')
+  @GET('/api/participantes/archivos')
   Future<List<ParticipantFileResponseDto>> getParticipantFiles(
-    @Path('parti_id') String partiId,
+    @Query('parti_id') String partiId,
   );
 
   @POST('/api/participantes/archivos')

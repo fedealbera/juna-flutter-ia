@@ -1,4 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import '../firebase/tenant_firebase_config.dart';
 
 enum SportType {
   running,
@@ -21,46 +23,126 @@ enum SportType {
 }
 
 class TenantConfig {
-  final String id;
-  final String name;
-  final Color primaryColor;
-  final Color secondaryColor;
-  final Color accentColor;
-  final Color backgroundColor;
+  final int tenantId;
+  final String tenantName;
   final String logoUrl;
+
+  final String primaryColor;
+  final String secondaryColor;
+  final String accentColor;
+
+  final FirebaseConfig firebase;
+
+  final FeatureFlags featureFlags;
+
+  // Compatibility fields for the rest of the application
+  final String? baseUrl;
   final List<SportType> supportedSports;
-  final bool enableRegistration;
-  final bool enableLiveTracking;
 
   const TenantConfig({
-    required this.id,
-    required this.name,
+    required this.tenantId,
+    required this.tenantName,
+    required this.logoUrl,
     required this.primaryColor,
     required this.secondaryColor,
     required this.accentColor,
-    required this.backgroundColor,
-    required this.logoUrl,
-    required this.supportedSports,
-    this.enableRegistration = true,
-    this.enableLiveTracking = false,
+    required this.firebase,
+    required this.featureFlags,
+    this.baseUrl,
+    this.supportedSports = const [
+      SportType.running,
+      SportType.trailRunning,
+      SportType.mtb,
+      SportType.duathlon,
+    ],
   });
+
+  // Helpers to get Colors from Hex Strings
+  Color get primaryColorRef => Color(int.parse(primaryColor.replaceFirst('#', '0xff')));
+  Color get secondaryColorRef => Color(int.parse(secondaryColor.replaceFirst('#', '0xff')));
+  Color get accentColorRef => Color(int.parse(accentColor.replaceFirst('#', '0xff')));
+  Color get backgroundColorRef => const Color(0xFF121212); // Standard dark mode background
+
+  // Compatibility getters
+  String get id => tenantId.toString();
+  String get name => tenantName;
+  bool get enableRegistration => featureFlags.enableRegistration;
+  bool get enableLiveTracking => featureFlags.enableLiveTracking;
+
+  FirebaseOptions get androidFirebaseOptions => FirebaseOptions(
+        apiKey: firebase.apiKey,
+        appId: firebase.appId,
+        messagingSenderId: firebase.messagingSenderId,
+        projectId: firebase.projectId,
+        storageBucket: firebase.storageBucket,
+      );
+
+  FirebaseOptions get iosFirebaseOptions => FirebaseOptions(
+        apiKey: firebase.apiKey,
+        appId: firebase.appId,
+        messagingSenderId: firebase.messagingSenderId,
+        projectId: firebase.projectId,
+        storageBucket: firebase.storageBucket,
+        iosBundleId: firebase.iosBundleId ?? 'com.churo.desafiomobile',
+      );
 
   // Factory to build fallback tenant config
   factory TenantConfig.defaultConfig() {
-    return const TenantConfig(
-      id: 'default',
-      name: 'Sport Event Platform',
-      primaryColor: Color(0xFF0D47A1), // Deep Blue
-      secondaryColor: Color(0xFF1976D2), // Blue
-      accentColor: Color(0xFFFF5722), // Orange
-      backgroundColor: Color(0xFFF5F5F5), // Light grey
+    return TenantConfig(
+      tenantId: 1,
+      tenantName: 'Sport Event Platform',
       logoUrl: 'assets/images/default_logo.png',
-      supportedSports: [
-        SportType.running,
-        SportType.trailRunning,
-        SportType.mtb,
-        SportType.duathlon,
-      ],
+      primaryColor: '#0D47A1', // Deep Blue hex
+      secondaryColor: '#1976D2', // Blue hex
+      accentColor: '#FF5722', // Orange hex
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(
+        enableRegistration: true,
+        enableLiveTracking: true,
+      ),
     );
   }
+
+  factory TenantConfig.fromJson(Map<String, dynamic> json) {
+    final branding = json['branding'] as Map<String, dynamic>? ?? {};
+    final fb = json['firebase'] as Map<String, dynamic>? ?? {};
+    final ff = json['featureFlags'] as Map<String, dynamic>? ?? {};
+
+    return TenantConfig(
+      tenantId: json['tenantId'] as int? ?? 1,
+      tenantName: json['tenantName'] as String? ?? 'DDLN',
+      logoUrl: json['logoUrl'] as String? ?? 'assets/images/ddln_logo.png',
+      primaryColor: branding['primaryColor'] as String? ?? '#E58D00',
+      secondaryColor: branding['secondaryColor'] as String? ?? '#212121',
+      accentColor: branding['accentColor'] as String? ?? '#FFC107',
+      firebase: FirebaseConfig.fromJson(fb),
+      featureFlags: FeatureFlags.fromJson(ff),
+      baseUrl: json['baseUrl'] as String?,
+      supportedSports: (json['supportedSports'] as List?)
+              ?.map((e) => SportType.values.firstWhere(
+                    (s) => s.name == e.toString(),
+                    orElse: () => SportType.running,
+                  ))
+              .toList() ??
+          const [
+            SportType.running,
+            SportType.trailRunning,
+            SportType.mtb,
+            SportType.duathlon,
+          ],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'tenantId': tenantId,
+        'tenantName': tenantName,
+        'logoUrl': logoUrl,
+        'primaryColor': primaryColor,
+        'secondaryColor': secondaryColor,
+        'accentColor': accentColor,
+        'firebase': firebase.toJson(),
+        'featureFlags': featureFlags.toJson(),
+        'baseUrl': baseUrl,
+        'supportedSports': supportedSports.map((e) => e.name).toList(),
+      };
 }

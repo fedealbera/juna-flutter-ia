@@ -56,8 +56,7 @@ class _MapsScreenState extends State<MapsScreen> {
   }
 
   void _loadTracks() {
-    final activeTenant = _tenantManager.value;
-    _tracksBloc.add(TracksEvent.getTracks(eventId: 'evt_v3_${activeTenant.id}'));
+    _tracksBloc.add(const TracksEvent.getTracks(eventId: '1'));
   }
 
   void _onTenantChanged() {
@@ -116,7 +115,7 @@ class _MapsScreenState extends State<MapsScreen> {
     return BlocProvider<TracksBloc>.value(
       value: _tracksBloc,
       child: Scaffold(
-        backgroundColor: activeTenant.backgroundColor,
+        backgroundColor: activeTenant.backgroundColorRef,
         body: Stack(
           children: [
             // 1. Integrated flutter_map with OpenStreetMap tiles
@@ -137,7 +136,7 @@ class _MapsScreenState extends State<MapsScreen> {
                     polylines: [
                       Polyline(
                         points: _gpxPoints,
-                        color: activeTenant.primaryColor,
+                        color: activeTenant.primaryColorRef,
                         strokeWidth: 5.0,
                         borderColor: Colors.black.withValues(alpha: 0.3),
                         borderStrokeWidth: 1.5,
@@ -185,7 +184,7 @@ class _MapsScreenState extends State<MapsScreen> {
                         point: trackerPosition,
                         width: 50,
                         height: 50,
-                        child: _buildMapMarker(Icons.directions_run_rounded, activeTenant.accentColor, isTracker: true),
+                        child: _buildMapMarker(Icons.directions_run_rounded, activeTenant.accentColorRef, isTracker: true),
                       ),
                   ],
                 ),
@@ -213,8 +212,8 @@ class _MapsScreenState extends State<MapsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? activeTenant.primaryColor
-                              : activeTenant.backgroundColor.withValues(alpha: 0.85),
+                              ? activeTenant.primaryColorRef
+                              : activeTenant.backgroundColorRef.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(25),
                           border: Border.all(
                             color: isSelected ? Colors.transparent : Colors.white.withValues(alpha: 0.1),
@@ -273,9 +272,9 @@ class _MapsScreenState extends State<MapsScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: activeTenant.accentColor.withValues(alpha: 0.2),
+                              color: activeTenant.accentColorRef.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: activeTenant.accentColor.withValues(alpha: 0.4)),
+                              border: Border.all(color: activeTenant.accentColorRef.withValues(alpha: 0.4)),
                             ),
                             child: const Row(
                               children: [

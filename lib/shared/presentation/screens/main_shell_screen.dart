@@ -4,6 +4,7 @@ import '../../../core/di/injection.dart';
 import '../../../core/theme/branding_manager.dart';
 import '../../../core/theme/tenant_config.dart';
 import '../../../core/theme/tenant_manager.dart';
+import '../../../core/firebase/tenant_firebase_config.dart';
 
 class MainShellScreen extends StatefulWidget {
   final Widget child;
@@ -19,49 +20,56 @@ class _MainShellScreenState extends State<MainShellScreen> {
   final BrandingManager _brandingManager = getIt<BrandingManager>();
 
   final List<TenantConfig> _mockTenants = [
-    const TenantConfig(
-      id: 'default',
-      name: 'Sport Event Platform',
-      primaryColor: Color(0xFF1E88E5), // Material Blue
-      secondaryColor: Color(0xFF1565C0), // Blue
-      accentColor: Color(0xFFFFB300), // Yellow Accent
-      backgroundColor: Color(0xFF121212),
+    TenantConfig(
+      tenantId: 1,
+      tenantName: 'Sport Event Platform',
       logoUrl: 'assets/images/default_logo.png',
-      supportedSports: [SportType.running, SportType.trailRunning, SportType.mtb, SportType.duathlon],
-      enableLiveTracking: true,
+      primaryColor: '#1E88E5',
+      secondaryColor: '#1565C0',
+      accentColor: '#FFFFB3',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
     ),
-    const TenantConfig(
-      id: 'patagonia_trail',
-      name: 'Patagonia Trail Run',
-      primaryColor: Color(0xFF43A047), // Vibrant Green
-      secondaryColor: Color(0xFF2E7D32), // Dark Green
-      accentColor: Color(0xFFFFB300), // Gold Accent
-      backgroundColor: Color(0xFF0F140F),
+    TenantConfig(
+      tenantId: 2,
+      tenantName: 'DDLN - Desafío de la Naturaleza',
       logoUrl: 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80',
-      supportedSports: [SportType.trailRunning, SportType.running],
-      enableLiveTracking: true,
+      primaryColor: '#FF7043',
+      secondaryColor: '#D84315',
+      accentColor: '#00E676',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
+      baseUrl: 'https://juna.net.ar/desafio2026_testtt/api',
     ),
-    const TenantConfig(
-      id: 'velo_mtb',
-      name: 'Velo MTB Challenge',
-      primaryColor: Color(0xFFFB8C00), // Orange
-      secondaryColor: Color(0xFFEF6C00), // Deep Orange
-      accentColor: Color(0xFF00E5FF), // Neon Cyan Accent
-      backgroundColor: Color(0xFF14110F),
+    TenantConfig(
+      tenantId: 3,
+      tenantName: 'Patagonia Trail Run',
+      logoUrl: 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80',
+      primaryColor: '#43A047',
+      secondaryColor: '#2E7D32',
+      accentColor: '#FFFFB3',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
+    ),
+    TenantConfig(
+      tenantId: 4,
+      tenantName: 'Velo MTB Challenge',
       logoUrl: 'https://images.unsplash.com/photo-1544192240-4a34feb0104a?w=150&q=80',
-      supportedSports: [SportType.mtb],
-      enableLiveTracking: false,
+      primaryColor: '#FB8C00',
+      secondaryColor: '#EF6C00',
+      accentColor: '#00E5FF',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: false),
     ),
-    const TenantConfig(
-      id: 'ba_marathon',
-      name: 'Buenos Aires Marathon',
-      primaryColor: Color(0xFFD81B60), // NRC Hot Pink style
-      secondaryColor: Color(0xFF8E24AA), // Purple
-      accentColor: Color(0xFF00E676), // Neon Green Accent
-      backgroundColor: Color(0xFF140F11),
+    TenantConfig(
+      tenantId: 5,
+      tenantName: 'Buenos Aires Marathon',
       logoUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=150&q=80',
-      supportedSports: [SportType.running, SportType.duathlon],
-      enableLiveTracking: true,
+      primaryColor: '#D81B60',
+      secondaryColor: '#8E24AA',
+      accentColor: '#00E676',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
     ),
   ];
 
@@ -123,40 +131,40 @@ class _MainShellScreenState extends State<MainShellScreen> {
         label: 'Vivo',
       ),
       const BottomNavigationBarItem(
-        icon: Icon(Icons.menu_rounded),
-        activeIcon: Icon(Icons.menu_open_rounded),
+        icon: Icon(Icons.more_horiz_rounded),
+        activeIcon: Icon(Icons.more_horiz_rounded),
         label: 'Más',
       ),
     ];
 
     Widget buildDrawerContent() {
       return Container(
-        color: Color.alphaBlend(Colors.black.withValues(alpha: 0.4), activeTenant.backgroundColor),
+        color: const Color(0xFF1E1E1E),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Drawer Header with Tenant configuration
+            // Header Org Logo
             DrawerHeader(
               decoration: BoxDecoration(
-                gradient: _brandingManager.getPrimaryGradient(activeTenant),
+                color: activeTenant.primaryColorRef.withValues(alpha: 0.1),
               ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _brandingManager.getLogo(activeTenant, height: 50),
-                    const SizedBox(height: 12),
-                    Text(
-                      activeTenant.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _brandingManager.getLogo(activeTenant, height: 50),
+                  const SizedBox(height: 12),
+                  Text(
+                    activeTenant.tenantName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
             // Navigation list items
@@ -238,13 +246,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<TenantConfig>(
-                        value: _mockTenants.firstWhere((t) => t.id == activeTenant.id, orElse: () => _mockTenants.first),
-                        dropdownColor: activeTenant.backgroundColor,
+                        value: _mockTenants.firstWhere((t) => t.tenantId == activeTenant.tenantId, orElse: () => _mockTenants.first),
+                        dropdownColor: activeTenant.backgroundColorRef,
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                         items: _mockTenants.map((t) {
                           return DropdownMenuItem<TenantConfig>(
                             value: t,
-                            child: Text(t.name),
+                            child: Text(t.tenantName),
                           );
                         }).toList(),
                         onChanged: (TenantConfig? val) {
@@ -295,8 +303,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
               currentIndex: selectedIndex,
               onTap: (index) => _onItemTapped(index, context),
               type: BottomNavigationBarType.fixed,
-              backgroundColor: activeTenant.backgroundColor,
-              selectedItemColor: activeTenant.primaryColor,
+              backgroundColor: activeTenant.backgroundColorRef,
+              selectedItemColor: activeTenant.primaryColorRef,
               unselectedItemColor: Colors.grey.shade600,
               showSelectedLabels: true,
               showUnselectedLabels: true,
@@ -315,13 +323,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
-        color: selected ? tenant.primaryColor.withValues(alpha: 0.15) : Colors.transparent,
+        color: selected ? tenant.primaryColorRef.withValues(alpha: 0.15) : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
         leading: Icon(
           icon,
-          color: selected ? tenant.primaryColor : Colors.grey.shade400,
+          color: selected ? tenant.primaryColorRef : Colors.grey.shade400,
         ),
         title: Text(
           title,

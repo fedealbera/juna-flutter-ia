@@ -7,12 +7,18 @@ import '../../features/maps/presentation/screens/maps_screen.dart';
 import '../../features/live/presentation/screens/live_screen.dart';
 import '../../features/more/presentation/screens/more_screen.dart';
 import '../../shared/presentation/screens/main_shell_screen.dart';
+import '../../shared/presentation/screens/splash_screen.dart';
 
 @lazySingleton
 class AppRouter {
   late final GoRouter router = GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/',
     routes: [
+      GoRoute(
+        path: '/',
+        name: 'splash',
+        builder: (BuildContext context, GoRouterState state) => const SplashScreen(),
+      ),
       ShellRoute(
         builder: (BuildContext context, GoRouterState state, Widget child) {
           return MainShellScreen(child: child);

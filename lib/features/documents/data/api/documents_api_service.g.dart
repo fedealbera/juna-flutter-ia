@@ -25,7 +25,7 @@ class _DocumentsApiService implements DocumentsApiService {
   Future<List<ParticipantFileResponseDto>> getParticipantFiles(
       String partiId) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'parti_id': partiId};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<List<ParticipantFileResponseDto>>(Options(
@@ -35,7 +35,7 @@ class _DocumentsApiService implements DocumentsApiService {
     )
         .compose(
           _dio.options,
-          '/api/participantes/${partiId}/archivos',
+          '/api/participantes/archivos',
           queryParameters: queryParameters,
           data: _data,
         )

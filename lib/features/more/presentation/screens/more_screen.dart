@@ -71,7 +71,7 @@ class _MoreScreenState extends State<MoreScreen> {
         BlocProvider<AboutBloc>.value(value: _aboutBloc),
       ],
       child: Scaffold(
-        backgroundColor: activeTenant.backgroundColor,
+        backgroundColor: activeTenant.backgroundColorRef,
         body: BlocListener<DocumentsBloc, DocumentsState>(
           listener: (context, state) {
             state.maybeWhen(
@@ -107,7 +107,7 @@ class _MoreScreenState extends State<MoreScreen> {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
                     ),
                     IconButton(
-                      icon: Icon(Icons.upload_file_rounded, color: activeTenant.primaryColor),
+                      icon: Icon(Icons.upload_file_rounded, color: activeTenant.primaryColorRef),
                       onPressed: () => _simulateFileUpload(context),
                     ),
                   ],
@@ -139,13 +139,13 @@ class _MoreScreenState extends State<MoreScreen> {
                                 style: AppCardStyle.glassmorphic,
                                 child: ListTile(
                                   contentPadding: EdgeInsets.zero,
-                                  leading: Icon(Icons.picture_as_pdf_outlined, color: activeTenant.primaryColor, size: 28),
+                                  leading: Icon(Icons.picture_as_pdf_outlined, color: activeTenant.primaryColorRef, size: 28),
                                   title: Text(
                                     file.name.isNotEmpty ? file.name : 'Deslinde Obligatorio.pdf',
                                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                                   ),
                                   subtitle: const Text('Haga clic para descargar / ver', style: TextStyle(color: Colors.grey, fontSize: 11)),
-                                  trailing: Icon(Icons.download_for_offline_outlined, color: activeTenant.accentColor),
+                                  trailing: Icon(Icons.download_for_offline_outlined, color: activeTenant.accentColorRef),
                                   onTap: () {},
                                 ),
                               ),
@@ -217,7 +217,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        backgroundColor: activeTenant.backgroundColor,
+                        backgroundColor: activeTenant.backgroundColorRef,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         title: const Text('Compartir App', style: TextStyle(color: Colors.white)),
                         content: Text('¡Comparte la aplicación de ${activeTenant.name} en tus redes sociales!', style: const TextStyle(color: Colors.white70)),
@@ -247,7 +247,7 @@ class _MoreScreenState extends State<MoreScreen> {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.info_outline, color: activeTenant.primaryColor),
+                                  Icon(Icons.info_outline, color: activeTenant.primaryColorRef),
                                   const SizedBox(width: 8),
                                   Text(
                                     info.appName,
@@ -317,7 +317,7 @@ class _MoreScreenState extends State<MoreScreen> {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          backgroundColor: activeTenant.backgroundColor,
+          backgroundColor: activeTenant.backgroundColorRef,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Subir Deslinde / Certificado', style: TextStyle(color: Colors.white)),
           content: const Text(
@@ -330,7 +330,7 @@ class _MoreScreenState extends State<MoreScreen> {
               child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: activeTenant.primaryColor),
+              style: ElevatedButton.styleFrom(backgroundColor: activeTenant.primaryColorRef),
               onPressed: () {
                 Navigator.pop(dialogContext);
                 _documentsBloc.add(DocumentsEvent.uploadDocument(

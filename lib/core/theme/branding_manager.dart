@@ -25,7 +25,7 @@ class BrandingManager {
         },
       );
     }
-    
+
     // Otherwise fallback to asset loading (checking placeholder status)
     return Image.asset(
       tenant.logoUrl,
@@ -41,14 +41,14 @@ class BrandingManager {
       width: width ?? 120,
       height: height ?? 40,
       decoration: BoxDecoration(
-        color: tenant.primaryColor.withValues(alpha: 0.1),
+        color: tenant.primaryColorRef.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
         child: Text(
           tenant.name,
           style: TextStyle(
-            color: tenant.primaryColor,
+            color: tenant.primaryColorRef,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -63,8 +63,8 @@ class BrandingManager {
   LinearGradient getPrimaryGradient(TenantConfig tenant) {
     return LinearGradient(
       colors: [
-        tenant.primaryColor,
-        tenant.secondaryColor,
+        tenant.primaryColorRef,
+        tenant.secondaryColorRef,
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,

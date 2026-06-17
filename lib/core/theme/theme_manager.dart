@@ -6,18 +6,18 @@ import 'tenant_config.dart';
 class ThemeManager {
   ThemeData getTheme(TenantConfig tenant) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: tenant.primaryColor,
-      primary: tenant.primaryColor,
-      secondary: tenant.secondaryColor,
-      tertiary: tenant.accentColor,
-      surface: tenant.backgroundColor,
+      seedColor: tenant.primaryColorRef,
+      primary: tenant.primaryColorRef,
+      secondary: tenant.secondaryColorRef,
+      tertiary: tenant.accentColorRef,
+      surface: tenant.backgroundColorRef,
       brightness: Brightness.light,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: tenant.backgroundColor,
+      scaffoldBackgroundColor: tenant.backgroundColorRef,
       
       // Premium Typography (Inter/Roboto default fallback)
       fontFamily: 'Inter',
@@ -34,7 +34,7 @@ class ThemeManager {
       
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: tenant.primaryColor,
+          backgroundColor: tenant.primaryColorRef,
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -63,7 +63,7 @@ class ThemeManager {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: tenant.primaryColor, width: 2),
+          borderSide: BorderSide(color: tenant.primaryColorRef, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -77,10 +77,10 @@ class ThemeManager {
 
   ThemeData getDarkTheme(TenantConfig tenant) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: tenant.primaryColor,
-      primary: tenant.primaryColor,
-      secondary: tenant.secondaryColor,
-      tertiary: tenant.accentColor,
+      seedColor: tenant.primaryColorRef,
+      primary: tenant.primaryColorRef,
+      secondary: tenant.secondaryColorRef,
+      tertiary: tenant.accentColorRef,
       surface: const Color(0xFF121212),
       brightness: Brightness.dark,
     );
@@ -102,7 +102,7 @@ class ThemeManager {
       
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: tenant.primaryColor,
+          backgroundColor: tenant.primaryColorRef,
           foregroundColor: Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -131,7 +131,7 @@ class ThemeManager {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: tenant.primaryColor, width: 2),
+          borderSide: BorderSide(color: tenant.primaryColorRef, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

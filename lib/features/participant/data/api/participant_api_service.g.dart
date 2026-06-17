@@ -104,7 +104,7 @@ class _ParticipantApiService implements ParticipantApiService {
     UpdateEmergencyRequestDto body,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'parti_id': partiId};
     final _headers = <String, dynamic>{};
     final _data = body;
     final _options = _setStreamType<UpdateEmergencyResponseDto>(Options(
@@ -114,7 +114,7 @@ class _ParticipantApiService implements ParticipantApiService {
     )
         .compose(
           _dio.options,
-          '/api/participantes/${partiId}/emergencia',
+          '/api/participantes/emergencia',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -140,7 +140,7 @@ class _ParticipantApiService implements ParticipantApiService {
     UpdateContactRequestDto body,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'parti_id': partiId};
     final _headers = <String, dynamic>{};
     final _data = body;
     final _options = _setStreamType<UpdateContactResponseDto>(Options(
@@ -150,7 +150,7 @@ class _ParticipantApiService implements ParticipantApiService {
     )
         .compose(
           _dio.options,
-          '/api/participantes/${partiId}/contacto',
+          '/api/participantes/contacto',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -176,7 +176,7 @@ class _ParticipantApiService implements ParticipantApiService {
     UpdateCircuitoRequestDto body,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'parti_id': partiId};
     final _headers = <String, dynamic>{};
     final _data = body;
     final _options = _setStreamType<UpdateCircuitoResponseDto>(Options(
@@ -186,7 +186,7 @@ class _ParticipantApiService implements ParticipantApiService {
     )
         .compose(
           _dio.options,
-          '/api/participantes/${partiId}/circuito',
+          '/api/participantes/circuito',
           queryParameters: queryParameters,
           data: _data,
         )

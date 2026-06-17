@@ -70,15 +70,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
         BlocProvider<NotificationsBloc>.value(value: _notificationsBloc),
       ],
       child: Scaffold(
-        backgroundColor: activeTenant.backgroundColor,
+        backgroundColor: activeTenant.backgroundColorRef,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
           bottom: TabBar(
             controller: _tabController,
-            indicatorColor: activeTenant.primaryColor,
-            labelColor: activeTenant.primaryColor,
+            indicatorColor: activeTenant.primaryColorRef,
+            labelColor: activeTenant.primaryColorRef,
             unselectedLabelColor: Colors.grey.shade400,
             tabs: const [
               Tab(text: 'NUEVA INSCRIPCIÓN', icon: Icon(Icons.add_task_rounded)),
@@ -178,7 +178,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: activeTenant.primaryColor,
+                    backgroundColor: activeTenant.primaryColorRef,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
@@ -291,15 +291,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: activeTenant.primaryColor,
+                    backgroundColor: activeTenant.primaryColorRef,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
                     if (_dniController.text.isNotEmpty) {
                       _participantBloc.add(ParticipantEvent.getDetail(
                         dni: _dniController.text,
-                        idOrg: activeTenant.id,
-                        eventoId: 'evt_v3_${activeTenant.id}',
+                        idOrg: '1',
+                        eventoId: '1',
                       ));
                     }
                   },
@@ -364,8 +364,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                         onPressed: () {
                           _participantBloc.add(ParticipantEvent.authenticate(
                             dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-                            idEvento: 'evt_v3_${activeTenant.id}',
-                            idOrg: activeTenant.id,
+                            idEvento: '1',
+                            idOrg: '1',
                             token: 'token_dispositivo_demo_123',
                           ));
                         },
@@ -385,8 +385,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                         onPressed: () {
                           _notificationsBloc.add(NotificationsEvent.registerToken(
                             documento: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-                            idEvento: 'evt_v3_${activeTenant.id}',
-                            idOrg: activeTenant.id,
+                            idEvento: '1',
+                            idOrg: '1',
                             token: 'fcm_token_device_sync_mock',
                           ));
                         },
@@ -449,10 +449,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: activeTenant.backgroundColor,
+              backgroundColor: activeTenant.backgroundColorRef,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: activeTenant.primaryColor.withValues(alpha: 0.2)),
+                side: BorderSide(color: activeTenant.primaryColorRef.withValues(alpha: 0.2)),
               ),
               title: const Text('Escaneando Dispositivo/Chip', style: TextStyle(color: Colors.white)),
               content: const Column(

@@ -3,6 +3,7 @@ import '../../core/di/injection.dart';
 import '../../core/theme/branding_manager.dart';
 import '../../core/theme/tenant_config.dart';
 import '../../core/theme/tenant_manager.dart';
+import '../../core/firebase/tenant_firebase_config.dart';
 import 'buttons/app_button.dart';
 import 'cards/app_card.dart';
 import 'loaders/app_loader.dart';
@@ -21,38 +22,38 @@ class _HomeDemoScreenState extends State<HomeDemoScreen> {
 
   // Mock list of Tenants/Organizations
   final List<TenantConfig> _mockTenants = [
-    const TenantConfig(
-      id: 'patagonia_trail',
-      name: 'Patagonia Trail Run',
-      primaryColor: Color(0xFF2E7D32), // Forest Green
-      secondaryColor: Color(0xFF1B5E20), // Dark Green
-      accentColor: Color(0xFFFF8F00), // Amber
-      backgroundColor: Color(0xFFF1F8E9), // Light Green Tint
-      logoUrl: 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80', // Mock Net Logo
-      supportedSports: [SportType.trailRunning, SportType.running],
-      enableLiveTracking: true,
+    TenantConfig(
+      tenantId: 3,
+      tenantName: 'Patagonia Trail Run',
+      primaryColor: '#2E7D32', // Forest Green
+      secondaryColor: '#1B5E20', // Dark Green
+      accentColor: '#FF8F00', // Amber
+      logoUrl: 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
+      supportedSports: const [SportType.trailRunning, SportType.running],
     ),
-    const TenantConfig(
-      id: 'velo_mtb',
-      name: 'Velo MTB Challenge',
-      primaryColor: Color(0xFFE65100), // Orange
-      secondaryColor: Color(0xFFBF360C), // Deep Red-Orange
-      accentColor: Color(0xFF29B6F6), // Sky Blue
-      backgroundColor: Color(0xFFFFF3E0), // Light Orange Tint
-      logoUrl: 'https://images.unsplash.com/photo-1544192240-4a34feb0104a?w=150&q=80', // Mock Net Logo
-      supportedSports: [SportType.mtb],
-      enableLiveTracking: false,
+    TenantConfig(
+      tenantId: 4,
+      tenantName: 'Velo MTB Challenge',
+      primaryColor: '#E65100', // Orange
+      secondaryColor: '#BF360C', // Deep Red-Orange
+      accentColor: '#29B6F6', // Sky Blue
+      logoUrl: 'https://images.unsplash.com/photo-1544192240-4a34feb0104a?w=150&q=80',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: false),
+      supportedSports: const [SportType.mtb],
     ),
-    const TenantConfig(
-      id: 'ba_marathon',
-      name: 'Buenos Aires Marathon',
-      primaryColor: Color(0xFF1565C0), // Blue
-      secondaryColor: Color(0xFF0D47A1), // Dark Blue
-      accentColor: Color(0xFFEC407A), // Hot Pink
-      backgroundColor: Color(0xFFE3F2FD), // Light Blue Tint
-      logoUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=150&q=80', // Mock Net Logo
-      supportedSports: [SportType.running, SportType.duathlon],
-      enableLiveTracking: true,
+    TenantConfig(
+      tenantId: 5,
+      tenantName: 'Buenos Aires Marathon',
+      primaryColor: '#1565C0', // Blue
+      secondaryColor: '#0D47A1', // Dark Blue
+      accentColor: '#EC407A', // Hot Pink
+      logoUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=150&q=80',
+      firebase: DefaultFirebaseConfig.ddln(),
+      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
+      supportedSports: const [SportType.running, SportType.duathlon],
     ),
   ];
 
@@ -78,13 +79,13 @@ class _HomeDemoScreenState extends State<HomeDemoScreen> {
                 return PopupMenuItem<TenantConfig>(
                   value: tenant,
                   child: Text(
-                    tenant.name,
+                    tenant.tenantName,
                     style: TextStyle(
-                      color: tenant.id == _tenantManager.value.id 
-                          ? tenant.primaryColor 
+                      color: tenant.tenantId == _tenantManager.value.tenantId
+                          ? tenant.primaryColorRef
                           : null,
-                      fontWeight: tenant.id == _tenantManager.value.id 
-                          ? FontWeight.bold 
+                      fontWeight: tenant.tenantId == _tenantManager.value.tenantId
+                          ? FontWeight.bold
                           : null,
                     ),
                   ),
@@ -190,7 +191,7 @@ class _HomeDemoScreenState extends State<HomeDemoScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             AppCard(
               style: AppCardStyle.normal,
               child: Column(

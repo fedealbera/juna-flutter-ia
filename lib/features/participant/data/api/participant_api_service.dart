@@ -33,21 +33,21 @@ abstract class ParticipantApiService {
     @Query('roundId') String? roundId,
   );
 
-  @PUT('/api/participantes/{partiId}/emergencia')
+  @PUT('/api/participantes/emergencia')
   Future<UpdateEmergencyResponseDto> updateEmergency(
-    @Path('partiId') String partiId,
+    @Query('parti_id') String partiId,
     @Body() UpdateEmergencyRequestDto body,
   );
 
-  @PUT('/api/participantes/{partiId}/contacto')
+  @PUT('/api/participantes/contacto')
   Future<UpdateContactResponseDto> updateContact(
-    @Path('partiId') String partiId,
+    @Query('parti_id') String partiId,
     @Body() UpdateContactRequestDto body,
   );
 
-  @PUT('/api/participantes/{partiId}/circuito')
+  @PUT('/api/participantes/circuito')
   Future<UpdateCircuitoResponseDto> updateCircuito(
-    @Path('partiId') String partiId,
+    @Query('parti_id') String partiId,
     @Body() UpdateCircuitoRequestDto body,
   );
 

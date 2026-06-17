@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
@@ -75,15 +76,15 @@ class _LiveScreenState extends State<LiveScreen> with SingleTickerProviderStateM
     return BlocProvider<SocialBloc>.value(
       value: _socialBloc,
       child: Scaffold(
-        backgroundColor: activeTenant.backgroundColor,
+        backgroundColor: activeTenant.backgroundColorRef,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
           bottom: TabBar(
             controller: _tabController,
-            indicatorColor: activeTenant.primaryColor,
-            labelColor: activeTenant.primaryColor,
+            indicatorColor: activeTenant.primaryColorRef,
+            labelColor: activeTenant.primaryColorRef,
             unselectedLabelColor: Colors.grey.shade400,
             tabs: const [
               Tab(text: 'RESULTADOS', icon: Icon(Icons.leaderboard_rounded)),
@@ -107,7 +108,7 @@ class _LiveScreenState extends State<LiveScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildResultsTab(dynamic activeTenant, ThemeData theme, List<Map<String, dynamic>> results) {
+  Widget _buildResultsTab(TenantConfig activeTenant, ThemeData theme, List<Map<String, dynamic>> results) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -140,14 +141,14 @@ class _LiveScreenState extends State<LiveScreen> with SingleTickerProviderStateM
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: activeTenant.primaryColor.withValues(alpha: 0.2),
+                            color: activeTenant.primaryColorRef.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Center(
                             child: Text(
                               '#${item['rank']}',
                               style: TextStyle(
-                                color: activeTenant.primaryColor,
+                                color: activeTenant.primaryColorRef,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
                               ),
@@ -177,7 +178,7 @@ class _LiveScreenState extends State<LiveScreen> with SingleTickerProviderStateM
                             Text(
                               item['time'],
                               style: TextStyle(
-                                color: activeTenant.accentColor,
+                                color: activeTenant.accentColorRef,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
                                 fontFamily: 'Courier',
@@ -206,7 +207,7 @@ class _LiveScreenState extends State<LiveScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildLiveUpdatesTab(dynamic activeTenant) {
+  Widget _buildLiveUpdatesTab(TenantConfig activeTenant) {
     final List<Map<String, String>> mockBroadcasts = [
       {'time': 'Hace 5 min', 'msg': 'Puntero Federico Albera cruza el puesto de control PC3 con un tiempo de 03:45:12.'},
       {'time': 'Hace 22 min', 'msg': 'El clima en la cumbre mejora. Temperatura actual: 12°C. Rutas en estado óptimo.'},
@@ -232,12 +233,12 @@ class _LiveScreenState extends State<LiveScreen> with SingleTickerProviderStateM
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: activeTenant.primaryColor.withValues(alpha: 0.15),
+                        color: activeTenant.primaryColorRef.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         'OFICIAL',
-                        style: TextStyle(color: activeTenant.primaryColor, fontWeight: FontWeight.bold, fontSize: 9),
+                        style: TextStyle(color: activeTenant.primaryColorRef, fontWeight: FontWeight.bold, fontSize: 9),
                       ),
                     ),
                     Text(
@@ -259,7 +260,7 @@ class _LiveScreenState extends State<LiveScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildSocialTab(dynamic activeTenant, ThemeData theme) {
+  Widget _buildSocialTab(TenantConfig activeTenant, ThemeData theme) {
     return BlocBuilder<SocialBloc, SocialState>(
       builder: (context, state) {
         return state.maybeWhen(

@@ -55,10 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadEventContent() {
-    final activeTenant = _tenantManager.value;
-    _contentBloc.add(ContentEvent.getEventContent(
-      eventId: 'evt_v3_${activeTenant.id}',
-      idOrg: activeTenant.id,
+    _contentBloc.add(const ContentEvent.getEventContent(
+      eventId: '1',
+      idOrg: '1',
     ));
   }
 
@@ -101,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocProvider<EmergencyBloc>.value(value: _emergencyBloc),
       ],
       child: Scaffold(
-        backgroundColor: activeTenant.backgroundColor,
+        backgroundColor: activeTenant.backgroundColorRef,
         body: BlocListener<EmergencyBloc, EmergencyState>(
           listener: (context, state) {
             state.maybeWhen(
@@ -172,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: activeTenant.primaryColor,
+                                color: activeTenant.primaryColorRef,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -243,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Icon(
                             Icons.timer_outlined,
-                            color: activeTenant.accentColor,
+                            color: activeTenant.accentColorRef,
                             size: 28,
                           ),
                         ],
@@ -311,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.white.withValues(alpha: 0.05),
                                 child: Icon(
                                   isFirst ? Icons.notifications_active_rounded : Icons.info_outline,
-                                  color: activeTenant.primaryColor,
+                                  color: activeTenant.primaryColorRef,
                                   size: 30,
                                 ),
                               ),
@@ -380,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.description_outlined, color: activeTenant.primaryColor),
+                                      Icon(Icons.description_outlined, color: activeTenant.primaryColorRef),
                                       const SizedBox(width: 8),
                                       const Text(
                                         'Reglamento Oficial',
@@ -472,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return BlocProvider<EmergencyBloc>.value(
           value: _emergencyBloc,
           child: AlertDialog(
-            backgroundColor: activeTenant.backgroundColor,
+            backgroundColor: activeTenant.backgroundColorRef,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.2)),
@@ -498,8 +497,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   _emergencyBloc.add(const EmergencyEvent.sendSos(
                     partiId: 'parti_demo_1',
-                    eventoId: 'evt_demo_1',
-                    orgId: 'org_demo_1',
+                    eventoId: '1',
+                    orgId: '1',
                     latitud: '-34.6037',
                     longitud: '-58.3816',
                   ));
