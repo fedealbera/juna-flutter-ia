@@ -275,17 +275,49 @@ class _MainShellScreenState extends State<MainShellScreen> {
     return Scaffold(
       appBar: AppBar(
         title: _brandingManager.getLogo(activeTenant, height: 32),
-        centerTitle: true,
+        centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
+        actions: [
+          if (!isWideScreen)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Container(
+                width: 150,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<TenantConfig>(
+                    isExpanded: true,
+                    value: _mockTenants.firstWhere((t) => t.tenantId == activeTenant.tenantId, orElse: () => _mockTenants.first),
+                    dropdownColor: activeTenant.backgroundColorRef,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70, size: 18),
+                    items: _mockTenants.map((t) {
+                      return DropdownMenuItem<TenantConfig>(
+                        value: t,
+                        child: Text(
+                          t.tenantName,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (TenantConfig? val) {
+                      if (val != null) {
+                        _tenantManager.changeTenant(val);
+                        setState(() {});
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
-      drawer: isWideScreen ? null : Drawer(child: buildDrawerContent()),
       body: Row(
         children: [
           if (isWideScreen)
