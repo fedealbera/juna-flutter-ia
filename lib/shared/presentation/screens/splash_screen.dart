@@ -5,6 +5,7 @@ import '../../../core/theme/tenant_manager.dart';
 import '../../../core/firebase/firebase_configuration_repository.dart';
 import '../../../core/firebase/initialize_firebase_use_case.dart';
 import '../../../core/firebase/firebase_manager.dart';
+import '../../../features/settings/domain/repositories/settings_repository.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -46,6 +47,13 @@ class _SplashScreenState extends State<SplashScreen> {
         if (token != null) {
           await _firebaseManager.registerFcmToken(tenantConfig.tenantId, token);
         }
+      }
+
+      // 6. Obtener y cachear settings del evento 1 de la organización 1
+      try {
+        await getIt<SettingsRepository>().getEventSettings('1', '1');
+      } catch (e) {
+        debugPrint('Error loading event settings during bootstrap: $e');
       }
     } catch (e) {
       debugPrint('Error during application bootstrap: $e. Falling back to default.');

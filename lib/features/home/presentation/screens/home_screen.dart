@@ -8,10 +8,13 @@ import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
 import '../../../content/presentation/bloc/content_bloc.dart';
 import '../../../content/presentation/bloc/content_event.dart';
-import '../../../content/presentation/bloc/content_state.dart';
 import '../../../emergency/presentation/bloc/emergency_bloc.dart';
 import '../../../emergency/presentation/bloc/emergency_event.dart';
 import '../../../emergency/presentation/bloc/emergency_state.dart';
+import '../../../settings/presentation/bloc/settings_bloc.dart';
+import '../../../settings/presentation/bloc/settings_event.dart';
+import '../../../settings/presentation/bloc/settings_state.dart';
+import '../../../settings/domain/repositories/settings_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,19 +28,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late final ContentBloc _contentBloc;
   late final EmergencyBloc _emergencyBloc;
+  late final SettingsBloc _settingsBloc;
 
   // Countdown timer parameters
   late Timer _countdownTimer;
   Duration _timeLeft = const Duration(days: 12, hours: 8, minutes: 43, seconds: 12);
+  int? _raceTimestamp;
 
   @override
   void initState() {
     super.initState();
     _contentBloc = getIt<ContentBloc>();
     _emergencyBloc = getIt<EmergencyBloc>();
+    _settingsBloc = getIt<SettingsBloc>();
 
-    // Load active event content
+    // Try to load cached settings instantly to avoid countdown jump
+    final cached = getIt<SettingsRepository>().getCachedSettings();
+    if (cached != null) {
+      final tsStr = cached.fechaCarreraTs;
+      if (tsStr.isNotEmpty) {
+        final parsedTs = int.tryParse(tsStr);
+        if (parsedTs != null) {
+          _raceTimestamp = tsStr.length == 10 ? parsedTs * 1000 : parsedTs;
+          final difference = DateTime.fromMillisecondsSinceEpoch(_raceTimestamp!).difference(DateTime.now());
+          _timeLeft = difference.inSeconds > 0 ? difference : Duration.zero;
+        }
+      }
+    }
+
+    // Load active event content and settings
     _loadEventContent();
+    _settingsBloc.add(const SettingsEvent.getSettings(eventId: '1', idOrg: '1'));
 
     // Dynamically rebuild when tenant configuration changes
     _tenantManager.addListener(_onTenantChanged);
@@ -45,9 +66,30 @@ class _HomeScreenState extends State<HomeScreen> {
     // Run countdown update loop
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
+        // Sync setting changes dynamically from BLoC state
+        final settingsState = _settingsBloc.state;
+        settingsState.maybeWhen(
+          loaded: (settings) {
+            final tsStr = settings.fechaCarreraTs;
+            if (tsStr.isNotEmpty) {
+              final ts = int.tryParse(tsStr);
+              if (ts != null) {
+                _raceTimestamp = tsStr.length == 10 ? ts * 1000 : ts;
+              }
+            }
+          },
+          orElse: () {},
+        );
+
         setState(() {
-          if (_timeLeft.inSeconds > 0) {
-            _timeLeft = _timeLeft - const Duration(seconds: 1);
+          if (_raceTimestamp != null) {
+            final raceDate = DateTime.fromMillisecondsSinceEpoch(_raceTimestamp!);
+            final difference = raceDate.difference(DateTime.now());
+            _timeLeft = difference.inSeconds > 0 ? difference : Duration.zero;
+          } else {
+            if (_timeLeft.inSeconds > 0) {
+              _timeLeft = _timeLeft - const Duration(seconds: 1);
+            }
           }
         });
       }
@@ -63,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onTenantChanged() {
     _loadEventContent();
+    _settingsBloc.add(const SettingsEvent.getSettings(eventId: '1', idOrg: '1'));
     setState(() {});
   }
 
@@ -70,6 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _tenantManager.removeListener(_onTenantChanged);
     _countdownTimer.cancel();
+    _settingsBloc.close();
     super.dispose();
   }
 
@@ -85,7 +129,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final activeTenant = _tenantManager.value;
-    final theme = Theme.of(context);
 
     // List of banner graphics according to the organization/tenant ID
     final String bannerImage = activeTenant.id == 'velo_mtb'
@@ -98,364 +141,377 @@ class _HomeScreenState extends State<HomeScreen> {
       providers: [
         BlocProvider<ContentBloc>.value(value: _contentBloc),
         BlocProvider<EmergencyBloc>.value(value: _emergencyBloc),
+        BlocProvider<SettingsBloc>.value(value: _settingsBloc),
       ],
       child: Scaffold(
         backgroundColor: activeTenant.backgroundColorRef,
-        body: BlocListener<EmergencyBloc, EmergencyState>(
-          listener: (context, state) {
-            state.maybeWhen(
-              sosSent: (result) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('¡Señal de Emergencia SOS enviada con éxito!'),
-                    backgroundColor: Colors.green.shade800,
-                  ),
-                );
-              },
-              error: (msg) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error al enviar SOS: $msg'),
-                    backgroundColor: Colors.red.shade800,
-                  ),
-                );
-              },
-              orElse: () {},
-            );
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. Dynamic Hero Banner Carousel with premium dark overlay
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Stack(
-                    children: [
-                      Image.network(
-                        bannerImage,
-                        height: 220,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, progress) {
-                          if (progress == null) return child;
-                          return Container(
-                            height: 220,
-                            color: Colors.white.withValues(alpha: 0.05),
-                            child: const Center(child: CircularProgressIndicator.adaptive()),
-                          );
-                        },
+        body: MultiBlocListener(
+          listeners: [
+            BlocListener<EmergencyBloc, EmergencyState>(
+              listener: (context, state) {
+                state.maybeWhen(
+                  sosSent: (result) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('¡Señal de Emergencia SOS enviada con éxito!'),
+                        backgroundColor: Colors.green.shade800,
                       ),
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withValues(alpha: 0.8),
-                                Colors.black.withValues(alpha: 0.2),
-                              ],
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
+                    );
+                  },
+                  error: (msg) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error al enviar SOS: $msg'),
+                        backgroundColor: Colors.red.shade800,
+                      ),
+                    );
+                  },
+                  orElse: () {},
+                );
+              },
+            ),
+            BlocListener<SettingsBloc, SettingsState>(
+              listener: (context, state) {
+                state.maybeWhen(
+                  loaded: (settings) {
+                    final tsStr = settings.fechaCarreraTs;
+                    if (tsStr.isNotEmpty) {
+                      final ts = int.tryParse(tsStr);
+                      if (ts != null) {
+                        setState(() {
+                          _raceTimestamp = tsStr.length == 10 ? ts * 1000 : ts;
+                        });
+                      }
+                    }
+                  },
+                  orElse: () {},
+                );
+              },
+            ),
+          ],
+          child: BlocBuilder<SettingsBloc, SettingsState>(
+            builder: (context, settingsState) {
+              final settings = settingsState.maybeWhen(
+                loaded: (s) => s,
+                orElse: () => null,
+              );
+
+              final appTitle = settings?.appTitle.isNotEmpty == true ? settings!.appTitle : activeTenant.name;
+              final edicion = settings?.edicion.isNotEmpty == true ? settings!.edicion : '2026';
+              final tipoCarrera = settings?.tipoCarrera.isNotEmpty == true ? settings!.tipoCarrera : 'MOUNTAIN BIKE';
+              final fechaCarrera = settings?.fechaCarrera.isNotEmpty == true ? settings!.fechaCarrera : '7 de Junio';
+
+              final isVisibleSos = settings != null
+                  ? settings.getSetting('ISVISIBLE_SOS') == 'TRUE'
+                  : activeTenant.enableLiveTracking;
+
+              final isEnabledSosSetting = settings != null
+                  ? settings.getSetting('ISENABLED_SOS') == 'TRUE'
+                  : activeTenant.enableLiveTracking;
+
+              bool isRaceDay = false;
+              if (settings != null) {
+                final tsStr = settings.fechaCarreraTs;
+                if (tsStr.isNotEmpty) {
+                  final ts = int.tryParse(tsStr);
+                  if (ts != null) {
+                    final milliseconds = tsStr.length == 10 ? ts * 1000 : ts;
+                    final raceDate = DateTime.fromMillisecondsSinceEpoch(milliseconds);
+                    final now = DateTime.now();
+                    isRaceDay = now.year == raceDate.year &&
+                                now.month == raceDate.month &&
+                                now.day == raceDate.day;
+                  }
+                }
+              }
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Dynamic Hero Banner Carousel with premium dark overlay
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            bannerImage,
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return Container(
+                                height: 220,
+                                color: Colors.white.withValues(alpha: 0.05),
+                                child: const Center(child: CircularProgressIndicator.adaptive()),
+                              );
+                            },
+                          ),
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.8),
+                                    Colors.black.withValues(alpha: 0.2),
+                                  ],
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 16,
-                        left: 16,
-                        right: 16,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: activeTenant.primaryColorRef,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                activeTenant.id.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                  letterSpacing: 1,
+                          Positioned(
+                            bottom: 16,
+                            left: 16,
+                            right: 16,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: activeTenant.primaryColorRef,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    tipoCarrera,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Edición $edicion - Inscripciones Abiertas',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  appTitle,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Edición 2026 - Inscripciones Abiertas',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              activeTenant.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
+                    ),
+                    const SizedBox(height: 20),
 
-                // 2. Next Event & Countdown section
-                AppCard(
-                  style: AppCardStyle.gradient,
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // 2. Next Event & Countdown section
+                    AppCard(
+                      style: AppCardStyle.gradient,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'PRÓXIMA LARGA',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'PRÓXIMA EDICIÓN ($edicion)',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.7),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      appTitle,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      tipoCarrera,
+                                      style: TextStyle(
+                                        color: activeTenant.accentColorRef,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Cruce Andino 80K',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                              const SizedBox(width: 8),
+                              Icon(
+                                Icons.timer_outlined,
+                                color: activeTenant.accentColorRef,
+                                size: 28,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'FECHA DEL EVENTO',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.5),
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        fechaCarrera,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'CUENTA REGRESIVA',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.5),
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          _formatDuration(_timeLeft),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'Courier',
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          Icon(
-                            Icons.timer_outlined,
-                            color: activeTenant.accentColorRef,
-                            size: 28,
+                          const SizedBox(height: 16),
+                          AppButton(
+                            text: 'Ver Detalles de Categorías',
+                            onPressed: () => context.go('/inscripciones'),
+                            type: AppButtonType.outlined,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                        ),
-                        child: Center(
-                          child: Text(
-                            _formatDuration(_timeLeft),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'Courier',
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      AppButton(
-                        text: 'Ver Detalles de Categorías',
-                        onPressed: () => context.go('/inscripciones'),
-                        type: AppButtonType.outlined,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
+                    ),
+                    const SizedBox(height: 20),
 
-                // 3. Dynamic News Section
-                Text(
-                  'Últimas Novedades',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 2,
-                  itemBuilder: (context, index) {
-                    final isFirst = index == 0;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: AppCard(
+                    // 3. Context-sensitive SOS and Quick Actions
+                    if (isVisibleSos) ...[
+                      AppCard(
                         style: AppCardStyle.glassmorphic,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        customBorder: Border.all(color: Colors.redAccent.withValues(alpha: 0.3), width: 1.5),
+                        child: Column(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                color: Colors.white.withValues(alpha: 0.05),
-                                child: Icon(
-                                  isFirst ? Icons.notifications_active_rounded : Icons.info_outline,
-                                  color: activeTenant.primaryColorRef,
-                                  size: 30,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isFirst ? '¡Entrega de Kits e Inscripción!' : 'Charlas técnicas online',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    isFirst
-                                        ? 'Presentarse en el polideportivo principal con DNI original y deslinde impreso.'
-                                        : 'Únete a la charla técnica en vivo de las rutas el viernes a las 18:00hs.',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade400,
-                                      fontSize: 12,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 10),
-
-                // 4. Dynamic Markdown Content Bloc integration
-                BlocBuilder<ContentBloc, ContentState>(
-                  builder: (context, state) {
-                    return state.maybeWhen(
-                      loading: () => Container(
-                        padding: const EdgeInsets.all(20),
-                        child: const Center(child: CircularProgressIndicator.adaptive()),
-                      ),
-                      loaded: (content) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Información del Circuito',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            AppCard(
-                              style: AppCardStyle.normal,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                            Row(
+                              children: [
+                                const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 28),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Icon(Icons.description_outlined, color: activeTenant.primaryColorRef),
-                                      const SizedBox(width: 8),
                                       const Text(
-                                        'Reglamento Oficial',
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                        'Acción Crítica SOS',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                       ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Presiona el botón para enviar coordenadas de rescate en tiempo real a la organización.',
+                                        style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                                      ),
+                                      if (!isRaceDay) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Disponible únicamente el día de la carrera ($fechaCarrera).',
+                                          style: TextStyle(
+                                            color: activeTenant.accentColorRef.withValues(alpha: 0.8),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
                                     ],
                                   ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    content.title.isNotEmpty 
-                                        ? content.title 
-                                        : 'Contenido dinámico para este evento deportivo. Descarga el deslinde obligatorio y repasa el equipamiento sugerido.',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade300,
-                                      fontSize: 14,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            AppButton(
+                              text: 'ENVIAR ALERTA SOS',
+                              onPressed: isEnabledSosSetting && isRaceDay
+                                  ? () => _showSosConfirmDialog(context)
+                                  : null,
+                              icon: Icons.emergency_share_rounded,
                             ),
                           ],
-                        );
-                      },
-                      orElse: () => const SizedBox.shrink(),
-                    );
-                  },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 24),
-
-                // 5. Context-sensitive SOS and Quick Actions
-                if (activeTenant.enableLiveTracking) ...[
-                  AppCard(
-                    style: AppCardStyle.glassmorphic,
-                    customBorder: Border.all(color: Colors.redAccent.withValues(alpha: 0.3), width: 1.5),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 28),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Acción Crítica SOS',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Presiona el botón para enviar coordenadas de rescate en tiempo real a la organización.',
-                                    style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        AppButton(
-                          text: 'ENVIAR ALERTA SOS',
-                          onPressed: () => _showSosConfirmDialog(context),
-                          icon: Icons.emergency_share_rounded,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

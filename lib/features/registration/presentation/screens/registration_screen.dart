@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -12,9 +13,8 @@ import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../../../participant/presentation/bloc/participant_bloc.dart';
 import '../../../participant/presentation/bloc/participant_event.dart';
 import '../../../participant/presentation/bloc/participant_state.dart';
+import '../../../settings/domain/repositories/settings_repository.dart';
 import '../bloc/registration_bloc.dart';
-import '../bloc/registration_event.dart';
-import '../bloc/registration_state.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -33,7 +33,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
 
   // Search input controllers
   final TextEditingController _dniController = TextEditingController();
-  final TextEditingController _couponController = TextEditingController();
 
   @override
   void initState() {
@@ -55,7 +54,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     _tenantManager.removeListener(_onTenantChanged);
     _tabController.dispose();
     _dniController.dispose();
-    _couponController.dispose();
     super.dispose();
   }
 
@@ -109,7 +107,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             controller: _tabController,
             children: [
               // Tab 1: New Registration
-              _buildNewRegistrationTab(activeTenant),
+              RegistrationWebView(activeTenant: activeTenant),
               // Tab 2: View / Lookups
               _buildViewLookupTab(activeTenant),
             ],
@@ -119,143 +117,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     );
   }
 
-  Widget _buildNewRegistrationTab(TenantConfig activeTenant) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppCard(
-            style: AppCardStyle.gradient,
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Registro Rápido',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Completa tus datos y valida cupones promocionales antes de finalizar el pago.',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Formulario de Inscripción',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          const AppTextField(
-            label: 'Nombre Completo',
-            hint: 'Escribe tu nombre',
-            prefixIcon: Icons.person_outline_rounded,
-          ),
-          const SizedBox(height: 16),
-          const AppTextField(
-            label: 'Número de DNI / Pasaporte',
-            hint: 'Número de identificación',
-            prefixIcon: Icons.badge_outlined,
-            keyboardType: TextInputType.number,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: AppTextField(
-                  label: 'Código de Descuento',
-                  hint: 'Ingresa cupón',
-                  prefixIcon: Icons.confirmation_number_outlined,
-                  controller: _couponController,
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 100,
-                height: 52,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: activeTenant.primaryColorRef,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () {
-                    if (_couponController.text.isNotEmpty) {
-                      _registrationBloc.add(RegistrationEvent.validateDiscount(
-                        insId: 'ins_demo_99',
-                        code: _couponController.text,
-                      ));
-                    }
-                  },
-                  child: const Text('Validar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          BlocBuilder<RegistrationBloc, RegistrationState>(
-            builder: (context, state) {
-              return state.maybeWhen(
-                loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-                discountValidated: (res) {
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle_outline, color: Colors.green),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '¡Cupón "${_couponController.text}" aplicado con éxito! Descuento del 15%.',
-                            style: const TextStyle(color: Colors.green, fontSize: 13, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                error: (msg) {
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline, color: Colors.red),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Cupón inválido o vencido: $msg',
-                            style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                orElse: () => const SizedBox.shrink(),
-              );
-            },
-          ),
-          const SizedBox(height: 24),
-          AppButton(
-            text: 'Proceder al Pago',
-            onPressed: () {},
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildViewLookupTab(TenantConfig activeTenant) {
     return SingleChildScrollView(
@@ -479,6 +340,129 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
           },
         );
       },
+    );
+  }
+}
+
+class RegistrationWebView extends StatefulWidget {
+  final TenantConfig activeTenant;
+
+  const RegistrationWebView({
+    super.key,
+    required this.activeTenant,
+  });
+
+  @override
+  State<RegistrationWebView> createState() => _RegistrationWebViewState();
+}
+
+class _RegistrationWebViewState extends State<RegistrationWebView>
+    with AutomaticKeepAliveClientMixin {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+  double _loadingProgress = 0.0;
+  String? _url;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
+    final urlString = cachedSettings?.urlInscripciones ?? 'https://juna.net.ar/desafio2026/';
+    _url = urlString;
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progress) {
+            if (mounted) {
+              setState(() {
+                _loadingProgress = progress / 100.0;
+              });
+            }
+          },
+          onPageStarted: (String url) {
+            if (mounted) {
+              setState(() {
+                _isLoading = true;
+              });
+            }
+          },
+          onPageFinished: (String url) {
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          },
+          onWebResourceError: (WebResourceError error) {
+            debugPrint("WebView error: ${error.description}");
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(urlString));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    if (_url == null || _url!.isEmpty) {
+      return const Center(
+        child: Text(
+          'Error: No se pudo cargar la URL de inscripciones.',
+          style: TextStyle(color: Colors.redAccent, fontSize: 16),
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        WebViewWidget(controller: _controller),
+        if (_isLoading)
+          Container(
+            color: widget.activeTenant.backgroundColorRef,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      widget.activeTenant.primaryColorRef,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Cargando inscripciones...',
+                    style: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (_isLoading && _loadingProgress > 0 && _loadingProgress < 1.0)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            child: LinearProgressIndicator(
+              value: _loadingProgress,
+              backgroundColor: Colors.transparent,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                widget.activeTenant.primaryColorRef,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

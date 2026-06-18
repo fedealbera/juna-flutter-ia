@@ -7,12 +7,17 @@ import '../mappers/event_settings_mapper.dart';
 @LazySingleton(as: SettingsRepository)
 class SettingsRepositoryImpl implements SettingsRepository {
   final SettingsRemoteDataSource _settingsRemoteDataSource;
+  EventSettings? _cachedSettings;
 
   SettingsRepositoryImpl(this._settingsRemoteDataSource);
 
   @override
   Future<EventSettings> getEventSettings(String eventoId, String idOrg) async {
     final dto = await _settingsRemoteDataSource.getEventSettings(eventoId, idOrg);
-    return EventSettingsMapper.toEntity(dto);
+    _cachedSettings = EventSettingsMapper.toEntity(dto);
+    return _cachedSettings!;
   }
+
+  @override
+  EventSettings? getCachedSettings() => _cachedSettings;
 }
