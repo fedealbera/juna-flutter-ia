@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
+import '../../../content/presentation/screens/content_list_screen.dart';
 import '../../../maps/presentation/screens/maps_screen.dart';
 import '../../../settings/domain/entities/event_settings.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
@@ -128,7 +129,15 @@ class _LiveScreenState extends State<LiveScreen> {
                   icon: Icons.feed_outlined,
                   badgeColor: const Color(0xFF2196F3), // Blue
                   onTap: () {
-                    // Logic to be implemented later
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ContentListScreen(
+                          title: 'Novedades',
+                          tipoContenido: 2,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(height: 12),
@@ -138,7 +147,15 @@ class _LiveScreenState extends State<LiveScreen> {
                   icon: Icons.info_outline_rounded,
                   badgeColor: const Color(0xFF9C27B0), // Purple
                   onTap: () {
-                    // Logic to be implemented later
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ContentListScreen(
+                          title: 'Info Importante',
+                          tipoContenido: 3,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 const SizedBox(height: 32),
