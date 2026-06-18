@@ -70,6 +70,25 @@ class EventSettings extends Equatable {
   bool get isEnabledWeb => getSetting('ISENABLED_WEB').toUpperCase() == 'TRUE';
   String get urlWeb => getSetting('URL_WEB');
 
+  bool get isEnabledWhatsapp => getSetting('ISENABLED_WHATSAPP').toUpperCase() == 'TRUE';
+  String get contactoMensajeWhatsapp => getSetting('CONTACTO_MENSAJE_WHATSAPP');
+  String get whatsappPhone => getSetting('WHATSAPP_PHONE');
+  String get emailConsulta => getSetting('EMAIL_CONSULTA');
+  String get urlStores => getSetting('URL_STORES');
+  String get typeVersion => getSetting('TYPE_VERSION');
+
+  Map<String, dynamic> get urlStoresMap {
+    final value = getSetting('URL_STORES');
+    if (value.isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+    } catch (_) {}
+    return const {};
+  }
+
   @override
   List<Object?> get props => [rawJson];
 }
