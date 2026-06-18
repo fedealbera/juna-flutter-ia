@@ -5,9 +5,21 @@ class ParticipantDetail extends Equatable {
 
   const ParticipantDetail(this.rawJson);
 
-  String get id => rawJson['id']?.toString() ?? '';
-  String get name => rawJson['nombre']?.toString() ?? '';
-  String get dni => rawJson['documento']?.toString() ?? '';
+  Map<String, dynamic> get _data => rawJson['corredor'] is Map 
+      ? (rawJson['corredor'] as Map).cast<String, dynamic>() 
+      : rawJson;
+
+  String get id => _data['id']?.toString() ?? '';
+  String get name => _data['nombre']?.toString() ?? '';
+  String get dni => _data['dni']?.toString() ?? _data['documento']?.toString() ?? '';
+  String get nroPlaca => _data['nroPlaca']?.toString() ?? '';
+  String get lastName => _data['apellido']?.toString() ?? '';
+  String get fullName => '$name $lastName'.trim();
+  String get circuito => _data['idCircuitoNombre']?.toString() ?? '';
+  String get categoria => _data['categoriaNombre']?.toString() ?? '';
+  String get agrupamiento => _data['agrupamiento']?.toString() ?? '';
+  String get largada => _data['largada']?.toString() ?? '';
+  List<String> get articulos => (_data['articulos'] as List?)?.map((e) => e.toString()).toList() ?? [];
 
   @override
   List<Object?> get props => [rawJson];

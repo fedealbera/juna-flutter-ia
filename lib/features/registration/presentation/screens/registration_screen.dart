@@ -1,10 +1,10 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
-import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
 import '../../../../shared/design_system/text_fields/app_text_field.dart';
 import '../../../notifications/presentation/bloc/notifications_bloc.dart';
@@ -12,7 +12,9 @@ import '../../../notifications/presentation/bloc/notifications_event.dart';
 import '../../../notifications/presentation/bloc/notifications_state.dart';
 import '../../../participant/presentation/bloc/participant_bloc.dart';
 import '../../../participant/presentation/bloc/participant_event.dart';
+import '../../../participant/domain/entities/participant_detail.dart';
 import '../../../participant/presentation/bloc/participant_state.dart';
+import '../../../../core/storage/hive_service.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../bloc/registration_bloc.dart';
 
@@ -34,6 +36,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
   // Search input controllers
   final TextEditingController _dniController = TextEditingController();
 
+  ParticipantDetail? _linkedParticipant;
+  bool _checkingCache = true;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +48,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     _notificationsBloc = getIt<NotificationsBloc>();
 
     _tenantManager.addListener(_onTenantChanged);
+    _loadLinkedParticipant();
+  }
+
+  Future<void> _loadLinkedParticipant() async {
+    final hiveService = getIt<HiveService>();
+    final Map? cachedJson = await hiveService.get<Map>('participant_box', 'cached_participant');
+    if (cachedJson != null) {
+      if (mounted) {
+        setState(() {
+          _linkedParticipant = ParticipantDetail(cachedJson.cast<String, dynamic>());
+          _checkingCache = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _checkingCache = false;
+        });
+      }
+    }
   }
 
   void _onTenantChanged() {
@@ -84,25 +109,59 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             ],
           ),
         ),
-        body: BlocListener<NotificationsBloc, NotificationsState>(
-          listener: (context, state) {
-            state.maybeWhen(
-              registered: (res) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Token Push registrado con éxito en Firebase.'),
-                    backgroundColor: Colors.green,
-                  ),
+        body: MultiBlocListener(
+          listeners: [
+            BlocListener<NotificationsBloc, NotificationsState>(
+              listener: (context, state) {
+                state.maybeWhen(
+                  registered: (res) {
+                    // Token registered successfully in background
+                  },
+                  error: (msg) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error de Token Push: $msg'), backgroundColor: Colors.red),
+                    );
+                  },
+                  orElse: () {},
                 );
               },
-              error: (msg) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error de Token Push: $msg'), backgroundColor: Colors.red),
+            ),
+            BlocListener<ParticipantBloc, ParticipantState>(
+              listener: (context, state) {
+                state.maybeWhen(
+                  detailLoaded: (detail) async {
+                    await getIt<HiveService>().put<Map>(
+                      'participant_box',
+                      'cached_participant',
+                      detail.rawJson,
+                    );
+                    if (mounted) {
+                      setState(() {
+                        _linkedParticipant = detail;
+                      });
+                    }
+
+                    try {
+                      final token = await FirebaseMessaging.instance.getToken();
+                      if (token != null && token.isNotEmpty) {
+                        _notificationsBloc.add(NotificationsEvent.registerToken(
+                          documento: detail.dni,
+                          idEvento: '1',
+                          idOrg: '1',
+                          token: token,
+                        ));
+                      } else {
+                        debugPrint('FCM Token returned null or empty');
+                      }
+                    } catch (e) {
+                      debugPrint('Error getting Firebase token: $e');
+                    }
+                  },
+                  orElse: () {},
                 );
               },
-              orElse: () {},
-            );
-          },
+            ),
+          ],
           child: TabBarView(
             controller: _tabController,
             children: [
@@ -119,6 +178,53 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
 
 
   Widget _buildViewLookupTab(TenantConfig activeTenant) {
+    if (_checkingCache) {
+      return const Center(child: CircularProgressIndicator.adaptive());
+    }
+
+    if (_linkedParticipant != null) {
+      final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
+      final fechaAcreditacion = cachedSettings?.getSetting('FECHA_ACREDITACION') ?? '5 y 6 de Junio';
+      final fechaCarrera = cachedSettings?.getSetting('FECHA_CARRERA') ?? '7 de Junio';
+      final detail = _linkedParticipant!;
+
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Corredor Vinculado',
+              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _buildParticipantCard(detail, fechaAcreditacion, fechaCarrera, activeTenant),
+            const SizedBox(height: 24),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: () async {
+                await getIt<HiveService>().delete<Map>('participant_box', 'cached_participant');
+                _dniController.clear();
+                if (mounted) {
+                  setState(() {
+                    _linkedParticipant = null;
+                  });
+                }
+              },
+              child: const Text(
+                'Desvincular',
+                style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -130,7 +236,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
           ),
           const SizedBox(height: 8),
           const Text(
-            'Verifica tu estado de inscripción, vincula tu cuenta, o conecta tu chip deportivo.',
+            'Verifica tu estado de inscripción o vincula tu cuenta.',
             style: TextStyle(color: Colors.grey, fontSize: 13),
           ),
           const SizedBox(height: 16),
@@ -161,6 +267,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                         dni: _dniController.text,
                         idOrg: '1',
                         eventoId: '1',
+                        roundId: '1',
                       ));
                     }
                   },
@@ -174,88 +281,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             builder: (context, state) {
               return state.maybeWhen(
                 loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-                detailLoaded: (detail) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AppCard(
-                        style: AppCardStyle.glassmorphic,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  detail.name.isNotEmpty ? detail.name : 'Corredor Encontrado',
-                                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
-                                  ),
-                                  child: const Text(
-                                    'PAGO CONFIRMADO',
-                                    style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Divider(color: Colors.white.withValues(alpha: 0.1)),
-                            const SizedBox(height: 8),
-                            _buildInfoRow('Documento:', detail.dni.isNotEmpty ? detail.dni : _dniController.text),
-                            _buildInfoRow('Chip Asociado:', 'Acreditación Pendiente'),
-                            _buildInfoRow('Categoría:', 'General 80K Caballeros A'),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Acciones Disponibles',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 12),
-                      AppButton(
-                        text: 'Vincular DNI a este Dispositivo',
-                        icon: Icons.link_rounded,
-                        onPressed: () {
-                          _participantBloc.add(ParticipantEvent.authenticate(
-                            dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-                            idEvento: '1',
-                            idOrg: '1',
-                            token: 'token_dispositivo_demo_123',
-                          ));
-                        },
-                        type: AppButtonType.primary,
-                      ),
-                      const SizedBox(height: 12),
-                      AppButton(
-                        text: 'Asociar Dispositivo / Chip',
-                        icon: Icons.bluetooth_searching_rounded,
-                        onPressed: () => _showDeviceScanDialog(context),
-                        type: AppButtonType.outlined,
-                      ),
-                      const SizedBox(height: 12),
-                      AppButton(
-                        text: 'Registrar Push Token FCM',
-                        icon: Icons.notification_add_rounded,
-                        onPressed: () {
-                          _notificationsBloc.add(NotificationsEvent.registerToken(
-                            documento: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-                            idEvento: '1',
-                            idOrg: '1',
-                            token: 'fcm_token_device_sync_mock',
-                          ));
-                        },
-                        type: AppButtonType.outlined,
-                      ),
-                    ],
-                  );
-                },
                 error: (msg) {
                   return Container(
                     padding: const EdgeInsets.all(16),
@@ -289,6 +314,120 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     );
   }
 
+  Widget _buildParticipantCard(
+    ParticipantDetail detail,
+    String fechaAcreditacion,
+    String fechaCarrera,
+    TenantConfig activeTenant,
+  ) {
+    return AppCard(
+      style: AppCardStyle.glassmorphic,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      detail.fullName.isNotEmpty ? detail.fullName : 'Corredor Encontrado',
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                      ),
+                      child: const Text(
+                        'PAGO CONFIRMADO',
+                        style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: activeTenant.primaryColorRef,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: activeTenant.primaryColorRef.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'PLACA',
+                      style: TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      detail.nroPlaca.isNotEmpty ? detail.nroPlaca : '---',
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
+          const SizedBox(height: 8),
+          _buildInfoRow('Nombre:', detail.fullName.isNotEmpty ? detail.fullName : 'No especificado'),
+          _buildInfoRow('DNI:', detail.dni.isNotEmpty ? detail.dni : _dniController.text),
+          _buildInfoRow('Fecha de Acreditación:', fechaAcreditacion),
+          _buildInfoRow('Fecha de la Carrera:', fechaCarrera),
+          _buildInfoRow('Circuito:', detail.circuito.isNotEmpty ? detail.circuito : 'No especificado'),
+          _buildInfoRow('Categoría:', detail.categoria.isNotEmpty ? detail.categoria : 'No especificado'),
+          _buildInfoRow('Hora de Agrupamiento:', detail.agrupamiento.isNotEmpty ? detail.agrupamiento : 'No especificado'),
+          _buildInfoRow('Largada:', detail.largada.isNotEmpty ? detail.largada : 'No especificado'),
+          if (detail.articulos.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Divider(color: Colors.white.withValues(alpha: 0.1)),
+            const SizedBox(height: 8),
+            const Text(
+              'Artículos Adicionales:',
+              style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            ...detail.articulos.map((art) => Padding(
+                  padding: const EdgeInsets.only(left: 4.0, bottom: 6.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle_outline_rounded, color: activeTenant.primaryColorRef, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        art,
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                )),
+            const SizedBox(height: 8),
+            const Text(
+              '* Estos artículos se entregan durante la acreditación.',
+              style: TextStyle(color: Colors.grey, fontSize: 11, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -302,46 +441,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     );
   }
 
-  void _showDeviceScanDialog(BuildContext context) {
-    final activeTenant = _tenantManager.value;
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              backgroundColor: activeTenant.backgroundColorRef,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: activeTenant.primaryColorRef.withValues(alpha: 0.2)),
-              ),
-              title: const Text('Escaneando Dispositivo/Chip', style: TextStyle(color: Colors.white)),
-              content: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: 20),
-                  CircularProgressIndicator.adaptive(),
-                  SizedBox(height: 24),
-                  Text(
-                    'Buscando wearables, sensores Garmin, polar bands o chips RFID por Bluetooth...',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                  SizedBox(height: 20),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+
 }
 
 class RegistrationWebView extends StatefulWidget {
