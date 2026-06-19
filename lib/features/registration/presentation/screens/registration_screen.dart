@@ -289,11 +289,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             children: [
               Expanded(
                 child: AppTextField(
-                  label: 'DNI / Pasaporte',
+                  label: 'DNI',
                   hint: 'Ingresa DNI del corredor',
                   prefixIcon: Icons.search_rounded,
                   controller: _dniController,
                   keyboardType: TextInputType.number,
+                  maxLength: 8,
                 ),
               ),
               const SizedBox(width: 12),
