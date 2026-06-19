@@ -4,7 +4,7 @@ import '../../../core/di/injection.dart';
 import '../../../core/theme/branding_manager.dart';
 import '../../../core/theme/tenant_config.dart';
 import '../../../core/theme/tenant_manager.dart';
-import '../../../core/firebase/tenant_firebase_config.dart';
+import '../../../core/firebase/notification_service.dart';
 
 class MainShellScreen extends StatefulWidget {
   final Widget child;
@@ -18,60 +18,25 @@ class MainShellScreen extends StatefulWidget {
 class _MainShellScreenState extends State<MainShellScreen> {
   final TenantManager _tenantManager = getIt<TenantManager>();
   final BrandingManager _brandingManager = getIt<BrandingManager>();
+  final NotificationService _notificationService = getIt<NotificationService>();
 
-  final List<TenantConfig> _mockTenants = [
-    TenantConfig(
-      tenantId: 1,
-      tenantName: 'Sport Event Platform',
-      logoUrl: 'assets/images/default_logo.png',
-      primaryColor: '#1E88E5',
-      secondaryColor: '#1565C0',
-      accentColor: '#FFFFB3',
-      firebase: DefaultFirebaseConfig.ddln(),
-      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
-    ),
-    TenantConfig(
-      tenantId: 2,
-      tenantName: 'DDLN - Desafío de la Naturaleza',
-      logoUrl: 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80',
-      primaryColor: '#FF7043',
-      secondaryColor: '#D84315',
-      accentColor: '#00E676',
-      firebase: DefaultFirebaseConfig.ddln(),
-      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
-      baseUrl: 'https://juna.net.ar/desafio2026_testtt/api',
-    ),
-    TenantConfig(
-      tenantId: 3,
-      tenantName: 'Patagonia Trail Run',
-      logoUrl: 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80',
-      primaryColor: '#43A047',
-      secondaryColor: '#2E7D32',
-      accentColor: '#FFFFB3',
-      firebase: DefaultFirebaseConfig.ddln(),
-      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
-    ),
-    TenantConfig(
-      tenantId: 4,
-      tenantName: 'Velo MTB Challenge',
-      logoUrl: 'https://images.unsplash.com/photo-1544192240-4a34feb0104a?w=150&q=80',
-      primaryColor: '#FB8C00',
-      secondaryColor: '#EF6C00',
-      accentColor: '#00E5FF',
-      firebase: DefaultFirebaseConfig.ddln(),
-      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: false),
-    ),
-    TenantConfig(
-      tenantId: 5,
-      tenantName: 'Buenos Aires Marathon',
-      logoUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=150&q=80',
-      primaryColor: '#D81B60',
-      secondaryColor: '#8E24AA',
-      accentColor: '#00E676',
-      firebase: DefaultFirebaseConfig.ddln(),
-      featureFlags: const FeatureFlags(enableRegistration: true, enableLiveTracking: true),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _notificationService.addListener(_onNotificationsChanged);
+  }
+
+  @override
+  void dispose() {
+    _notificationService.removeListener(_onNotificationsChanged);
+    super.dispose();
+  }
+
+  void _onNotificationsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.path;
@@ -225,46 +190,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 ],
               ),
             ),
-            // Footer Tenant Swapping Tool
             Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Cambiar Organización (White Label Demo)',
-                    style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<TenantConfig>(
-                        value: _mockTenants.firstWhere((t) => t.tenantId == activeTenant.tenantId, orElse: () => _mockTenants.first),
-                        dropdownColor: activeTenant.backgroundColorRef,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                        items: _mockTenants.map((t) {
-                          return DropdownMenuItem<TenantConfig>(
-                            value: t,
-                            child: Text(t.tenantName),
-                          );
-                        }).toList(),
-                        onChanged: (TenantConfig? val) {
-                          if (val != null) {
-                            _tenantManager.changeTenant(val);
-                            setState(() {});
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Event Platform © 2026',
+                style: TextStyle(color: Colors.grey, fontSize: 11),
+                textAlign: TextAlign.center,
               ),
             ),
           ],
@@ -279,43 +211,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          if (!isWideScreen)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Container(
-                width: 150,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<TenantConfig>(
-                    isExpanded: true,
-                    value: _mockTenants.firstWhere((t) => t.tenantId == activeTenant.tenantId, orElse: () => _mockTenants.first),
-                    dropdownColor: activeTenant.backgroundColorRef,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white70, size: 18),
-                    items: _mockTenants.map((t) {
-                      return DropdownMenuItem<TenantConfig>(
-                        value: t,
-                        child: Text(
-                          t.tenantName,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (TenantConfig? val) {
-                      if (val != null) {
-                        _tenantManager.changeTenant(val);
-                        setState(() {});
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ),
+          _buildNotificationBell(activeTenant),
         ],
       ),
       body: Row(
@@ -372,6 +268,54 @@ class _MainShellScreenState extends State<MainShellScreen> {
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildNotificationBell(TenantConfig tenant) {
+    final unreadCount = _notificationService.unreadCount;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 26),
+            onPressed: () {
+              context.go('/notificaciones');
+            },
+          ),
+          if (unreadCount > 0)
+            Positioned(
+              right: 6,
+              top: 6,
+              child: IgnorePointer(
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.black, width: 1.5),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Center(
+                    child: Text(
+                      unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

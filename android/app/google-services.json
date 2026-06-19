@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "344966674512",
+    "project_id": "ddln-mb",
+    "storage_bucket": "ddln-mb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344966674512:android:e5ce8563caa25f40c1f955",
+        "android_client_info": {
+          "package_name": "com.churo.desafiomobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPpSvNQQlyJMCwI37bIXEepXJv3DpSKII"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

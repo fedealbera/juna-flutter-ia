@@ -8,12 +8,16 @@ import '../../features/participant/presentation/screens/participant_documentatio
 import '../../features/maps/presentation/screens/maps_screen.dart';
 import '../../features/live/presentation/screens/live_screen.dart';
 import '../../features/more/presentation/screens/more_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../shared/presentation/screens/main_shell_screen.dart';
 import '../../shared/presentation/screens/splash_screen.dart';
 
 @lazySingleton
 class AppRouter {
+  final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
   late final GoRouter router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/',
     routes: [
       GoRoute(
@@ -60,6 +64,11 @@ class AppRouter {
             path: '/mas',
             name: 'mas',
             builder: (BuildContext context, GoRouterState state) => const MoreScreen(),
+          ),
+          GoRoute(
+            path: '/notificaciones',
+            name: 'notificaciones',
+            builder: (BuildContext context, GoRouterState state) => const NotificationsScreen(),
           ),
         ],
       ),

@@ -108,7 +108,7 @@ The document sub-route `/inscripciones/documentacion` manages all required runne
 
 ## 6. Gradle & Platform Adjustments
 
-To accommodate Firebase Core dependencies, offline secure storage, and stable rendering, multiple adjustments were implemented:
+To accommodate Firebase Core dependencies, offline secure storage, stable rendering, and dynamic FCM push notifications, multiple adjustments were implemented:
 
 1. **Kotlin Gradle Plugin:** Upgraded `org.jetbrains.kotlin.android` to version `"2.1.0"` inside `android/settings.gradle.kts`.
 2. **Android NDK Version:** Set `ndkVersion = "27.0.12077973"` in `android/app/build.gradle.kts`.
@@ -117,6 +117,11 @@ To accommodate Firebase Core dependencies, offline secure storage, and stable re
    <meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false" />
    ```
    This redirects rendering to the stable Skia engine, preventing thread commands encoding aborts.
+4. **Bundle ID & Application ID Update:** Native settings on both Android (`namespace` and `applicationId` inside `android/app/build.gradle.kts`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER` inside `project.pbxproj`) are set to `com.churo.desafiomobile` to align with the DDLN Firebase projects.
+5. **Google Services integration:** 
+   - Placed the DDLN `google-services.json` and `GoogleService-Info.plist` config files inside their respective Android (`android/app/`) and iOS (`ios/Runner/`) directories.
+   - Applied the Google Services Gradle plugin on Android and programmatically linked the Plist/Entitlements to the Xcode project workspace.
+   - Added remote notification permissions and background configurations (background modes and `aps-environment` capabilities).
 
 ---
 

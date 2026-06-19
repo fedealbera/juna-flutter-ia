@@ -1,4 +1,4 @@
-package com.churomobile.eventplatform.event_platform_v3
+package com.churo.desafiomobile
 
 import io.flutter.embedding.android.FlutterActivity
 

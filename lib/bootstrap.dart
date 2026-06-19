@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'core/firebase/notification_service.dart';
 import 'core/env/env_config.dart';
 import 'core/di/injection.dart';
 import 'core/storage/hive_service.dart';
@@ -13,6 +15,9 @@ Future<void> bootstrap(EnvConfig envConfig) async {
 
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Register background messaging handler
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // 1. Setup DI container
     await configureDependencies(envConfig);

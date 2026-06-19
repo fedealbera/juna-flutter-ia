@@ -5,6 +5,7 @@ import '../../../core/theme/tenant_manager.dart';
 import '../../../core/firebase/firebase_configuration_repository.dart';
 import '../../../core/firebase/initialize_firebase_use_case.dart';
 import '../../../core/firebase/firebase_manager.dart';
+import '../../../core/firebase/notification_service.dart';
 import '../../../features/settings/domain/repositories/settings_repository.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -41,7 +42,14 @@ class _SplashScreenState extends State<SplashScreen> {
       // 4. Inicializar Firebase dinámicamente
       await _initializeFirebaseUseCase(tenantConfig.tenantId, tenantConfig.firebase);
 
-      // 5. Obtener FCM Token
+      // 5. Inicializar NotificationService
+      try {
+        await getIt<NotificationService>().init();
+      } catch (e) {
+        debugPrint('Error initializing NotificationService: $e');
+      }
+
+      // 6. Obtener FCM Token
       if (tenantConfig.featureFlags.enableRemoteConfig) {
         await _firebaseManager.getFcmToken();
       }
