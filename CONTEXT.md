@@ -58,6 +58,12 @@ The application is engineered to support true White Label dynamic brand configur
 5. **FCM Token Retrieval:** The application fetches the device's FCM push token locally, but does *not* send it to the backend on boot.
 6. **Transition:** The user is seamlessly routed to `/home`.
 
+### Push Notifications Background Support & Isolate Syncing
+* **Native Tray Alerts:** Uses `flutter_local_notifications` to programmatically display native system tray notification alerts from data-only FCM push payloads when the application is in the background or closed.
+* **Isolate Database Syncing:**
+  * To prevent database file access locks, the top-level `@pragma('vm:entry-point')` function `firebaseMessagingBackgroundHandler` wraps database updates in a `try/finally` block to close the Hive `notifications_box` immediately after writing background notifications.
+  * Mixed `WidgetsBindingObserver` into `NotificationService` to close the `notifications_box` box when the app goes into the background (`paused`/`detached`), and automatically reopen it and reload the notifications list (`refreshNotifications()`) when the app is resumed (`resumed`).
+
 ---
 
 ## 3. Registration & Push Token Linking Logic
@@ -112,13 +118,14 @@ To accommodate Firebase Core dependencies, offline secure storage, stable render
 
 1. **Kotlin Gradle Plugin:** Upgraded `org.jetbrains.kotlin.android` to version `"2.1.0"` inside `android/settings.gradle.kts`.
 2. **Android NDK Version:** Set `ndkVersion = "27.0.12077973"` in `android/app/build.gradle.kts`.
-3. **Impeller Disabled on Android:** Disabled the experimental Impeller engine inside `android/app/src/main/AndroidManifest.xml` via:
+3. **Java 8+ Desugaring:** Enabled desugaring support (`isCoreLibraryDesugaringEnabled = true`) inside `android/app/build.gradle.kts`'s `compileOptions` block and added `coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")` to support modern Java APIs utilized by the notification plugin on older Android target configurations.
+4. **Impeller Disabled on Android:** Disabled the experimental Impeller engine inside `android/app/src/main/AndroidManifest.xml` via:
    ```xml
    <meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false" />
    ```
    This redirects rendering to the stable Skia engine, preventing thread commands encoding aborts.
-4. **Bundle ID & Application ID Update:** Native settings on both Android (`namespace` and `applicationId` inside `android/app/build.gradle.kts`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER` inside `project.pbxproj`) are set to `com.churo.desafiomobile` to align with the DDLN Firebase projects.
-5. **Google Services integration:** 
+5. **Bundle ID & Application ID Update:** Native settings on both Android (`namespace` and `applicationId` inside `android/app/build.gradle.kts`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER` inside `project.pbxproj`) are set to `com.churo.desafiomobile` to align with the DDLN Firebase projects.
+6. **Google Services integration:** 
    - Placed the DDLN `google-services.json` and `GoogleService-Info.plist` config files inside their respective Android (`android/app/`) and iOS (`ios/Runner/`) directories.
    - Applied the Google Services Gradle plugin on Android and programmatically linked the Plist/Entitlements to the Xcode project workspace.
    - Added remote notification permissions and background configurations (background modes and `aps-environment` capabilities).
@@ -131,8 +138,9 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 
 ### Layout Layouts & Screens
 * **`MainShellScreen`:** Implements responsive design—rendering a Bottom Navigation Bar on mobile viewports and switching to a persistent Sidebar on desktop/tablet viewports. The mobile burger menu (and corresponding slide-out Drawer) has been completely removed. Dynamic tenant configuration swapping is handled directly via a custom Dropdown button placed in the `AppBar`'s `actions` list on mobile viewports, and at the bottom of the persistent navigation Sidebar on desktop viewports.
-* **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons.
-* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options (DNI search, runner details, chip number pairing).
+* **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons. The default fallback banner image is configured with the DDLN mountain bike photo (`https://www.desafiodelasnubes.com.ar/img/fotos/1.jpg`).
+* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI" and has an uppercase "DESVINCULAR" button next to "EDITAR DATOS".
+* **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency section is rendered conditionally and is hidden if the participant has no assigned plate number (`nroPlaca == 0`).
 * **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, etc.).
 * **`LiveScreen`:** Outputs live leaderboard listings categorized by age divisions and quick social links.
 * **`MoreScreen`:** Embeds document download directories, contact messages, and application sharing options.
