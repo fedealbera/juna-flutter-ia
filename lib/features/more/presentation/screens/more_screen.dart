@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -394,9 +395,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   text: 'Salir / Cerrar Sesión',
                   icon: Icons.logout_rounded,
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Sesión cerrada correctamente.')),
-                    );
+                    SystemNavigator.pop();
                   },
                   type: AppButtonType.outlined,
                 ),

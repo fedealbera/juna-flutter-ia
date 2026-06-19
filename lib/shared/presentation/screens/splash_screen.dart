@@ -41,12 +41,9 @@ class _SplashScreenState extends State<SplashScreen> {
       // 4. Inicializar Firebase dinámicamente
       await _initializeFirebaseUseCase(tenantConfig.tenantId, tenantConfig.firebase);
 
-      // 5. Obtener FCM Token & Registrar en backend
+      // 5. Obtener FCM Token
       if (tenantConfig.featureFlags.enableRemoteConfig) {
-        final token = await _firebaseManager.getFcmToken();
-        if (token != null) {
-          await _firebaseManager.registerFcmToken(tenantConfig.tenantId, token);
-        }
+        await _firebaseManager.getFcmToken();
       }
 
       // 6. Obtener y cachear settings del evento 1 de la organización 1

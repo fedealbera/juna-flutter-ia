@@ -9,21 +9,14 @@ abstract class FirebaseConfigurationRepository {
 
 @LazySingleton(as: FirebaseConfigurationRepository)
 class FirebaseConfigurationRepositoryImpl implements FirebaseConfigurationRepository {
+  // ignore: unused_field
   final TenantApiService _apiService;
 
   FirebaseConfigurationRepositoryImpl(this._apiService);
 
   @override
   Future<TenantConfig> getConfiguration(int tenantId) async {
-    try {
-      final response = await _apiService.getTenantConfig(tenantId);
-      if (response is Map<String, dynamic>) {
-        return TenantConfig.fromJson(response);
-      }
-      throw Exception('Invalid config response format');
-    } catch (e) {
-      // Automatic fallback if backend endpoint fails or response is incomplete/null/error
-      return DefaultTenantConfig.ddln();
-    }
+    // Return local default config directly, as backend config endpoint doesn't exist yet.
+    return DefaultTenantConfig.ddln();
   }
 }

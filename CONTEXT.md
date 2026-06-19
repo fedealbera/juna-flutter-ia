@@ -51,43 +51,62 @@ The application is engineered to support true White Label dynamic brand configur
 
 ### Dynamic Tenant Configuration Flow
 1. **Initial Boot:** The application mounts the `SplashScreen` as the entry point.
-2. **Retrieve Configuration:** The `SplashScreen` bootstrap sequence queries the configuration from the backend API `/api/tenants/{id}/config` via `FirebaseConfigurationRepository`.
-3. **Local Fallback:** If the network is unavailable or the backend fails, the app falls back to the local `DDLN` configuration.
-4. **Branding Injection:** The `TenantManager` is updated. Color values (defined as hex strings like `#E58D00`) are parsed dynamically into Flutter `Color` objects at runtime.
-5. **Dynamic Firebase Setup:** Firebase Core and Firebase Analytics are re-initialized on-the-fly.
-6. **Token Registration:** The application fetches the device's FCM push token and registers it in the backend.
-7. **Transition:** The user is seamlessly routed to `/home`.
-
-### Configured Models
-* **`TenantConfig`**:
-  * `int tenantId`
-  * `String tenantName`
-  * `String logoUrl`
-  * `String primaryColor` (parsed as `#Hex` code)
-  * `String secondaryColor` (parsed as `#Hex` code)
-  * `String accentColor` (parsed as `#Hex` code)
-  * `FirebaseConfig firebase`
-  * `FeatureFlags featureFlags`
-* **`FirebaseConfig`**: Platform-specific values (`apiKey`, `appId`, `messagingSenderId`, `projectId`, etc.).
-* **`FeatureFlags`**: Granular toggles (`enableRegistration`, `enableLiveTracking`, `enableAnalytics`, `enableCrashlytics`, `enableRemoteConfig`).
+2. **Retrieve Configuration:** The `SplashScreen` bootstrap sequence requests configuration from `FirebaseConfigurationRepository`.
+   * *Fallback:* To prevent startup dependency issues with endpoints not yet available, `FirebaseConfigurationRepositoryImpl` returns `DefaultTenantConfig.ddln()` locally without calling the `/api/tenants/{id}/config` backend endpoint.
+3. **Branding Injection:** The `TenantManager` is updated. Color values (defined as hex strings like `#E58D00`) are parsed dynamically into Flutter `Color` objects at runtime.
+4. **Dynamic Firebase Setup:** Firebase Core and Firebase Analytics are re-initialized on-the-fly.
+5. **FCM Token Retrieval:** The application fetches the device's FCM push token locally, but does *not* send it to the backend on boot.
+6. **Transition:** The user is seamlessly routed to `/home`.
 
 ---
 
-## 3. Network Configuration & Security
+## 3. Registration & Push Token Linking Logic
 
-All API operations utilize a centralized `Dio` client configured with robust interceptors to comply with backend requirements:
+To properly link runners with their corresponding push tokens, the token registration endpoint `/api/participantes/token` is called only under specific user actions:
 
-* **Secure API Key:** 
-  All calls inject the secure API key header:
-  `X-API-Key: juna_api_f7b9c3x2_secure_key_2026`
-* **Subpath Preservation (`BaseUrlInterceptor`):**
-  Ensures subpaths in tenant base URLs (e.g. `/desafio2026_testtt/api`) are not truncated when Retrofit queries invoke root paths (`/`).
-* **Path Sanitization:**
-  Strips duplicate `/api` path additions (e.g., converting `.../api/api/eventos` to `.../api/eventos`).
+* **Search & Link:** The runner inputs their DNI and searches for their registration inside the "VER PARTICIPANTE" tab on `RegistrationScreen`.
+* **Token POST Action:** When the API `GET /api/participantes/{dni}/detalle` returns successfully, the participant is linked (stored in local secure cache via `HiveService`). Only at this point is the `POST /api/participantes/token` endpoint triggered with the runner's DNI, event details, and FCM token. It does not run at application startup.
+
+### Pre-Inscripto vs. Pago Confirmado UI Logic
+Based on the value of `nroPlaca` returned by the runner details endpoint:
+* **`nroPlaca == "0"` (Pre-Inscripto):**
+  * Displays a prominent orange `PRE-INSCRIPTO` tag instead of the plate box.
+  * Hides the plate number and plate frames.
+  * Displays a custom `PAGAR` button styled with tenant brand colors. Tapping this button launches the runner's unique `linkPago` in an external system browser.
+* **`nroPlaca != "0"` (Pago Confirmado):**
+  * Displays a green `PAGO CONFIRMADO` tag.
+  * Renders a highly highlighted plate code container showing the plate number.
+  * Displays a `DOCUMENTACIÓN` button that routes to the document upload screen.
 
 ---
 
-## 4. Gradle & Platform Adjustments
+## 4. Participant Documentation & Camera Upload Workflow
+
+The document sub-route `/inscripciones/documentacion` manages all required runner certifications:
+
+1. **Document Requirements (GET):** The screen queries `GET /api/participantes/{id}/archivos` using the participant's ID. It retrieves document files and checks their status:
+   * `SD` (Sin Entregar) or `OB` (Observado/Rechazado): Shows a **"Subir"** button to capture files.
+   * `PE` (En Revisión): Shows a text indicating validation is pending.
+   * `AP` (Aprobado): Shows a **"VER"** button opening the public image URL.
+2. **Camera Access & Multipart Upload (POST):** Clicking **"Subir"** triggers the native camera via `image_picker`. The photo is sent via a Multipart request to `POST /api/participantes/archivos` containing parameters:
+   * `parti_id` (runner ID)
+   * `tipo` (e.g. `CERTIFICADO_MEDICO`, `DESLINDE_RESPONSABILIDAD`, `AUTORIZACION_MENORES`)
+   * `file` (the image file)
+3. **State & Modal Loading Handling:**
+   * During upload, a local stack-based `_isUploading` loading overlay is displayed on top of the screen to block interaction.
+   * On API completion, the overlay is hidden and an `AlertDialog` (Success / Error) is displayed.
+   * To prevent routing bugs, the alert dialog is closed using `dialogContext` in `Navigator.of(dialogContext).pop()` to ensure only the modal dialog is popped and the participant remains on the documentation screen.
+   * On success, the state of the document updates locally to `PE` (En Revisión).
+
+---
+
+## 5. Exit & Session Termination
+
+* **Close Application:** Tapping the exit or close session option in `MoreScreen` terminates the application process cleanly by invoking `SystemNavigator.pop()`.
+
+---
+
+## 6. Gradle & Platform Adjustments
 
 To accommodate Firebase Core dependencies, offline secure storage, and stable rendering, multiple adjustments were implemented:
 
@@ -101,7 +120,7 @@ To accommodate Firebase Core dependencies, offline secure storage, and stable re
 
 ---
 
-## 5. UI Features & Design System
+## 7. UI Features & Design System
 
 The visual theme complies with **Material Design 3** styled as a high-end dark sports mode.
 
@@ -115,7 +134,7 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 
 ---
 
-## 6. Participant REST API Updates
+## 8. Participant REST API Updates
 
 Participant update endpoints in `ParticipantApiService` are refactored to remove the `{partiId}` path parameters:
 
@@ -124,10 +143,12 @@ Participant update endpoints in `ParticipantApiService` are refactored to remove
 | Update Emergency Info | `/api/participantes/{partiId}/emergencia` | `/api/participantes/emergencia` | Query Parameter (`parti_id`) |
 | Update Contact Info | `/api/participantes/{partiId}/contacto` | `/api/participantes/contacto` | Query Parameter (`parti_id`) |
 | Update Circuit | `/api/participantes/{partiId}/circuito` | `/api/participantes/circuito` | Query Parameter (`parti_id`) |
+| List Documentation | N/A | `/api/participantes/{id}/archivos` | Path Parameter (`id`) |
+| Upload Document | N/A | `/api/participantes/archivos` | Multipart Parameters (`parti_id`, `tipo`, `file`) |
 
 ---
 
-## 7. Verification Commands
+## 9. Verification Commands
 
 To verify compilation and test integrity, use the following workspace commands:
 

@@ -179,6 +179,7 @@ extension GetItInjectableX on _i174.GetIt {
       environment,
       environmentFilter,
     );
+    final tenantApiModule = _$TenantApiModule();
     final eventsApiModule = _$EventsApiModule();
     final tracksApiModule = _$TracksApiModule();
     final settingsApiModule = _$SettingsApiModule();
@@ -188,7 +189,6 @@ extension GetItInjectableX on _i174.GetIt {
     final emergencyApiModule = _$EmergencyApiModule();
     final documentsApiModule = _$DocumentsApiModule();
     final geographyApiModule = _$GeographyApiModule();
-    final tenantApiModule = _$TenantApiModule();
     gh.lazySingleton<_i914.RetryInterceptor>(() => _i914.RetryInterceptor());
     gh.lazySingleton<_i511.ErrorInterceptor>(() => _i511.ErrorInterceptor());
     gh.lazySingleton<_i238.LoggerInterceptor>(() => _i238.LoggerInterceptor());
@@ -229,6 +229,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i650.GetSocialLinks(gh<_i640.SocialRepository>()));
     gh.factory<_i17.SocialBloc>(
         () => _i17.SocialBloc(gh<_i650.GetSocialLinks>()));
+    gh.lazySingleton<_i351.TenantApiService>(
+        () => tenantApiModule.provideTenantApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i998.EventsApiService>(
         () => eventsApiModule.provideEventsApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i337.TracksApiService>(
@@ -247,8 +249,6 @@ extension GetItInjectableX on _i174.GetIt {
         documentsApiModule.provideDocumentsApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i304.GeographyApiService>(() =>
         geographyApiModule.provideGeographyApiService(gh<_i667.DioClient>()));
-    gh.lazySingleton<_i351.TenantApiService>(
-        () => tenantApiModule.provideTenantApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i881.ParticipantRemoteDataSource>(() =>
         _i881.ParticipantRemoteDataSourceImpl(
             gh<_i280.ParticipantApiService>()));
@@ -383,6 +383,8 @@ extension GetItInjectableX on _i174.GetIt {
   }
 }
 
+class _$TenantApiModule extends _i351.TenantApiModule {}
+
 class _$EventsApiModule extends _i998.EventsApiModule {}
 
 class _$TracksApiModule extends _i337.TracksApiModule {}
@@ -400,5 +402,3 @@ class _$EmergencyApiModule extends _i467.EmergencyApiModule {}
 class _$DocumentsApiModule extends _i792.DocumentsApiModule {}
 
 class _$GeographyApiModule extends _i304.GeographyApiModule {}
-
-class _$TenantApiModule extends _i351.TenantApiModule {}

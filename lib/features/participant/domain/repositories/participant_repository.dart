@@ -43,4 +43,12 @@ abstract class ParticipantRepository {
     required String categoriaId,
     required String talleId,
   });
+
+  Future<Map<String, dynamic>> getParticipantDocuments(String partiId);
+
+  Future<bool> uploadParticipantDocument({
+    required String partiId,
+    required String tipo,
+    required String filePath,
+  });
 }

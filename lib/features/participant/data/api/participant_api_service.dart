@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
@@ -54,6 +55,19 @@ abstract class ParticipantApiService {
   @POST('/api/participantes/token')
   Future<UpdatePushTokenResponseDto> updatePushToken(
     @Body() UpdatePushTokenRequestDto body,
+  );
+
+  @GET('/api/participantes/{id}/archivos')
+  Future<dynamic> getParticipantDocuments(
+    @Path('id') String partiId,
+  );
+
+  @POST('/api/participantes/archivos')
+  @MultiPart()
+  Future<dynamic> uploadParticipantDocument(
+    @Part(name: 'parti_id') String partiId,
+    @Part(name: 'tipo') String tipo,
+    @Part(name: 'file') File file,
   );
 }
 

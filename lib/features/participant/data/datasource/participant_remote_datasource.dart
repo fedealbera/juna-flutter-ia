@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:injectable/injectable.dart';
 import '../api/participant_api_service.dart';
 import '../dto/request/auth_participant_request_dto.dart';
@@ -24,6 +25,12 @@ abstract class ParticipantRemoteDataSource {
   Future<UpdateContactResponseDto> updateContact(String partiId, UpdateContactRequestDto body);
   Future<UpdateCircuitoResponseDto> updateCircuito(String partiId, UpdateCircuitoRequestDto body);
   Future<UpdatePushTokenResponseDto> updatePushToken(UpdatePushTokenRequestDto body);
+  Future<Map<String, dynamic>> getParticipantDocuments(String partiId);
+  Future<bool> uploadParticipantDocument({
+    required String partiId,
+    required String tipo,
+    required String filePath,
+  });
 }
 
 @LazySingleton(as: ParticipantRemoteDataSource)
@@ -65,5 +72,29 @@ class ParticipantRemoteDataSourceImpl implements ParticipantRemoteDataSource {
   @override
   Future<UpdatePushTokenResponseDto> updatePushToken(UpdatePushTokenRequestDto body) {
     return _apiService.updatePushToken(body);
+  }
+
+  @override
+  Future<Map<String, dynamic>> getParticipantDocuments(String partiId) async {
+    final response = await _apiService.getParticipantDocuments(partiId);
+    if (response is Map) {
+      return response.cast<String, dynamic>();
+    }
+    return <String, dynamic>{};
+  }
+
+  @override
+  Future<bool> uploadParticipantDocument({
+    required String partiId,
+    required String tipo,
+    required String filePath,
+  }) async {
+    try {
+      final file = File(filePath);
+      await _apiService.uploadParticipantDocument(partiId, tipo, file);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }

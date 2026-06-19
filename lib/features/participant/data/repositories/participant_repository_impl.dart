@@ -113,4 +113,22 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     );
     return ParticipantMapper.toCircuitoEntity(response);
   }
+
+  @override
+  Future<Map<String, dynamic>> getParticipantDocuments(String partiId) async {
+    return _remoteDataSource.getParticipantDocuments(partiId);
+  }
+
+  @override
+  Future<bool> uploadParticipantDocument({
+    required String partiId,
+    required String tipo,
+    required String filePath,
+  }) async {
+    return _remoteDataSource.uploadParticipantDocument(
+      partiId: partiId,
+      tipo: tipo,
+      filePath: filePath,
+    );
+  }
 }

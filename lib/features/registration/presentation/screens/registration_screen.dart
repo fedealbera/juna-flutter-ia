@@ -1,7 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -72,6 +75,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
 
   void _onTenantChanged() {
     setState(() {});
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    if (urlString.isEmpty) return;
+    final uri = Uri.parse(urlString);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se pudo abrir la página de pago.')),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -200,6 +221,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             const SizedBox(height: 16),
             _buildParticipantCard(detail, fechaAcreditacion, fechaCarrera, activeTenant),
             const SizedBox(height: 24),
+            if (detail.nroPlaca == '0')
+              AppButton(
+                text: 'PAGAR',
+                icon: Icons.payment_rounded,
+                onPressed: () {
+                  if (detail.linkPago.isNotEmpty) {
+                    _launchURL(detail.linkPago);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No hay link de pago disponible para este participante.')),
+                    );
+                  }
+                },
+              )
+            else
+              AppButton(
+                text: 'DOCUMENTACIÓN',
+                icon: Icons.description_rounded,
+                onPressed: () {
+                  context.push('/inscripciones/documentacion', extra: detail);
+                },
+              ),
+            const SizedBox(height: 12),
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.redAccent, width: 1.5),
@@ -320,6 +364,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     String fechaCarrera,
     TenantConfig activeTenant,
   ) {
+    final bool isPreInscripto = detail.nroPlaca == '0';
+
     return AppCard(
       style: AppCardStyle.glassmorphic,
       child: Column(
@@ -338,50 +384,90 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                       style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                    if (!isPreInscripto)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'PAGO CONFIRMADO',
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.info_rounded, color: Colors.orange, size: 14),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'PRE-INSCRIPTO',
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: const Text(
-                        'PAGO CONFIRMADO',
-                        style: TextStyle(color: Colors.green, fontSize: 9, fontWeight: FontWeight.bold),
-                      ),
-                    ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: activeTenant.primaryColorRef,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: activeTenant.primaryColorRef.withValues(alpha: 0.3),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+              if (!isPreInscripto) ...[
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: activeTenant.primaryColorRef,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: activeTenant.primaryColorRef.withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'PLACA',
+                        style: TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        detail.nroPlaca.isNotEmpty ? detail.nroPlaca : '---',
+                        style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'PLACA',
-                      style: TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      detail.nroPlaca.isNotEmpty ? detail.nroPlaca : '---',
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 16),

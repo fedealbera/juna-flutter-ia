@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/registration/presentation/screens/registration_screen.dart';
+import '../../features/participant/domain/entities/participant_detail.dart';
+import '../../features/participant/presentation/screens/participant_documentation_screen.dart';
 import '../../features/maps/presentation/screens/maps_screen.dart';
 import '../../features/live/presentation/screens/live_screen.dart';
 import '../../features/more/presentation/screens/more_screen.dart';
@@ -33,6 +35,16 @@ class AppRouter {
             path: '/inscripciones',
             name: 'inscripciones',
             builder: (BuildContext context, GoRouterState state) => const RegistrationScreen(),
+            routes: [
+              GoRoute(
+                path: 'documentacion',
+                name: 'documentacion',
+                builder: (BuildContext context, GoRouterState state) {
+                  final participant = state.extra as ParticipantDetail;
+                  return ParticipantDocumentationScreen(participant: participant);
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: '/mapas',
