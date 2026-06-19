@@ -71,13 +71,17 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       await Hive.initFlutter();
       final Box<Map> box = await Hive.openBox<Map>('notifications_box');
       final String id = message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString();
-      await box.put(id, {
-        'id': id,
-        'title': finalTitle,
-        'body': finalBody,
-        'isRead': false,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      try {
+        await box.put(id, {
+          'id': id,
+          'title': finalTitle,
+          'body': finalBody,
+          'isRead': false,
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+      } finally {
+        await box.close();
+      }
 
       // Show system notification tray alert in background isolate
       const AndroidInitializationSettings initializationSettingsAndroid =
@@ -120,7 +124,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 @lazySingleton
-class NotificationService extends ChangeNotifier {
+class NotificationService extends ChangeNotifier with WidgetsBindingObserver {
   final Logger _logger = Logger();
   FirebaseMessaging? _messaging;
   List<LocalNotification> _notifications = [];
@@ -129,6 +133,7 @@ class NotificationService extends ChangeNotifier {
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
   Future<void> init() async {
+    WidgetsBinding.instance.addObserver(this);
     try {
       _messaging = FirebaseMessaging.instance;
       
@@ -190,6 +195,34 @@ class NotificationService extends ChangeNotifier {
       }
     } catch (e) {
       _logger.w('Firebase Messaging setup skipped/failed: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    _logger.i('AppLifecycleState changed to: $state');
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      try {
+        if (Hive.isBoxOpen('notifications_box')) {
+          await Hive.box<Map>('notifications_box').close();
+          _logger.i('Closed notifications_box on app paused/detached');
+        }
+      } catch (e) {
+        _logger.w('Error closing notifications_box: $e');
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      try {
+        await refreshNotifications();
+        _logger.i('Refreshed notifications on app resumed');
+      } catch (e) {
+        _logger.w('Error refreshing notifications on app resumed: $e');
+      }
     }
   }
 
