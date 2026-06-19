@@ -33,7 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Countdown timer parameters
   late Timer _countdownTimer;
-  Duration _timeLeft = const Duration(days: 12, hours: 8, minutes: 43, seconds: 12);
+  Duration _timeLeft = const Duration(
+    days: 12,
+    hours: 8,
+    minutes: 43,
+    seconds: 12,
+  );
   int? _raceTimestamp;
 
   @override
@@ -51,7 +56,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final parsedTs = int.tryParse(tsStr);
         if (parsedTs != null) {
           _raceTimestamp = tsStr.length == 10 ? parsedTs * 1000 : parsedTs;
-          final difference = DateTime.fromMillisecondsSinceEpoch(_raceTimestamp!).difference(DateTime.now());
+          final difference = DateTime.fromMillisecondsSinceEpoch(
+            _raceTimestamp!,
+          ).difference(DateTime.now());
           _timeLeft = difference.inSeconds > 0 ? difference : Duration.zero;
         }
       }
@@ -59,7 +66,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Load active event content and settings
     _loadEventContent();
-    _settingsBloc.add(const SettingsEvent.getSettings(eventId: '1', idOrg: '1'));
+    _settingsBloc.add(
+      const SettingsEvent.getSettings(eventId: '1', idOrg: '1'),
+    );
 
     // Dynamically rebuild when tenant configuration changes
     _tenantManager.addListener(_onTenantChanged);
@@ -84,7 +93,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
         setState(() {
           if (_raceTimestamp != null) {
-            final raceDate = DateTime.fromMillisecondsSinceEpoch(_raceTimestamp!);
+            final raceDate = DateTime.fromMillisecondsSinceEpoch(
+              _raceTimestamp!,
+            );
             final difference = raceDate.difference(DateTime.now());
             _timeLeft = difference.inSeconds > 0 ? difference : Duration.zero;
           } else {
@@ -98,15 +109,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadEventContent() {
-    _contentBloc.add(const ContentEvent.getEventContent(
-      eventId: '1',
-      idOrg: '1',
-    ));
+    _contentBloc.add(
+      const ContentEvent.getEventContent(eventId: '1', idOrg: '1'),
+    );
   }
 
   void _onTenantChanged() {
     _loadEventContent();
-    _settingsBloc.add(const SettingsEvent.getSettings(eventId: '1', idOrg: '1'));
+    _settingsBloc.add(
+      const SettingsEvent.getSettings(eventId: '1', idOrg: '1'),
+    );
     setState(() {});
   }
 
@@ -118,18 +130,15 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final activeTenant = _tenantManager.value;
 
     // List of banner graphics according to the organization/tenant ID
-    final String bannerImage = activeTenant.id == 'velo_mtb'
-        ? 'https://images.unsplash.com/photo-1544192240-4a34feb0104a?w=800&q=80'
-        : activeTenant.id == 'patagonia_trail'
+    final String bannerImage =
+        activeTenant.id == 'patagonia_trail'
             ? 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=800&q=80'
-            : 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80';
+            : 'https://www.desafiodelasnubes.com.ar/img/fotos/1.jpg'; // Default to a premium Mountain Bike action photo
 
     return MultiBlocProvider(
       providers: [
@@ -147,7 +156,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   sosSent: (result) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('¡Señal de Emergencia SOS enviada con éxito!'),
+                        content: const Text(
+                          '¡Señal de Emergencia SOS enviada con éxito!',
+                        ),
                         backgroundColor: Colors.green.shade800,
                       ),
                     );
@@ -190,18 +201,32 @@ class _HomeScreenState extends State<HomeScreen> {
                 orElse: () => null,
               );
 
-              final appTitle = settings?.appTitle.isNotEmpty == true ? settings!.appTitle : activeTenant.name;
-              final edicion = settings?.edicion.isNotEmpty == true ? settings!.edicion : '2026';
-              final tipoCarrera = settings?.tipoCarrera.isNotEmpty == true ? settings!.tipoCarrera : 'MOUNTAIN BIKE';
-              final fechaCarrera = settings?.fechaCarrera.isNotEmpty == true ? settings!.fechaCarrera : '7 de Junio';
+              final appTitle =
+                  settings?.appTitle.isNotEmpty == true
+                      ? settings!.appTitle
+                      : activeTenant.name;
+              final edicion =
+                  settings?.edicion.isNotEmpty == true
+                      ? settings!.edicion
+                      : '2026';
+              final tipoCarrera =
+                  settings?.tipoCarrera.isNotEmpty == true
+                      ? settings!.tipoCarrera
+                      : 'MOUNTAIN BIKE';
+              final fechaCarrera =
+                  settings?.fechaCarrera.isNotEmpty == true
+                      ? settings!.fechaCarrera
+                      : '7 de Junio';
 
-              final isVisibleSos = settings != null
-                  ? settings.getSetting('ISVISIBLE_SOS') == 'TRUE'
-                  : activeTenant.enableLiveTracking;
+              final isVisibleSos =
+                  settings != null
+                      ? settings.getSetting('ISVISIBLE_SOS') == 'TRUE'
+                      : activeTenant.enableLiveTracking;
 
-              final isEnabledSosSetting = settings != null
-                  ? settings.getSetting('ISENABLED_SOS') == 'TRUE'
-                  : activeTenant.enableLiveTracking;
+              final isEnabledSosSetting =
+                  settings != null
+                      ? settings.getSetting('ISENABLED_SOS') == 'TRUE'
+                      : activeTenant.enableLiveTracking;
 
               bool isRaceDay = false;
               if (settings != null) {
@@ -210,17 +235,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   final ts = int.tryParse(tsStr);
                   if (ts != null) {
                     final milliseconds = tsStr.length == 10 ? ts * 1000 : ts;
-                    final raceDate = DateTime.fromMillisecondsSinceEpoch(milliseconds);
+                    final raceDate = DateTime.fromMillisecondsSinceEpoch(
+                      milliseconds,
+                    );
                     final now = DateTime.now();
-                    isRaceDay = now.year == raceDate.year &&
-                                now.month == raceDate.month &&
-                                now.day == raceDate.day;
+                    isRaceDay =
+                        now.year == raceDate.year &&
+                        now.month == raceDate.month &&
+                        now.day == raceDate.day;
                   }
                 }
               }
 
               return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 20.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -239,7 +270,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               return Container(
                                 height: 220,
                                 color: Colors.white.withValues(alpha: 0.05),
-                                child: const Center(child: CircularProgressIndicator.adaptive()),
+                                child: const Center(
+                                  child: CircularProgressIndicator.adaptive(),
+                                ),
                               );
                             },
                           ),
@@ -265,7 +298,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: activeTenant.primaryColorRef,
                                     borderRadius: BorderRadius.circular(6),
@@ -321,7 +357,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       'PRÓXIMA EDICIÓN ($edicion)',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.7),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.7,
+                                        ),
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                         letterSpacing: 1,
@@ -362,7 +400,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.calendar_today_rounded, color: activeTenant.accentColorRef, size: 16),
+                              Icon(
+                                Icons.calendar_today_rounded,
+                                color: activeTenant.accentColorRef,
+                                size: 16,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'FECHA DEL EVENTO: $fechaCarrera',
@@ -378,11 +420,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildCountdownBlock(_timeLeft.inDays.toString(), 'DÍAS', activeTenant),
+                              _buildCountdownBlock(
+                                _timeLeft.inDays.toString(),
+                                'DÍAS',
+                                activeTenant,
+                              ),
                               _buildCountdownDivider(activeTenant),
-                              _buildCountdownBlock((_timeLeft.inHours.remainder(24)).toString().padLeft(2, '0'), 'HORAS', activeTenant),
+                              _buildCountdownBlock(
+                                (_timeLeft.inHours.remainder(
+                                  24,
+                                )).toString().padLeft(2, '0'),
+                                'HORAS',
+                                activeTenant,
+                              ),
                               _buildCountdownDivider(activeTenant),
-                              _buildCountdownBlock((_timeLeft.inMinutes.remainder(60)).toString().padLeft(2, '0'), 'MINUTOS', activeTenant),
+                              _buildCountdownBlock(
+                                (_timeLeft.inMinutes.remainder(
+                                  60,
+                                )).toString().padLeft(2, '0'),
+                                'MINUTOS',
+                                activeTenant,
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -400,16 +458,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (isVisibleSos) ...[
                       AppCard(
                         style: AppCardStyle.glassmorphic,
-                        customBorder: Border.all(color: Colors.redAccent.withValues(alpha: 0.3), width: 1.5),
+                        customBorder: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
                         child: Column(
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 28),
+                                const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: Colors.redAccent,
+                                  size: 28,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'Acción Crítica SOS',
@@ -422,14 +488,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const SizedBox(height: 2),
                                       Text(
                                         'Presiona el botón para enviar coordenadas de rescate en tiempo real a la organización.',
-                                        style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                                        style: TextStyle(
+                                          color: Colors.grey.shade400,
+                                          fontSize: 11,
+                                        ),
                                       ),
                                       if (!isRaceDay) ...[
                                         const SizedBox(height: 4),
                                         Text(
                                           'Disponible únicamente el día de la carrera ($fechaCarrera).',
                                           style: TextStyle(
-                                            color: activeTenant.accentColorRef.withValues(alpha: 0.8),
+                                            color: activeTenant.accentColorRef
+                                                .withValues(alpha: 0.8),
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -443,9 +513,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 16),
                             AppButton(
                               text: 'ENVIAR ALERTA SOS',
-                              onPressed: isEnabledSosSetting && isRaceDay
-                                  ? () => _showSosConfirmDialog(context)
-                                  : null,
+                              onPressed:
+                                  isEnabledSosSetting && isRaceDay
+                                      ? () => _showSosConfirmDialog(context)
+                                      : null,
                               icon: Icons.emergency_share_rounded,
                             ),
                           ],
@@ -481,7 +552,10 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
                 SizedBox(width: 10),
-                Text('Confirmar Emergencia', style: TextStyle(color: Colors.white)),
+                Text(
+                  'Confirmar Emergencia',
+                  style: TextStyle(color: Colors.white),
+                ),
               ],
             ),
             content: const Text(
@@ -491,21 +565,31 @@ class _HomeScreenState extends State<HomeScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
+                child: const Text(
+                  'CANCELAR',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
                 onPressed: () {
-                  _emergencyBloc.add(const EmergencyEvent.sendSos(
-                    partiId: 'parti_demo_1',
-                    eventoId: '1',
-                    orgId: '1',
-                    latitud: '-34.6037',
-                    longitud: '-58.3816',
-                  ));
+                  _emergencyBloc.add(
+                    const EmergencyEvent.sendSos(
+                      partiId: 'parti_demo_1',
+                      eventoId: '1',
+                      orgId: '1',
+                      latitud: '-34.6037',
+                      longitud: '-58.3816',
+                    ),
+                  );
                   Navigator.pop(dialogContext);
                 },
-                child: const Text('ENVIAR SOS', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'ENVIAR SOS',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),

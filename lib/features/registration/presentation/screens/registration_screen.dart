@@ -244,25 +244,56 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                 },
               ),
             const SizedBox(height: 12),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.redAccent, width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              onPressed: () async {
-                await getIt<HiveService>().delete<Map>('participant_box', 'cached_participant');
-                _dniController.clear();
-                if (mounted) {
-                  setState(() {
-                    _linkedParticipant = null;
-                  });
-                }
-              },
-              child: const Text(
-                'DESVINCULAR',
-                style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () async {
+                      await getIt<HiveService>().delete<Map>('participant_box', 'cached_participant');
+                      _dniController.clear();
+                      if (mounted) {
+                        setState(() {
+                          _linkedParticipant = null;
+                        });
+                      }
+                    },
+                    child: const Text(
+                      'DESVINCULAR',
+                      style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: activeTenant.primaryColorRef,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () async {
+                      final result = await context.push<bool>('/inscripciones/editar-datos', extra: detail);
+                      if (result == true) {
+                        _participantBloc.add(ParticipantEvent.getDetail(
+                          dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
+                          idOrg: '1',
+                          eventoId: '1',
+                          roundId: '1',
+                        ));
+                      }
+                    },
+                    child: const Text(
+                      'EDITAR DATOS',
+                      style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

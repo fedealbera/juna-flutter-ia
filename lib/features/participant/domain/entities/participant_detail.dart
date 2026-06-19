@@ -22,6 +22,16 @@ class ParticipantDetail extends Equatable {
   String get largada => _data['largada']?.toString() ?? '';
   List<String> get articulos => (_data['articulos'] as List?)?.map((e) => e.toString()).toList() ?? [];
 
+  String get contCelular => _data['contCelular']?.toString() ?? '';
+  String get contEmail => _data['contEmail']?.toString() ?? '';
+  String get contInstagram => _data['contInstagram']?.toString() ?? '';
+  String get contNombre => _data['contNombre']?.toString() ?? '';
+  String get contTel => _data['contTel']?.toString() ?? '';
+  String get domCiudad => _data['domCiudad']?.toString() ?? '';
+  String get domCiudadNombre => _data['domCiudadNombre']?.toString() ?? '';
+  String get domProvincia => _data['domProvincia']?.toString() ?? '';
+  String get domPais => _data['domPais']?.toString() ?? '';
+
   @override
   List<Object?> get props => [rawJson];
 }
