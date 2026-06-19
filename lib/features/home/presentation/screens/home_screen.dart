@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
@@ -117,14 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final days = duration.inDays;
-    final hours = twoDigits(duration.inHours.remainder(24));
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '${days}d : ${hours}h : ${minutes}m : ${seconds}s';
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -366,83 +360,34 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 16),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'FECHA DEL EVENTO',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.5),
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.8,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        fechaCarrera,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'CUENTA REGRESIVA',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.5),
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.8,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          _formatDuration(_timeLeft),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontFamily: 'Courier',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              Icon(Icons.calendar_today_rounded, color: activeTenant.accentColorRef, size: 16),
+                              const SizedBox(width: 8),
+                              Text(
+                                'FECHA DEL EVENTO: $fechaCarrera',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildCountdownBlock(_timeLeft.inDays.toString(), 'DÍAS', activeTenant),
+                              _buildCountdownDivider(activeTenant),
+                              _buildCountdownBlock((_timeLeft.inHours.remainder(24)).toString().padLeft(2, '0'), 'HORAS', activeTenant),
+                              _buildCountdownDivider(activeTenant),
+                              _buildCountdownBlock((_timeLeft.inMinutes.remainder(60)).toString().padLeft(2, '0'), 'MINUTOS', activeTenant),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
                           AppButton(
-                            text: 'Ver Detalles de Categorías',
+                            text: 'Ver Inscripción',
                             onPressed: () => context.go('/inscripciones'),
                             type: AppButtonType.outlined,
                           ),
@@ -566,6 +511,66 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCountdownBlock(String value, String label, TenantConfig tenant) {
+    return Container(
+      width: 75,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: tenant.primaryColorRef.withValues(alpha: 0.25),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: tenant.primaryColorRef.withValues(alpha: 0.05),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: tenant.accentColorRef,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white54,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountdownDivider(TenantConfig tenant) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: Text(
+        ':',
+        style: TextStyle(
+          color: tenant.primaryColorRef.withValues(alpha: 0.6),
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
     );
   }
 }
