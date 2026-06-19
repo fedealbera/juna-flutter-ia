@@ -260,7 +260,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                 }
               },
               child: const Text(
-                'Desvincular',
+                'DESVINCULAR',
                 style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
               ),
             ),
