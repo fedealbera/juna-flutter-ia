@@ -57,6 +57,7 @@ The application is engineered to support true White Label dynamic brand configur
 4. **Dynamic Firebase Setup:** Firebase Core and Firebase Analytics are re-initialized on-the-fly.
 5. **FCM Token Retrieval:** The application fetches the device's FCM push token locally, but does *not* send it to the backend on boot.
 6. **Transition:** The user is seamlessly routed to `/home`.
+7. **Dynamic Theme & Configuration Sync from Settings:** In addition, when settings are fetched from `/api/eventos/{eventoId}/settings?idOrg={idOrg}`, if the key `PRIMARY_COLOR` is found in the response, `SettingsRepositoryImpl` dynamically calls `TenantManager.changeTenant` with an updated config using `copyWith` to refresh the primary brand color globally.
 
 ### Push Notifications Background Support & Isolate Syncing
 * **Native Tray Alerts:** Uses `flutter_local_notifications` to programmatically display native system tray notification alerts from data-only FCM push payloads when the application is in the background or closed.
@@ -138,12 +139,12 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 
 ### Layout Layouts & Screens
 * **`MainShellScreen`:** Implements responsive design—rendering a Bottom Navigation Bar on mobile viewports and switching to a persistent Sidebar on desktop/tablet viewports. The mobile burger menu (and corresponding slide-out Drawer) has been completely removed. Dynamic tenant configuration swapping is handled directly via a custom Dropdown button placed in the `AppBar`'s `actions` list on mobile viewports, and at the bottom of the persistent navigation Sidebar on desktop viewports.
-* **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons. The default fallback banner image is configured with the DDLN mountain bike photo (`https://www.desafiodelasnubes.com.ar/img/fotos/1.jpg`).
+* **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons. The hero banner image is loaded dynamically from the settings key `IMAGE_BANNER`. All explicit fallback banner URLs have been removed, and the banner container is hidden conditionally if `IMAGE_BANNER` is empty or not provided.
 * **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI" and has an uppercase "DESVINCULAR" button next to "EDITAR DATOS".
 * **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency section is rendered conditionally and is hidden if the participant has no assigned plate number (`nroPlaca == 0`).
 * **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, etc.).
 * **`LiveScreen`:** Outputs live leaderboard listings categorized by age divisions and quick social links.
-* **`MoreScreen`:** Embeds document download directories, contact messages, and application sharing options.
+  * **`MoreScreen`:** Embeds document download directories, contact messages, and application sharing options. The "Acerca de" section is redesigned to display: 1) "Juná App" title, 2) custom logo PNG asset (`assets/images/juna_app_logo.png`), 3) app version, 4) platform description, 5) clickable mailto link to `churomobile@gmail.com`, 6) app version, and 7) an **Actualizar la App** update button. The update button parses `URL_STORES` dynamically, determines the current platform using `Theme.of(context).platform`, and redirects to either the `ANDROID` or `IOS` store URL.
 
 ---
 

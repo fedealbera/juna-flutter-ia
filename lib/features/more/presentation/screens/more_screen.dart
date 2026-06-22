@@ -63,7 +63,9 @@ class _MoreScreenState extends State<MoreScreen> {
       } catch (_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se pudo abrir la aplicación de contacto.')),
+            const SnackBar(
+              content: Text('No se pudo abrir la aplicación de contacto.'),
+            ),
           );
         }
       }
@@ -85,25 +87,30 @@ class _MoreScreenState extends State<MoreScreen> {
             children: [
               // 2. Contact form section redesigned matching screenshot
               const Text(
-                  'Estamos para ayudarte',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                'Estamos para ayudarte',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Escribinos por el canal que prefieras y te respondemos lo antes posible.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontWeight: FontWeight.w400,
-                  ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Escribinos por el canal que prefieras y te respondemos lo antes posible.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w400,
                 ),
-                const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 16),
 
-                // WhatsApp Support Card
-                _buildContactCard(
-                  title: 'Escribinos por WhatsApp',
-                  subtitle: _settings?.isEnabledWhatsapp == true
-                      ? Text(
+              // WhatsApp Support Card
+              _buildContactCard(
+                title: 'Escribinos por WhatsApp',
+                subtitle:
+                    _settings?.isEnabledWhatsapp == true
+                        ? Text(
                           'WhatsApp: ${_settings?.whatsappPhone ?? ""}',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.8),
@@ -111,303 +118,293 @@ class _MoreScreenState extends State<MoreScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         )
-                      : const Text(
+                        : const Text(
                           'Canal no Habilitado',
                           style: TextStyle(color: Colors.white24, fontSize: 13),
                         ),
-                  icon: Icons.chat_bubble_outline_rounded,
-                  badgeColor: const Color(0xFF25D366),
-                  isEnabled: _settings?.isEnabledWhatsapp == true,
-                  onTap: _settings?.isEnabledWhatsapp == true
-                      ? () {
+                icon: Icons.chat_bubble_outline_rounded,
+                badgeColor: const Color(0xFF25D366),
+                isEnabled: _settings?.isEnabledWhatsapp == true,
+                onTap:
+                    _settings?.isEnabledWhatsapp == true
+                        ? () {
                           final phone = _settings?.whatsappPhone ?? '';
                           final msg = _settings?.contactoMensajeWhatsapp ?? '';
-                          final url = 'https://wa.me/$phone?text=${Uri.encodeComponent(msg)}';
+                          final url =
+                              'https://wa.me/$phone?text=${Uri.encodeComponent(msg)}';
                           _launchURL(url);
                         }
-                      : null,
-                ),
-                const SizedBox(height: 12),
+                        : null,
+              ),
+              const SizedBox(height: 12),
 
-                // Email Support Card
-                _buildContactCard(
-                  title: 'Escribir por mail',
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Correo: ',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13),
+              // Email Support Card
+              _buildContactCard(
+                title: 'Escribir por mail',
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Correo: ',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 13,
                           ),
-                          Expanded(
-                            child: Text(
-                              _settings?.emailConsulta ?? '',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                        ),
+                        Expanded(
+                          child: Text(
+                            _settings?.emailConsulta ?? '',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Te responderemos en un plazo máximo de 48 hs.',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
-                      ),
-                    ],
-                  ),
-                  icon: Icons.mail_outline_rounded,
-                  badgeColor: const Color(0xFF2196F3),
-                  isEnabled: true,
-                  onTap: () {
-                    final email = _settings?.emailConsulta ?? '';
-                    _launchURL('mailto:$email');
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // 3. Social actions (Share) redesigned matching screenshot
-                Text(
-                  'GENERAL',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildContactCard(
-                  title: 'Compartir la App',
-                  subtitle: Text(
-                    _settings?.appTitle.isNotEmpty == true
-                        ? _settings!.appTitle
-                        : activeTenant.name,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
+                        ),
+                      ],
                     ),
-                  ),
-                  icon: Icons.share_rounded,
-                  badgeColor: const Color(0xFF9C27B0), // Purple share badge color
-                  isEnabled: true,
-                  onTap: () {
-                    final appTitle = _settings?.appTitle.isNotEmpty == true
-                        ? _settings!.appTitle
-                        : activeTenant.name;
-                    
-                    final String shareText;
-                    final stores = _settings?.urlStoresMap ?? const {};
-                    if (stores.isNotEmpty) {
-                      final iosLink = stores['IOS']?.toString() ?? '';
-                      final androidLink = stores['ANDROID']?.toString() ?? '';
-                      final buffer = StringBuffer();
-                      buffer.writeln('Descargar la APP de $appTitle');
-                      buffer.writeln(); // Enter
-                      buffer.writeln('iOS: $iosLink');
-                      buffer.write('Android: $androidLink');
-                      shareText = buffer.toString();
-                    } else {
-                      final rawStores = _settings?.urlStores ?? '';
-                      shareText = 'Descargar la APP de $appTitle\n\n$rawStores';
-                    }
-
-                    final box = context.findRenderObject() as RenderBox?;
-                    final rect = box != null ? box.localToGlobal(Offset.zero) & box.size : null;
-                    SharePlus.instance.share(
-                      ShareParams(
-                        text: shareText,
-                        sharePositionOrigin: rect,
+                    const SizedBox(height: 2),
+                    Text(
+                      'Te responderemos en un plazo máximo de 48 hs.',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 11,
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
+                icon: Icons.mail_outline_rounded,
+                badgeColor: const Color(0xFF2196F3),
+                isEnabled: true,
+                onTap: () {
+                  final email = _settings?.emailConsulta ?? '';
+                  _launchURL('mailto:$email');
+                },
+              ),
+              const SizedBox(height: 24),
 
-                // 4. Platform Specifications (using AboutBloc)
-                Text(
-                  'ACERCA DE',
+              // 3. Social actions (Share) redesigned matching screenshot
+              Text(
+                'GENERAL',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildContactCard(
+                title: 'Compartir la App',
+                subtitle: Text(
+                  _settings?.appTitle.isNotEmpty == true
+                      ? _settings!.appTitle
+                      : activeTenant.name,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-                const SizedBox(height: 12),
-                BlocBuilder<AboutBloc, AboutState>(
-                  builder: (context, state) {
-                    return state.maybeWhen(
-                      loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-                      loaded: (info) {
-                        final appTitle = _settings?.appTitle.isNotEmpty == true
-                            ? _settings!.appTitle
-                            : activeTenant.name;
-                        final firstLetter = (appTitle.isNotEmpty ? appTitle[0] : 'J').toUpperCase();
-                        
-                        final typeVersion = _settings?.typeVersion ?? '';
-                        final versionDisplay = typeVersion.isNotEmpty
-                            ? '${info.appVersion} ($typeVersion)'
-                            : info.appVersion;
+                icon: Icons.share_rounded,
+                badgeColor: const Color(0xFF9C27B0), // Purple share badge color
+                isEnabled: true,
+                onTap: () {
+                  final appTitle =
+                      _settings?.appTitle.isNotEmpty == true
+                          ? _settings!.appTitle
+                          : activeTenant.name;
 
-                        final email = _settings?.emailConsulta ?? 'churomobile@gmail.com';
+                  final String shareText;
+                  final stores = _settings?.urlStoresMap ?? const {};
+                  if (stores.isNotEmpty) {
+                    final iosLink = stores['IOS']?.toString() ?? '';
+                    final androidLink = stores['ANDROID']?.toString() ?? '';
+                    final buffer = StringBuffer();
+                    buffer.writeln('Descargar la APP de $appTitle');
+                    buffer.writeln(); // Enter
+                    buffer.writeln('iOS: $iosLink');
+                    buffer.write('Android: $androidLink');
+                    shareText = buffer.toString();
+                  } else {
+                    final rawStores = _settings?.urlStores ?? '';
+                    shareText = 'Descargar la APP de $appTitle\n\n$rawStores';
+                  }
 
-                        return AppCard(
-                          style: AppCardStyle.glassmorphic,
-                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Logo Badge
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    firstLetter,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
+                  final box = context.findRenderObject() as RenderBox?;
+                  final rect =
+                      box != null
+                          ? box.localToGlobal(Offset.zero) & box.size
+                          : null;
+                  SharePlus.instance.share(
+                    ShareParams(text: shareText, sharePositionOrigin: rect),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
 
-                              // Title & Subtitle
-                              Text(
-                                appTitle,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
+              // 4. Platform Specifications (using AboutBloc)
+              Text(
+                'ACERCA DE',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 12),
+              BlocBuilder<AboutBloc, AboutState>(
+                builder: (context, state) {
+                  return state.maybeWhen(
+                    loading:
+                        () => const Center(
+                          child: CircularProgressIndicator.adaptive(),
+                        ),
+                    loaded: (info) {
+                      final typeVersion = _settings?.typeVersion ?? '';
+                      final versionDisplay =
+                          typeVersion.isNotEmpty
+                              ? '${info.appVersion} ($typeVersion)'
+                              : info.appVersion;
+
+                      return AppCard(
+                        style: AppCardStyle.glassmorphic,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 24,
+                          horizontal: 20,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 5),
+
+                            // 1) PNG image adapted so it doesn't expand too much
+                            Image.asset(
+                              'assets/images/juna_app_logo.png',
+                              height: 100,
+                              fit: BoxFit.contain,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // 2) App description text
+                            Text(
+                              'App de alto rendimiento Android & iOS',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.6),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Apps de alto rendimiento Android & iOS',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 6),
-                              
-                              // Email Link
-                              GestureDetector(
-                                onTap: () => _launchURL('mailto:$email'),
-                                child: Text(
-                                  email,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+
+                            // 3) Email address
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Email: ',
                                   style: TextStyle(
-                                    color: activeTenant.primaryColorRef,
+                                    color: Colors.white.withValues(alpha: 0.6),
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    decoration: TextDecoration.underline,
+                                    fontWeight: FontWeight.w400,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Divider Line
-                              Divider(color: Colors.white.withValues(alpha: 0.1)),
-                              const SizedBox(height: 12),
-
-                              // Version text
-                              Text(
-                                'Versión $versionDisplay',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.4),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Actualizar la App Button
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0F172A),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    elevation: 0,
-                                  ),
-                                  onPressed: () {
-                                    final stores = _settings?.urlStoresMap ?? const {};
-                                    final iosLink = stores['IOS']?.toString() ?? '';
-                                    final androidLink = stores['ANDROID']?.toString() ?? '';
-                                    
-                                    if (Theme.of(context).platform == TargetPlatform.iOS && iosLink.isNotEmpty) {
-                                      _launchURL(iosLink);
-                                    } else if (androidLink.isNotEmpty) {
-                                      _launchURL(androidLink);
-                                    } else if (iosLink.isNotEmpty) {
-                                      _launchURL(iosLink);
-                                    }
-                                  },
-                                  icon: const Icon(Icons.file_download_rounded, size: 20),
-                                  label: const Text(
-                                    'Actualizar la App',
+                                GestureDetector(
+                                  onTap:
+                                      () => _launchURL(
+                                        'mailto:churomobile@gmail.com',
+                                      ),
+                                  child: Text(
+                                    'churomobile@gmail.com',
                                     style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
+                                      color: activeTenant.primaryColorRef,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.underline,
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      orElse: () => const SizedBox.shrink(),
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
 
-                // 5. Logout Action
-                AppButton(
-                  text: 'Salir / Cerrar Sesión',
-                  icon: Icons.logout_rounded,
-                  onPressed: () {
-                    SystemNavigator.pop();
-                  },
-                  type: AppButtonType.outlined,
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
+                            // 4) Divider & Version text
+                            Divider(color: Colors.white.withValues(alpha: 0.1)),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Versión $versionDisplay',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // 5) Actualizar la App Button using AppButton design system style
+                            AppButton(
+                              text: 'Actualizar la App',
+                              icon: Icons.file_download_rounded,
+                              type: AppButtonType.primary,
+                              onPressed: () {
+                                final stores =
+                                    _settings?.urlStoresMap ?? const {};
+                                final iosLink = stores['IOS']?.toString() ?? '';
+                                final androidLink =
+                                    stores['ANDROID']?.toString() ?? '';
+
+                                final platform = Theme.of(context).platform;
+                                if (platform == TargetPlatform.iOS) {
+                                  if (iosLink.isNotEmpty) {
+                                    _launchURL(iosLink);
+                                  }
+                                } else if (platform == TargetPlatform.android) {
+                                  if (androidLink.isNotEmpty) {
+                                    _launchURL(androidLink);
+                                  }
+                                } else {
+                                  // Fallback for other environments
+                                  if (androidLink.isNotEmpty) {
+                                    _launchURL(androidLink);
+                                  } else if (iosLink.isNotEmpty) {
+                                    _launchURL(iosLink);
+                                  }
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    orElse: () => const SizedBox.shrink(),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // 5. Logout Action
+              AppButton(
+                text: 'Salir / Cerrar Sesión',
+                icon: Icons.logout_rounded,
+                onPressed: () {
+                  SystemNavigator.pop();
+                },
+                type: AppButtonType.outlined,
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
-
-
 
   Widget _buildContactCard({
     required String title,
@@ -433,9 +430,10 @@ class _MoreScreenState extends State<MoreScreen> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: isEnabled
-                      ? badgeColor.withValues(alpha: 0.1)
-                      : Colors.white.withValues(alpha: 0.05),
+                  color:
+                      isEnabled
+                          ? badgeColor.withValues(alpha: 0.1)
+                          : Colors.white.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -457,7 +455,10 @@ class _MoreScreenState extends State<MoreScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isEnabled ? Colors.white : Colors.white.withValues(alpha: 0.4),
+                        color:
+                            isEnabled
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.4),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -481,6 +482,4 @@ class _MoreScreenState extends State<MoreScreen> {
       ),
     );
   }
-
-
 }
