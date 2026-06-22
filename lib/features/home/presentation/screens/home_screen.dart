@@ -190,9 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
           child: BlocBuilder<SettingsBloc, SettingsState>(
             builder: (context, settingsState) {
+              final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
               final settings = settingsState.maybeWhen(
                 loaded: (s) => s,
-                orElse: () => null,
+                orElse: () => cachedSettings,
               );
 
               final String bannerImage = settings?.getSetting('IMAGE_BANNER') ?? '';
