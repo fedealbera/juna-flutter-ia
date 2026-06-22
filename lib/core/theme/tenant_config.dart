@@ -86,6 +86,32 @@ class TenantConfig {
         iosBundleId: firebase.iosBundleId ?? 'com.churo.desafiomobile',
       );
 
+  TenantConfig copyWith({
+    int? tenantId,
+    String? tenantName,
+    String? logoUrl,
+    String? primaryColor,
+    String? secondaryColor,
+    String? accentColor,
+    FirebaseConfig? firebase,
+    FeatureFlags? featureFlags,
+    String? baseUrl,
+    List<SportType>? supportedSports,
+  }) {
+    return TenantConfig(
+      tenantId: tenantId ?? this.tenantId,
+      tenantName: tenantName ?? this.tenantName,
+      logoUrl: logoUrl ?? this.logoUrl,
+      primaryColor: primaryColor ?? this.primaryColor,
+      secondaryColor: secondaryColor ?? this.secondaryColor,
+      accentColor: accentColor ?? this.accentColor,
+      firebase: firebase ?? this.firebase,
+      featureFlags: featureFlags ?? this.featureFlags,
+      baseUrl: baseUrl ?? this.baseUrl,
+      supportedSports: supportedSports ?? this.supportedSports,
+    );
+  }
+
   // Factory to build fallback tenant config
   factory TenantConfig.defaultConfig() {
     return TenantConfig(

@@ -285,8 +285,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i382.RegistrationRemoteDataSource>(() =>
         _i382.RegistrationRemoteDataSourceImpl(
             gh<_i360.RegistrationApiService>()));
-    gh.lazySingleton<_i674.SettingsRepository>(() =>
-        _i955.SettingsRepositoryImpl(gh<_i283.SettingsRemoteDataSource>()));
     gh.lazySingleton<_i1027.ContentRepository>(() =>
         _i463.ContentRepositoryImpl(gh<_i283.SettingsRemoteDataSource>()));
     gh.lazySingleton<_i103.TracksRepository>(
@@ -312,6 +310,11 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i237.GetDocuments(gh<_i345.DocumentsRepository>()));
     gh.lazySingleton<_i982.UploadDocument>(
         () => _i982.UploadDocument(gh<_i345.DocumentsRepository>()));
+    gh.lazySingleton<_i674.SettingsRepository>(
+        () => _i955.SettingsRepositoryImpl(
+              gh<_i283.SettingsRemoteDataSource>(),
+              gh<_i476.TenantManager>(),
+            ));
     gh.lazySingleton<_i980.RegistrationRepository>(() =>
         _i394.RegistrationRepositoryImpl(
             gh<_i382.RegistrationRemoteDataSource>()));

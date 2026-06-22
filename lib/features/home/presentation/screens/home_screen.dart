@@ -134,12 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final activeTenant = _tenantManager.value;
 
-    // List of banner graphics according to the organization/tenant ID
-    final String bannerImage =
-        activeTenant.id == 'patagonia_trail'
-            ? 'https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=800&q=80'
-            : 'https://www.desafiodelasnubes.com.ar/img/fotos/1.jpg'; // Default to a premium Mountain Bike action photo
-
     return MultiBlocProvider(
       providers: [
         BlocProvider<ContentBloc>.value(value: _contentBloc),
@@ -201,6 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 orElse: () => null,
               );
 
+              final String bannerImage = settings?.getSetting('IMAGE_BANNER') ?? '';
+
               final appTitle =
                   settings?.appTitle.isNotEmpty == true
                       ? settings!.appTitle
@@ -255,91 +251,93 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. Dynamic Hero Banner Carousel with premium dark overlay
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Stack(
-                        children: [
-                          Image.network(
-                            bannerImage,
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return Container(
-                                height: 220,
-                                color: Colors.white.withValues(alpha: 0.05),
-                                child: const Center(
-                                  child: CircularProgressIndicator.adaptive(),
-                                ),
-                              );
-                            },
-                          ),
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.black.withValues(alpha: 0.8),
-                                    Colors.black.withValues(alpha: 0.2),
-                                  ],
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
+                    if (bannerImage.isNotEmpty) ...[
+                      // 1. Dynamic Hero Banner Carousel with premium dark overlay
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Stack(
+                          children: [
+                            Image.network(
+                              bannerImage,
+                              height: 220,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return Container(
+                                  height: 220,
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  child: const Center(
+                                    child: CircularProgressIndicator.adaptive(),
+                                  ),
+                                );
+                              },
+                            ),
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.black.withValues(alpha: 0.8),
+                                      Colors.black.withValues(alpha: 0.2),
+                                    ],
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          Positioned(
-                            bottom: 16,
-                            left: 16,
-                            right: 16,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: activeTenant.primaryColorRef,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    tipoCarrera,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
-                                      letterSpacing: 1,
+                            Positioned(
+                              bottom: 16,
+                              left: 16,
+                              right: 16,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: activeTenant.primaryColorRef,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      tipoCarrera,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                        letterSpacing: 1,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Edición $edicion - Inscripciones Abiertas',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontSize: 13,
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Edición $edicion - Inscripciones Abiertas',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.8),
+                                      fontSize: 13,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  appTitle,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    appTitle,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 20),
+                    ],
 
                     // 2. Next Event & Countdown section
                     AppCard(
