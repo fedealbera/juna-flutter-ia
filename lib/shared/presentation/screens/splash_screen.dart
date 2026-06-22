@@ -17,8 +17,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final TenantManager _tenantManager = getIt<TenantManager>();
-  final FirebaseConfigurationRepository _configRepository = getIt<FirebaseConfigurationRepository>();
-  final InitializeFirebaseUseCase _initializeFirebaseUseCase = getIt<InitializeFirebaseUseCase>();
+  final FirebaseConfigurationRepository _configRepository =
+      getIt<FirebaseConfigurationRepository>();
+  final InitializeFirebaseUseCase _initializeFirebaseUseCase =
+      getIt<InitializeFirebaseUseCase>();
   final FirebaseManager _firebaseManager = getIt<FirebaseManager>();
 
   @override
@@ -34,13 +36,18 @@ class _SplashScreenState extends State<SplashScreen> {
       final int activeTenantId = int.tryParse(currentTenant.id) ?? 1;
 
       // 2. Obtener TenantConfig desde backend (o fallback local si falla)
-      final tenantConfig = await _configRepository.getConfiguration(activeTenantId);
+      final tenantConfig = await _configRepository.getConfiguration(
+        activeTenantId,
+      );
 
       // 3. Aplicar Branding (actualizar TenantManager)
       await _tenantManager.changeTenant(tenantConfig);
 
       // 4. Inicializar Firebase dinámicamente
-      await _initializeFirebaseUseCase(tenantConfig.tenantId, tenantConfig.firebase);
+      await _initializeFirebaseUseCase(
+        tenantConfig.tenantId,
+        tenantConfig.firebase,
+      );
 
       // 5. Inicializar NotificationService
       try {
@@ -61,7 +68,9 @@ class _SplashScreenState extends State<SplashScreen> {
         debugPrint('Error loading event settings during bootstrap: $e');
       }
     } catch (e) {
-      debugPrint('Error during application bootstrap: $e. Falling back to default.');
+      debugPrint(
+        'Error during application bootstrap: $e. Falling back to default.',
+      );
     } finally {
       // 6. Continuar aplicación (ir a /home)
       if (mounted) {
@@ -73,89 +82,120 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     final activeTenant = _tenantManager.value;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: activeTenant.backgroundColorRef,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              activeTenant.primaryColorRef.withValues(alpha: 0.15),
-              activeTenant.secondaryColorRef.withValues(alpha: 0.05),
-              Colors.black,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Premium White Label loading display
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                width: 130,
-                height: 130,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.03),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: activeTenant.primaryColorRef.withValues(alpha: 0.2),
-                    width: 2,
+      backgroundColor: const Color(0xFF090C15), // Deep premium dark background
+      body: Stack(
+        children: [
+          // 1. Ambient Glow Spheres matching tenant brand
+          Positioned(
+            top: screenHeight * 0.15,
+            left: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: activeTenant.primaryColorRef.withValues(alpha: 0.12),
+                boxShadow: [
+                  BoxShadow(
+                    color: activeTenant.primaryColorRef.withValues(alpha: 0.12),
+                    blurRadius: 150,
+                    spreadRadius: 40,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: activeTenant.primaryColorRef.withValues(alpha: 0.1),
-                      blurRadius: 40,
-                      spreadRadius: 10,
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: screenHeight * 0.15,
+            right: -50,
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: activeTenant.secondaryColorRef.withValues(alpha: 0.08),
+                boxShadow: [
+                  BoxShadow(
+                    color: activeTenant.secondaryColorRef.withValues(alpha: 0.08),
+                    blurRadius: 180,
+                    spreadRadius: 50,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 2. Foreground Content
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(),
+
+                  // Floating Glassmorphic card for the logo
+                  Container(
+                    width: 230,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.02),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 30,
+                          offset: const Offset(0, 15),
+                        ),
+                        BoxShadow(
+                          color: activeTenant.primaryColorRef.withValues(alpha: 0.15),
+                          blurRadius: 45,
+                          spreadRadius: -8,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Image.network(
-                    activeTenant.logoUrl,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      Icons.electric_bolt_rounded,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22.5),
+                      child: Image.asset(
+                        'assets/images/juna_app_logo.png',
+                        fit: BoxFit.cover, // Transforms checkered background into a clean, premium textured background
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Loading presentation at the bottom
+                  Text(
+                    'Cargando tu experiencia...',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
                       color: activeTenant.primaryColorRef,
-                      size: 50,
+                      strokeWidth: 2.5,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 48),
+                ],
               ),
-              const SizedBox(height: 32),
-              Text(
-                activeTenant.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Cargando tu experiencia...',
-                style: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 48),
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  color: activeTenant.primaryColorRef,
-                  strokeWidth: 3,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

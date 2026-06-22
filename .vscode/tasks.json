@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "configure-ddln",
+            "type": "shell",
+            "command": "make config-ddln",
+            "problemMatcher": []
+        },
+        {
+            "label": "configure-21klg",
+            "type": "shell",
+            "command": "make config-21klg",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-ddln-apk-prod",
+            "type": "shell",
+            "command": "make build-ddln-apk-prod",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-ddln-aab-prod",
+            "type": "shell",
+            "command": "make build-ddln-aab-prod",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-ddln-ipa-prod",
+            "type": "shell",
+            "command": "make build-ddln-ipa-prod",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-21klg-apk-prod",
+            "type": "shell",
+            "command": "make build-21klg-apk-prod",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-21klg-aab-prod",
+            "type": "shell",
+            "command": "make build-21klg-aab-prod",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-21klg-ipa-prod",
+            "type": "shell",
+            "command": "make build-21klg-ipa-prod",
+            "problemMatcher": []
+        }
+    ]
+}

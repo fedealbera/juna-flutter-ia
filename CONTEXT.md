@@ -125,11 +125,11 @@ To accommodate Firebase Core dependencies, offline secure storage, stable render
    <meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false" />
    ```
    This redirects rendering to the stable Skia engine, preventing thread commands encoding aborts.
-5. **Bundle ID & Application ID Update:** Native settings on both Android (`namespace` and `applicationId` inside `android/app/build.gradle.kts`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER` inside `project.pbxproj`) are set to `com.churo.desafiomobile` to align with the DDLN Firebase projects.
-6. **Google Services integration:** 
-   - Placed the DDLN `google-services.json` and `GoogleService-Info.plist` config files inside their respective Android (`android/app/`) and iOS (`ios/Runner/`) directories.
-   - Applied the Google Services Gradle plugin on Android and programmatically linked the Plist/Entitlements to the Xcode project workspace.
-   - Added remote notification permissions and background configurations (background modes and `aps-environment` capabilities).
+5. **Bundle ID & Application ID Update:** Native settings on both Android (`namespace` and `applicationId` inside `android/app/build.gradle.kts`) and iOS (`PRODUCT_BUNDLE_IDENTIFIER` inside `project.pbxproj`) are dynamically swapped at build configuration time to match the target tenant.
+6. **Google Services & Keystore Signatures:** 
+   - Swaps DDLN and 21kLG configurations (`google-services.json` and `GoogleService-Info.plist`) inside Android and iOS workspace targets.
+   - Automatically swaps release signing configurations (`key.properties` referencing the global keystore `churosign.ks`) under `android/app/` to produce ready-to-release signed APKs and AAB bundles.
+   - Configures push notification permission registries and capabilities.
 
 ---
 
@@ -162,7 +162,7 @@ Participant update endpoints in `ParticipantApiService` are refactored to remove
 
 ---
 
-## 9. Verification Commands
+## 9. Verification & Build Commands
 
 To verify compilation and test integrity, use the following workspace commands:
 
@@ -176,3 +176,44 @@ flutter analyze
 # Execute Test Suites (All tests pass)
 flutter test
 ```
+
+---
+
+## 10. Build-Time Multi-Tenant Compilation Pipeline
+
+To support clean native builds and unique package configurations per tenant across different environments, a build-time configuration system has been implemented:
+
+### Automation Script (`scripts/configure_tenant.py`)
+This script automates all steps needed to target a specific tenant:
+1. **Config Copying:** Copies native configurations (`AndroidManifest.xml`, `google-services.json`, `GoogleService-Info.plist`, `Info.plist`, `Runner.entitlements`, and `key.properties`) from `tenants/<tenant>/` to respective native directories.
+2. **Kotlin Refactoring:** Automatically parses `MainActivity.kt`, adjusts the package name, deletes old directories to prevent Gradle compilation conflicts, and places the refactored Kotlin file in the correct directory path matching the bundle ID.
+3. **iOS Bundle ID Update:** Automatically matches the bundle identifier inside `ios/Runner.xcodeproj/project.pbxproj` using regular expressions.
+4. **Dart Entrypoints Generation:** Rewrites environment configuration entrypoints (`lib/main_development.dart`, `lib/main_qa.dart`, and `lib/main_production.dart`) to inject the tenant-specific Base URLs and API Keys.
+5. **Asset Generation:** Triggers launcher icon and native splash updates dynamically via `flutter_launcher_icons` and `flutter_native_splash`.
+
+### Available Makefile Targets
+The `Makefile` exposes simple targets to easily configure, run, and compile the application:
+
+* **Configure Tenants:**
+  - `make config-ddln` - Configures the workspace for the DDLN tenant.
+  - `make config-21klg` - Configures the workspace for the 21kLG tenant.
+* **Run App:**
+  - `make run-dev` - Runs the application targeting the Development environment.
+  - `make run-qa` - Runs the application targeting the QA environment.
+  - `make run-prod` - Runs the application targeting the Production environment.
+* **Build Targets (Stand-alone):**
+  - **APK:** `make build-apk-dev` / `make build-apk-qa` / `make build-apk-prod`
+  - **AAB:** `make build-aab-dev` / `make build-aab-qa` / `make build-aab-prod`
+  - **IPA:** `make build-ipa-dev` / `make build-ipa-qa` / `make build-ipa-prod`
+* **Combined Tenant Production Builds:**
+  - `make build-ddln-apk-prod` - Automatically switches configuration to DDLN and builds production APK.
+  - `make build-ddln-aab-prod` - Automatically switches configuration to DDLN and builds production AAB.
+  - `make build-ddln-ipa-prod` - Automatically switches configuration to DDLN and builds production IPA.
+  - `make build-21klg-apk-prod` - Automatically switches configuration to 21kLG and builds production APK.
+  - `make build-21klg-aab-prod` - Automatically switches configuration to 21kLG and builds production AAB.
+  - `make build-21klg-ipa-prod` - Automatically switches configuration to 21kLG and builds production IPA.
+* **Helpers:**
+  - `make clean` - Cleans build caches.
+  - `make get` - Installs packages via `flutter pub get`.
+
+

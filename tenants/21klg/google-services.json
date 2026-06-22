@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "968260717587",
+    "firebase_url": "https://lagaceta21k-default-rtdb.firebaseio.com",
+    "project_id": "lagaceta21k",
+    "storage_bucket": "lagaceta21k.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:968260717587:android:7daa5be43f60d7c56b03e6",
+        "android_client_info": {
+          "package_name": "com.churomobile.lagaceta21k"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQUQ79V_h9wKTA1NUlTDPi5Fy0NXIFJQI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
