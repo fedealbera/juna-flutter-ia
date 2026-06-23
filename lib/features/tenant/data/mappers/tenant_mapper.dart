@@ -13,6 +13,7 @@ class TenantMapper {
       firebase: config.firebase,
       featureFlags: config.featureFlags,
       baseUrl: config.baseUrl,
+      environments: config.environments,
       supportedSports: config.supportedSports.map((e) => e.name).toList(),
     );
   }
@@ -28,6 +29,7 @@ class TenantMapper {
       firebase: entity.firebase,
       featureFlags: entity.featureFlags,
       baseUrl: entity.baseUrl,
+      environments: entity.environments,
       supportedSports: entity.supportedSports.map((e) {
         return SportType.values.firstWhere(
           (s) => s.name == e,

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import '../firebase/tenant_firebase_config.dart';
+import '../env/env_config.dart';
 
 enum SportType {
   running,
@@ -38,6 +39,7 @@ class TenantConfig {
   // Compatibility fields for the rest of the application
   final String? baseUrl;
   final List<SportType> supportedSports;
+  final Map<AppEnvironment, TenantEnvConfig> environments;
 
   const TenantConfig({
     required this.tenantId,
@@ -55,7 +57,16 @@ class TenantConfig {
       SportType.mtb,
       SportType.duathlon,
     ],
+    this.environments = const {},
   });
+
+  String? baseUrlFor(AppEnvironment environment) {
+    return environments[environment]?.baseUrl ?? baseUrl;
+  }
+
+  String? apiKeyFor(AppEnvironment environment) {
+    return environments[environment]?.apiKey;
+  }
 
   // Helpers to get Colors from Hex Strings
   Color get primaryColorRef => Color(int.parse(primaryColor.replaceFirst('#', '0xff')));
@@ -97,6 +108,7 @@ class TenantConfig {
     FeatureFlags? featureFlags,
     String? baseUrl,
     List<SportType>? supportedSports,
+    Map<AppEnvironment, TenantEnvConfig>? environments,
   }) {
     return TenantConfig(
       tenantId: tenantId ?? this.tenantId,
@@ -109,6 +121,7 @@ class TenantConfig {
       featureFlags: featureFlags ?? this.featureFlags,
       baseUrl: baseUrl ?? this.baseUrl,
       supportedSports: supportedSports ?? this.supportedSports,
+      environments: environments ?? this.environments,
     );
   }
 
@@ -134,6 +147,18 @@ class TenantConfig {
     final fb = json['firebase'] as Map<String, dynamic>? ?? {};
     final ff = json['featureFlags'] as Map<String, dynamic>? ?? {};
 
+    final envsJson = json['environments'] as Map<String, dynamic>?;
+    final Map<AppEnvironment, TenantEnvConfig> environmentsMap = {};
+    if (envsJson != null) {
+      envsJson.forEach((key, value) {
+        final env = AppEnvironment.values.firstWhere(
+          (e) => e.name == key,
+          orElse: () => AppEnvironment.development,
+        );
+        environmentsMap[env] = TenantEnvConfig.fromJson(value as Map<String, dynamic>);
+      });
+    }
+
     return TenantConfig(
       tenantId: json['tenantId'] as int? ?? 1,
       tenantName: json['tenantName'] as String? ?? 'DDLN',
@@ -144,6 +169,7 @@ class TenantConfig {
       firebase: FirebaseConfig.fromJson(fb),
       featureFlags: FeatureFlags.fromJson(ff),
       baseUrl: json['baseUrl'] as String?,
+      environments: environmentsMap,
       supportedSports: (json['supportedSports'] as List?)
               ?.map((e) => SportType.values.firstWhere(
                     (s) => s.name == e.toString(),
@@ -169,6 +195,29 @@ class TenantConfig {
         'firebase': firebase.toJson(),
         'featureFlags': featureFlags.toJson(),
         'baseUrl': baseUrl,
+        'environments': environments.map((key, value) => MapEntry(key.name, value.toJson())),
         'supportedSports': supportedSports.map((e) => e.name).toList(),
+      };
+}
+
+class TenantEnvConfig {
+  final String baseUrl;
+  final String apiKey;
+
+  const TenantEnvConfig({
+    required this.baseUrl,
+    required this.apiKey,
+  });
+
+  factory TenantEnvConfig.fromJson(Map<String, dynamic> json) {
+    return TenantEnvConfig(
+      baseUrl: json['baseUrl'] as String? ?? '',
+      apiKey: json['apiKey'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'baseUrl': baseUrl,
+        'apiKey': apiKey,
       };
 }

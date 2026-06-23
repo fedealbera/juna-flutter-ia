@@ -17,7 +17,7 @@ class BaseUrlInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final activeTenant = _tenantManager.value;
-    final String customBaseUrl = activeTenant.baseUrl ?? _envConfig.baseUrl;
+    final String customBaseUrl = activeTenant.baseUrlFor(_envConfig.environment) ?? _envConfig.baseUrl;
     
     final uri = Uri.parse(customBaseUrl);
     final String basePath = uri.path.endsWith('/') 
@@ -59,7 +59,7 @@ class DioClient {
     TenantManager tenantManager,
   ) : dio = Dio() {
     dio
-      ..options.baseUrl = tenantManager.value.baseUrl ?? envConfig.baseUrl
+      ..options.baseUrl = tenantManager.value.baseUrlFor(envConfig.environment) ?? envConfig.baseUrl
       ..options.connectTimeout = const Duration(seconds: 15)
       ..options.receiveTimeout = const Duration(seconds: 15)
       ..options.sendTimeout = const Duration(seconds: 15)
@@ -76,7 +76,7 @@ class DioClient {
       ]);
 
     tenantManager.addListener(() {
-      dio.options.baseUrl = tenantManager.value.baseUrl ?? envConfig.baseUrl;
+      dio.options.baseUrl = tenantManager.value.baseUrlFor(envConfig.environment) ?? envConfig.baseUrl;
     });
   }
 }

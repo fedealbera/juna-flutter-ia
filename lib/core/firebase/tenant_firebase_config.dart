@@ -1,4 +1,5 @@
 import '../theme/tenant_config.dart';
+import '../env/env_config.dart';
 
 class FirebaseConfig {
   final String apiKey;
@@ -113,6 +114,20 @@ class DefaultTenantConfig {
         enableRemoteConfig: true,
       ),
       baseUrl: 'https://juna.net.ar/desafio2026_testtt/api',
+      environments: const {
+        AppEnvironment.development: TenantEnvConfig(
+          baseUrl: 'https://juna.net.ar/desafio2026_testtt/api',
+          apiKey: 'juna_api_f7b9c3x2_secure_key_2026',
+        ),
+        AppEnvironment.qa: TenantEnvConfig(
+          baseUrl: 'https://juna.net.ar/desafio2026_testtt/api',
+          apiKey: 'juna_api_f7b9c3x2_secure_key_2026',
+        ),
+        AppEnvironment.production: TenantEnvConfig(
+          baseUrl: 'https://juna.net.ar/desafio2026/api',
+          apiKey: 'juna_api_f7b9c3x2_secure_key_2026',
+        ),
+      },
     );
   }
 }

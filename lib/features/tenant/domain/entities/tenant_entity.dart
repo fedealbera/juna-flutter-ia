@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/firebase/tenant_firebase_config.dart';
+import '../../../../core/env/env_config.dart';
+import '../../../../core/theme/tenant_config.dart';
 
 class TenantEntity extends Equatable {
   final int tenantId;
@@ -15,6 +17,7 @@ class TenantEntity extends Equatable {
 
   final String? baseUrl;
   final List<String> supportedSports;
+  final Map<AppEnvironment, TenantEnvConfig> environments;
 
   const TenantEntity({
     required this.tenantId,
@@ -27,6 +30,7 @@ class TenantEntity extends Equatable {
     required this.featureFlags,
     this.baseUrl,
     this.supportedSports = const ['running', 'trailRunning', 'mtb', 'duathlon'],
+    this.environments = const {},
   });
 
   @override
@@ -40,6 +44,7 @@ class TenantEntity extends Equatable {
         firebase,
         featureFlags,
         baseUrl,
+        environments,
         supportedSports,
       ];
 }

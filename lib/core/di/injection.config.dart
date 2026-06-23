@@ -201,11 +201,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i476.TenantManager>(() => _i476.TenantManager());
     gh.lazySingleton<_i9.BrandingManager>(() => _i9.BrandingManager());
     gh.lazySingleton<_i282.AppRouter>(() => _i282.AppRouter());
-    gh.lazySingleton<_i102.ApiKeyInterceptor>(
-        () => _i102.ApiKeyInterceptor(gh<_i0.EnvConfig>()));
     gh.lazySingleton<_i769.MapsRepository>(() => _i368.MapsRepositoryImpl());
     gh.lazySingleton<_i302.AboutRepository>(() => _i857.AboutRepositoryImpl());
     gh.lazySingleton<_i640.SocialRepository>(() => _i5.SocialRepositoryImpl());
+    gh.lazySingleton<_i102.ApiKeyInterceptor>(() => _i102.ApiKeyInterceptor(
+          gh<_i0.EnvConfig>(),
+          gh<_i476.TenantManager>(),
+        ));
     gh.lazySingleton<_i667.DioClient>(() => _i667.DioClient(
           gh<_i0.EnvConfig>(),
           gh<_i102.ApiKeyInterceptor>(),

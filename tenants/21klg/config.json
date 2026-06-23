@@ -4,15 +4,15 @@
   "packageName": "com.churomobile.lagaceta21k",
   "environments": {
     "development": {
-      "baseUrl": "https://juna.net.ar/lagaceta2025_testtt/ws",
+      "baseUrl": "https://juna.net.ar/lagaceta2026_test/api",
       "apiKey": "juna_api_f7b9c3x2_secure_key_2026"
     },
     "qa": {
-      "baseUrl": "https://juna.net.ar/lagaceta2025_testtt/ws",
+      "baseUrl": "https://juna.net.ar/lagaceta2026_test/api",
       "apiKey": "juna_api_f7b9c3x2_secure_key_2026"
     },
     "production": {
-      "baseUrl": "https://juna.net.ar/lagaceta2026/ws",
+      "baseUrl": "https://juna.net.ar/lagaceta2026/api",
       "apiKey": "juna_api_f7b9c3x2_secure_key_2026"
     }
   }
