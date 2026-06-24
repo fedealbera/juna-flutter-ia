@@ -52,7 +52,7 @@ The application is engineered to support true White Label dynamic brand configur
 ### Dynamic Tenant Configuration Flow
 1. **Initial Boot:** The application mounts the `SplashScreen` as the entry point.
 2. **Retrieve Configuration:** The `SplashScreen` bootstrap sequence requests configuration from `FirebaseConfigurationRepository`.
-   * *Fallback:* To prevent startup dependency issues with endpoints not yet available, `FirebaseConfigurationRepositoryImpl` returns `DefaultTenantConfig.ddln()` locally without calling the `/api/tenants/{id}/config` backend endpoint.
+   * *Active Tenant Fallback:* `FirebaseConfigurationRepositoryImpl` returns `ActiveTenantConfig.get()` locally without calling the `/api/tenants/{id}/config` backend endpoint. The `lib/core/firebase/active_tenant_config.dart` file is **generated automatically** by `scripts/configure_tenant.py` at build-time for each tenant. It contains the correct Firebase credentials (read from `google-services.json`), branding colors, and environment URLs for the active tenant. This ensures the correct URLs and configs are always loaded at boot regardless of which tenant is compiled.
 3. **Branding Injection:** The `TenantManager` is updated. Color values (defined as hex strings like `#E58D00`) are parsed dynamically into Flutter `Color` objects at runtime.
 4. **Dynamic Firebase Setup:** Firebase Core and Firebase Analytics are re-initialized on-the-fly.
 5. **FCM Token Retrieval:** The application fetches the device's FCM push token locally, but does *not* send it to the backend on boot.
@@ -139,12 +139,19 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 
 ### Layout Layouts & Screens
 * **`MainShellScreen`:** Implements responsive design—rendering a Bottom Navigation Bar on mobile viewports and switching to a persistent Sidebar on desktop/tablet viewports. The mobile burger menu (and corresponding slide-out Drawer) has been completely removed. Dynamic tenant configuration swapping is handled directly via a custom Dropdown button placed in the `AppBar`'s `actions` list on mobile viewports, and at the bottom of the persistent navigation Sidebar on desktop viewports.
-* **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons. The hero banner image is loaded dynamically from the settings key `IMAGE_BANNER`. All explicit fallback banner URLs have been removed, and the banner container is hidden conditionally if `IMAGE_BANNER` is empty or not provided.
+* **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons. The hero banner image is loaded dynamically from the settings key `IMAGE_BANNER`. All explicit fallback banner URLs have been removed, and the banner container is hidden conditionally if `IMAGE_BANNER` is empty or not provided. The **Next Event Countdown card** uses a dynamic gradient computed from the active tenant's primary and secondary colors: if the secondary color has high luminance (bright), the gradient blends toward the dark background `#1E1E1E` for contrast; otherwise it uses the secondary color directly. The **"Ver Inscripción"** button uses luminance-aware coloring—if the primary color is very dark, it uses the tenant's accent color for both border and text to ensure visibility.
 * **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI" and has an uppercase "DESVINCULAR" button next to "EDITAR DATOS".
 * **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency section is rendered conditionally and is hidden if the participant has no assigned plate number (`nroPlaca == 0`).
 * **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, etc.).
 * **`LiveScreen`:** Outputs live leaderboard listings categorized by age divisions and quick social links.
-  * **`MoreScreen`:** Embeds document download directories, contact messages, and application sharing options. The "Acerca de" section is redesigned to display: 1) "Juná App" title, 2) custom logo PNG asset (`assets/images/juna_app_logo.png`), 3) app version, 4) platform description, 5) clickable mailto link to `churomobile@gmail.com`, 6) app version, and 7) an **Actualizar la App** update button. The update button parses `URL_STORES` dynamically, determines the current platform using `Theme.of(context).platform`, and redirects to either the `ANDROID` or `IOS` store URL.
+* **`MoreScreen`:** Embeds document download directories, contact messages, and application sharing options. The **"Acerca de"** section displays: 1) custom logo PNG asset (`assets/images/juna_app_logo.png`), 2) app description text, 3) clickable mailto link to `churomobile@gmail.com`, 4) app version, and 5) an **Actualizar la App** button (with explicit `textColor: Colors.white`). The update button parses `URL_STORES` dynamically, determines the current platform using `Theme.of(context).platform`, and redirects to either the `ANDROID` or `IOS` store URL. Font sizes in this section are: `ACERCA DE` header at `13`, and all body texts (description, email, version) at `15`.
+
+### Design System — `AppButton`
+`AppButton` (`lib/shared/design_system/buttons/app_button.dart`) supports optional override parameters:
+* `color` — overrides the background fill color for any button type.
+* `textColor` — overrides the label/icon text color.
+* `borderColor` — overrides the border color (also activates a border if type is not `outlined`).
+These allow per-usage custom styling without subclassing, enabling tenant-aware coloring directly at the call site.
 
 ---
 
@@ -188,8 +195,30 @@ This script automates all steps needed to target a specific tenant:
 1. **Config Copying:** Copies native configurations (`AndroidManifest.xml`, `google-services.json`, `GoogleService-Info.plist`, `Info.plist`, `Runner.entitlements`, and `key.properties`) from `tenants/<tenant>/` to respective native directories.
 2. **Kotlin Refactoring:** Automatically parses `MainActivity.kt`, adjusts the package name, deletes old directories to prevent Gradle compilation conflicts, and places the refactored Kotlin file in the correct directory path matching the bundle ID.
 3. **iOS Bundle ID Update:** Automatically matches the bundle identifier inside `ios/Runner.xcodeproj/project.pbxproj` using regular expressions.
-4. **Dart Entrypoints Generation:** Rewrites environment configuration entrypoints (`lib/main_development.dart`, `lib/main_qa.dart`, and `lib/main_production.dart`) to inject the tenant-specific Base URLs and API Keys.
+4. **Dart Entrypoints & Active Tenant Config Generation:** Rewrites environment configuration entrypoints (`lib/main_development.dart`, `lib/main_qa.dart`, and `lib/main_production.dart`) to inject tenant-specific Base URLs and API Keys. Additionally, generates `lib/core/firebase/active_tenant_config.dart` by reading Firebase credentials from `tenants/<tenant>/google-services.json` and branding values (colors, logo URL) from the `branding` key in `tenants/<tenant>/config.json`. This file is consumed by `FirebaseConfigurationRepositoryImpl` as the local fallback tenant configuration.
 5. **Asset Generation:** Triggers launcher icon and native splash updates dynamically via `flutter_launcher_icons` and `flutter_native_splash`.
+
+### Tenant `config.json` Schema
+Each tenant's `tenants/<tenant>/config.json` now supports a `branding` section:
+```json
+{
+  "tenantId": "<id>",
+  "appName": "<name>",
+  "packageName": "<package>",
+  "branding": {
+    "primaryColor": "#RRGGBB",
+    "secondaryColor": "#RRGGBB",
+    "accentColor": "#RRGGBB",
+    "logoUrl": "<asset path or https URL>"
+  },
+  "environments": {
+    "development": { "baseUrl": "...", "apiKey": "..." },
+    "qa": { "baseUrl": "...", "apiKey": "..." },
+    "production": { "baseUrl": "...", "apiKey": "..." }
+  }
+}
+```
+The `branding` values are injected into the generated `active_tenant_config.dart` at configuration time.
 
 ### Available Makefile Targets
 The `Makefile` exposes simple targets to easily configure, run, and compile the application:
