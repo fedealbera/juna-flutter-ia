@@ -9,6 +9,9 @@ class AppButton extends StatefulWidget {
   final IconData? icon;
   final bool isLoading;
   final double? width;
+  final Color? color;
+  final Color? textColor;
+  final Color? borderColor;
 
   const AppButton({
     super.key,
@@ -18,6 +21,9 @@ class AppButton extends StatefulWidget {
     this.icon,
     this.isLoading = false,
     this.width,
+    this.color,
+    this.textColor,
+    this.borderColor,
   });
 
   @override
@@ -131,6 +137,9 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
     if (widget.onPressed == null) {
       return theme.disabledColor;
     }
+    if (widget.color != null) {
+      return widget.color;
+    }
     switch (widget.type) {
       case AppButtonType.primary:
         return theme.colorScheme.primary;
@@ -146,6 +155,9 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
     if (widget.onPressed == null) {
       return Colors.grey.shade500;
     }
+    if (widget.textColor != null) {
+      return widget.textColor!;
+    }
     switch (widget.type) {
       case AppButtonType.primary:
         return theme.colorScheme.onPrimary;
@@ -159,8 +171,8 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
   }
 
   Border? _getBorder(ThemeData theme) {
-    if (widget.type == AppButtonType.outlined) {
-      final color = widget.onPressed != null ? theme.colorScheme.primary : theme.disabledColor;
+    if (widget.type == AppButtonType.outlined || widget.borderColor != null) {
+      final color = widget.borderColor ?? (widget.onPressed != null ? theme.colorScheme.primary : theme.disabledColor);
       return Border.all(color: color, width: 2);
     }
     return null;

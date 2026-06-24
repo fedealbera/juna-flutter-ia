@@ -2,6 +2,12 @@
   "tenantId": "21klg",
   "appName": "21kLG",
   "packageName": "com.churomobile.lagaceta21k",
+  "branding": {
+    "primaryColor": "#0D47A1",
+    "secondaryColor": "#1976D2",
+    "accentColor": "#FF5722",
+    "logoUrl": "assets/21klg/app_logo_android.png"
+  },
   "environments": {
     "development": {
       "baseUrl": "https://juna.net.ar/lagaceta2026_test/api",

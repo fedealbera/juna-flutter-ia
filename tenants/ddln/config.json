@@ -2,6 +2,12 @@
   "tenantId": "ddln",
   "appName": "DDLN",
   "packageName": "com.churo.desafiomobile",
+  "branding": {
+    "primaryColor": "#E58D00",
+    "secondaryColor": "#212121",
+    "accentColor": "#FFC107",
+    "logoUrl": "https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80"
+  },
   "environments": {
     "development": {
       "baseUrl": "https://juna.net.ar/desafio2026_testtt/api",

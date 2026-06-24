@@ -209,6 +209,99 @@ void main() {{
 }}
 """)
 
+    # Generate active_tenant_config.dart
+    branding = config.get("branding", {})
+    primary_color = branding.get("primaryColor", "#E58D00")
+    secondary_color = branding.get("secondaryColor", "#212121")
+    accent_color = branding.get("accentColor", "#FFC107")
+    logo_url = branding.get("logoUrl", "https://images.unsplash.com/photo-1551632879-6dfc301c3490?w=150&q=80")
+
+    google_services_path = os.path.join(tenant_dir, "google-services.json")
+    firebase_config = {
+        "apiKey": "",
+        "appId": "",
+        "messagingSenderId": "",
+        "projectId": "",
+        "storageBucket": "",
+    }
+    if os.path.exists(google_services_path):
+        try:
+            with open(google_services_path, "r") as f:
+                gs_data = json.load(f)
+                project_info = gs_data.get("project_info", {})
+                firebase_config["projectId"] = project_info.get("project_id", "")
+                firebase_config["messagingSenderId"] = project_info.get("project_number", "")
+                firebase_config["storageBucket"] = project_info.get("storage_bucket", "")
+                
+                clients = gs_data.get("client", [])
+                if clients:
+                    client = clients[0]
+                    client_info = client.get("client_info", {})
+                    firebase_config["appId"] = client_info.get("mobilesdk_app_id", "")
+                    
+                    api_keys = client.get("api_key", [])
+                    if api_keys:
+                        firebase_config["apiKey"] = api_keys[0].get("current_key", "")
+        except Exception as e:
+            print(f"Warning: Failed to parse google-services.json: {e}")
+
+    tenant_id_map = {
+        "ddln": 1,
+        "21klg": 2,
+    }
+    tenant_id_str = config.get("tenantId", "ddln")
+    tenant_id_int = tenant_id_map.get(tenant_id_str, 1)
+
+    active_config_path = "lib/core/firebase/active_tenant_config.dart"
+    with open(active_config_path, "w") as f:
+        f.write(f"""import '../theme/tenant_config.dart';
+import 'tenant_firebase_config.dart';
+import '../env/env_config.dart';
+
+class ActiveTenantConfig {{
+  static TenantConfig get() {{
+    return TenantConfig(
+      tenantId: {tenant_id_int},
+      tenantName: '{app_name}',
+      logoUrl: '{logo_url}',
+      primaryColor: '{primary_color}',
+      secondaryColor: '{secondary_color}',
+      accentColor: '{accent_color}',
+      firebase: const FirebaseConfig(
+        apiKey: '{firebase_config["apiKey"]}',
+        appId: '{firebase_config["appId"]}',
+        messagingSenderId: '{firebase_config["messagingSenderId"]}',
+        projectId: '{firebase_config["projectId"]}',
+        storageBucket: '{firebase_config["storageBucket"]}',
+        iosBundleId: '{package_name}',
+      ),
+      featureFlags: const FeatureFlags(
+        enableRegistration: true,
+        enableLiveTracking: true,
+        enableAnalytics: true,
+        enableCrashlytics: true,
+        enableRemoteConfig: true,
+      ),
+      baseUrl: '{dev_url}',
+      environments: const {{
+        AppEnvironment.development: TenantEnvConfig(
+          baseUrl: '{dev_url}',
+          apiKey: '{dev_key}',
+        ),
+        AppEnvironment.qa: TenantEnvConfig(
+          baseUrl: '{qa_url}',
+          apiKey: '{qa_key}',
+        ),
+        AppEnvironment.production: TenantEnvConfig(
+          baseUrl: '{prod_url}',
+          apiKey: '{prod_key}',
+        ),
+      }},
+    );
+  }}
+}}
+""")
+
     # 7. Run flutter launcher icons and native splash generation
     print("-> Generating Launcher Icons...")
     subprocess.run(

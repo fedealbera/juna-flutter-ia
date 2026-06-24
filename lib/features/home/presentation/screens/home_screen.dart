@@ -343,6 +343,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     // 2. Next Event & Countdown section
                     AppCard(
                       style: AppCardStyle.gradient,
+                      customGradient: LinearGradient(
+                        colors: [
+                          activeTenant.primaryColorRef.withValues(alpha: 0.85),
+                          (activeTenant.secondaryColorRef.computeLuminance() > 0.15)
+                              ? const Color(0xFF1E1E1E)
+                              : activeTenant.secondaryColorRef.withValues(alpha: 0.95),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -447,6 +457,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             text: 'Ver Inscripción',
                             onPressed: () => context.go('/inscripciones'),
                             type: AppButtonType.outlined,
+                            borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                ? activeTenant.accentColorRef
+                                : activeTenant.primaryColorRef,
+                            textColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                ? activeTenant.accentColorRef
+                                : activeTenant.primaryColorRef,
                           ),
                         ],
                       ),

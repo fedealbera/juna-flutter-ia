@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import '../../features/tenant/data/api/tenant_api_service.dart';
 import '../theme/tenant_config.dart';
-import 'tenant_firebase_config.dart';
+import 'active_tenant_config.dart';
 
 abstract class FirebaseConfigurationRepository {
   Future<TenantConfig> getConfiguration(int tenantId);
@@ -17,6 +17,7 @@ class FirebaseConfigurationRepositoryImpl implements FirebaseConfigurationReposi
   @override
   Future<TenantConfig> getConfiguration(int tenantId) async {
     // Return local default config directly, as backend config endpoint doesn't exist yet.
-    return DefaultTenantConfig.ddln();
+    return ActiveTenantConfig.get();
   }
 }
+

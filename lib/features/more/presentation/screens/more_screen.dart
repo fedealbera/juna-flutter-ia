@@ -252,7 +252,7 @@ class _MoreScreenState extends State<MoreScreen> {
                 'ACERCA DE',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.4),
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
                 ),
@@ -296,7 +296,7 @@ class _MoreScreenState extends State<MoreScreen> {
                               'App de alto rendimiento Android & iOS',
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.6),
-                                fontSize: 13,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w400,
                               ),
                               textAlign: TextAlign.center,
@@ -311,7 +311,7 @@ class _MoreScreenState extends State<MoreScreen> {
                                   'Email: ',
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.6),
-                                    fontSize: 13,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w400,
                                   ),
                                 ),
@@ -324,7 +324,7 @@ class _MoreScreenState extends State<MoreScreen> {
                                     'churomobile@gmail.com',
                                     style: TextStyle(
                                       color: activeTenant.primaryColorRef,
-                                      fontSize: 13,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w500,
                                       decoration: TextDecoration.underline,
                                     ),
@@ -341,7 +341,7 @@ class _MoreScreenState extends State<MoreScreen> {
                               'Versión $versionDisplay',
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 13,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w400,
                               ),
                               textAlign: TextAlign.center,
@@ -352,6 +352,7 @@ class _MoreScreenState extends State<MoreScreen> {
                             AppButton(
                               text: 'Actualizar la App',
                               icon: Icons.file_download_rounded,
+                              textColor: Colors.white,
                               type: AppButtonType.primary,
                               onPressed: () {
                                 final stores =
