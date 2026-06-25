@@ -39,6 +39,22 @@ mixin _$ParticipantEvent {
     required TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)
         updateCircuito,
+    required TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)
+        updateParticipant,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -63,6 +79,22 @@ mixin _$ParticipantEvent {
     TResult? Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult? Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -87,6 +119,22 @@ mixin _$ParticipantEvent {
     TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -97,6 +145,7 @@ mixin _$ParticipantEvent {
     required TResult Function(UpdateEmergencyEvent value) updateEmergency,
     required TResult Function(UpdateContactEvent value) updateContact,
     required TResult Function(UpdateCircuitoEvent value) updateCircuito,
+    required TResult Function(UpdateParticipantEvent value) updateParticipant,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -106,6 +155,7 @@ mixin _$ParticipantEvent {
     TResult? Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult? Function(UpdateContactEvent value)? updateContact,
     TResult? Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult? Function(UpdateParticipantEvent value)? updateParticipant,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -115,6 +165,7 @@ mixin _$ParticipantEvent {
     TResult Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult Function(UpdateContactEvent value)? updateContact,
     TResult Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult Function(UpdateParticipantEvent value)? updateParticipant,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -259,6 +310,22 @@ class _$AuthenticateImpl implements Authenticate {
     required TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)
         updateCircuito,
+    required TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)
+        updateParticipant,
   }) {
     return authenticate(dni, idEvento, idOrg, token);
   }
@@ -286,6 +353,22 @@ class _$AuthenticateImpl implements Authenticate {
     TResult? Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult? Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
   }) {
     return authenticate?.call(dni, idEvento, idOrg, token);
   }
@@ -313,6 +396,22 @@ class _$AuthenticateImpl implements Authenticate {
     TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
     required TResult orElse(),
   }) {
     if (authenticate != null) {
@@ -329,6 +428,7 @@ class _$AuthenticateImpl implements Authenticate {
     required TResult Function(UpdateEmergencyEvent value) updateEmergency,
     required TResult Function(UpdateContactEvent value) updateContact,
     required TResult Function(UpdateCircuitoEvent value) updateCircuito,
+    required TResult Function(UpdateParticipantEvent value) updateParticipant,
   }) {
     return authenticate(this);
   }
@@ -341,6 +441,7 @@ class _$AuthenticateImpl implements Authenticate {
     TResult? Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult? Function(UpdateContactEvent value)? updateContact,
     TResult? Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult? Function(UpdateParticipantEvent value)? updateParticipant,
   }) {
     return authenticate?.call(this);
   }
@@ -353,6 +454,7 @@ class _$AuthenticateImpl implements Authenticate {
     TResult Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult Function(UpdateContactEvent value)? updateContact,
     TResult Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult Function(UpdateParticipantEvent value)? updateParticipant,
     required TResult orElse(),
   }) {
     if (authenticate != null) {
@@ -499,6 +601,22 @@ class _$GetDetailImpl implements GetDetail {
     required TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)
         updateCircuito,
+    required TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)
+        updateParticipant,
   }) {
     return getDetail(dni, idOrg, eventoId, roundId);
   }
@@ -526,6 +644,22 @@ class _$GetDetailImpl implements GetDetail {
     TResult? Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult? Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
   }) {
     return getDetail?.call(dni, idOrg, eventoId, roundId);
   }
@@ -553,6 +687,22 @@ class _$GetDetailImpl implements GetDetail {
     TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
     required TResult orElse(),
   }) {
     if (getDetail != null) {
@@ -569,6 +719,7 @@ class _$GetDetailImpl implements GetDetail {
     required TResult Function(UpdateEmergencyEvent value) updateEmergency,
     required TResult Function(UpdateContactEvent value) updateContact,
     required TResult Function(UpdateCircuitoEvent value) updateCircuito,
+    required TResult Function(UpdateParticipantEvent value) updateParticipant,
   }) {
     return getDetail(this);
   }
@@ -581,6 +732,7 @@ class _$GetDetailImpl implements GetDetail {
     TResult? Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult? Function(UpdateContactEvent value)? updateContact,
     TResult? Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult? Function(UpdateParticipantEvent value)? updateParticipant,
   }) {
     return getDetail?.call(this);
   }
@@ -593,6 +745,7 @@ class _$GetDetailImpl implements GetDetail {
     TResult Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult Function(UpdateContactEvent value)? updateContact,
     TResult Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult Function(UpdateParticipantEvent value)? updateParticipant,
     required TResult orElse(),
   }) {
     if (getDetail != null) {
@@ -730,6 +883,22 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     required TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)
         updateCircuito,
+    required TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)
+        updateParticipant,
   }) {
     return updateEmergency(partiId, contNombre, contTel);
   }
@@ -757,6 +926,22 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     TResult? Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult? Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
   }) {
     return updateEmergency?.call(partiId, contNombre, contTel);
   }
@@ -784,6 +969,22 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
     required TResult orElse(),
   }) {
     if (updateEmergency != null) {
@@ -800,6 +1001,7 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     required TResult Function(UpdateEmergencyEvent value) updateEmergency,
     required TResult Function(UpdateContactEvent value) updateContact,
     required TResult Function(UpdateCircuitoEvent value) updateCircuito,
+    required TResult Function(UpdateParticipantEvent value) updateParticipant,
   }) {
     return updateEmergency(this);
   }
@@ -812,6 +1014,7 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     TResult? Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult? Function(UpdateContactEvent value)? updateContact,
     TResult? Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult? Function(UpdateParticipantEvent value)? updateParticipant,
   }) {
     return updateEmergency?.call(this);
   }
@@ -824,6 +1027,7 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     TResult Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult Function(UpdateContactEvent value)? updateContact,
     TResult Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult Function(UpdateParticipantEvent value)? updateParticipant,
     required TResult orElse(),
   }) {
     if (updateEmergency != null) {
@@ -1027,6 +1231,22 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     required TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)
         updateCircuito,
+    required TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)
+        updateParticipant,
   }) {
     return updateContact(partiId, domCiudad, domCiudadNombre, domProvincia,
         domPais, contInstagram, contCelular, contEmail);
@@ -1055,6 +1275,22 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     TResult? Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult? Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
   }) {
     return updateContact?.call(partiId, domCiudad, domCiudadNombre,
         domProvincia, domPais, contInstagram, contCelular, contEmail);
@@ -1083,6 +1319,22 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
     required TResult orElse(),
   }) {
     if (updateContact != null) {
@@ -1100,6 +1352,7 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     required TResult Function(UpdateEmergencyEvent value) updateEmergency,
     required TResult Function(UpdateContactEvent value) updateContact,
     required TResult Function(UpdateCircuitoEvent value) updateCircuito,
+    required TResult Function(UpdateParticipantEvent value) updateParticipant,
   }) {
     return updateContact(this);
   }
@@ -1112,6 +1365,7 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     TResult? Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult? Function(UpdateContactEvent value)? updateContact,
     TResult? Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult? Function(UpdateParticipantEvent value)? updateParticipant,
   }) {
     return updateContact?.call(this);
   }
@@ -1124,6 +1378,7 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     TResult Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult Function(UpdateContactEvent value)? updateContact,
     TResult Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult Function(UpdateParticipantEvent value)? updateParticipant,
     required TResult orElse(),
   }) {
     if (updateContact != null) {
@@ -1295,6 +1550,22 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     required TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)
         updateCircuito,
+    required TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)
+        updateParticipant,
   }) {
     return updateCircuito(partiId, insId, circuitoId, categoriaId, talleId);
   }
@@ -1322,6 +1593,22 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     TResult? Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult? Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
   }) {
     return updateCircuito?.call(
         partiId, insId, circuitoId, categoriaId, talleId);
@@ -1350,6 +1637,22 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     TResult Function(String partiId, String insId, String circuitoId,
             String categoriaId, String talleId)?
         updateCircuito,
+    TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
     required TResult orElse(),
   }) {
     if (updateCircuito != null) {
@@ -1366,6 +1669,7 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     required TResult Function(UpdateEmergencyEvent value) updateEmergency,
     required TResult Function(UpdateContactEvent value) updateContact,
     required TResult Function(UpdateCircuitoEvent value) updateCircuito,
+    required TResult Function(UpdateParticipantEvent value) updateParticipant,
   }) {
     return updateCircuito(this);
   }
@@ -1378,6 +1682,7 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     TResult? Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult? Function(UpdateContactEvent value)? updateContact,
     TResult? Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult? Function(UpdateParticipantEvent value)? updateParticipant,
   }) {
     return updateCircuito?.call(this);
   }
@@ -1390,6 +1695,7 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     TResult Function(UpdateEmergencyEvent value)? updateEmergency,
     TResult Function(UpdateContactEvent value)? updateContact,
     TResult Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult Function(UpdateParticipantEvent value)? updateParticipant,
     required TResult orElse(),
   }) {
     if (updateCircuito != null) {
@@ -1418,4 +1724,487 @@ abstract class UpdateCircuitoEvent implements ParticipantEvent {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$UpdateCircuitoEventImplCopyWith<_$UpdateCircuitoEventImpl> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$UpdateParticipantEventImplCopyWith<$Res> {
+  factory _$$UpdateParticipantEventImplCopyWith(
+          _$UpdateParticipantEventImpl value,
+          $Res Function(_$UpdateParticipantEventImpl) then) =
+      __$$UpdateParticipantEventImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call(
+      {String partiId,
+      String? contNombre,
+      String? contTel,
+      String? domCiudad,
+      String? domCiudadNombre,
+      String? domProvincia,
+      String? domPais,
+      String? contInstagram,
+      String? contCelular,
+      String? contEmail,
+      String? insId,
+      String? circuitoId,
+      String? categoriaId,
+      String? talleId});
+}
+
+/// @nodoc
+class __$$UpdateParticipantEventImplCopyWithImpl<$Res>
+    extends _$ParticipantEventCopyWithImpl<$Res, _$UpdateParticipantEventImpl>
+    implements _$$UpdateParticipantEventImplCopyWith<$Res> {
+  __$$UpdateParticipantEventImplCopyWithImpl(
+      _$UpdateParticipantEventImpl _value,
+      $Res Function(_$UpdateParticipantEventImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ParticipantEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? partiId = null,
+    Object? contNombre = freezed,
+    Object? contTel = freezed,
+    Object? domCiudad = freezed,
+    Object? domCiudadNombre = freezed,
+    Object? domProvincia = freezed,
+    Object? domPais = freezed,
+    Object? contInstagram = freezed,
+    Object? contCelular = freezed,
+    Object? contEmail = freezed,
+    Object? insId = freezed,
+    Object? circuitoId = freezed,
+    Object? categoriaId = freezed,
+    Object? talleId = freezed,
+  }) {
+    return _then(_$UpdateParticipantEventImpl(
+      partiId: null == partiId
+          ? _value.partiId
+          : partiId // ignore: cast_nullable_to_non_nullable
+              as String,
+      contNombre: freezed == contNombre
+          ? _value.contNombre
+          : contNombre // ignore: cast_nullable_to_non_nullable
+              as String?,
+      contTel: freezed == contTel
+          ? _value.contTel
+          : contTel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      domCiudad: freezed == domCiudad
+          ? _value.domCiudad
+          : domCiudad // ignore: cast_nullable_to_non_nullable
+              as String?,
+      domCiudadNombre: freezed == domCiudadNombre
+          ? _value.domCiudadNombre
+          : domCiudadNombre // ignore: cast_nullable_to_non_nullable
+              as String?,
+      domProvincia: freezed == domProvincia
+          ? _value.domProvincia
+          : domProvincia // ignore: cast_nullable_to_non_nullable
+              as String?,
+      domPais: freezed == domPais
+          ? _value.domPais
+          : domPais // ignore: cast_nullable_to_non_nullable
+              as String?,
+      contInstagram: freezed == contInstagram
+          ? _value.contInstagram
+          : contInstagram // ignore: cast_nullable_to_non_nullable
+              as String?,
+      contCelular: freezed == contCelular
+          ? _value.contCelular
+          : contCelular // ignore: cast_nullable_to_non_nullable
+              as String?,
+      contEmail: freezed == contEmail
+          ? _value.contEmail
+          : contEmail // ignore: cast_nullable_to_non_nullable
+              as String?,
+      insId: freezed == insId
+          ? _value.insId
+          : insId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      circuitoId: freezed == circuitoId
+          ? _value.circuitoId
+          : circuitoId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      categoriaId: freezed == categoriaId
+          ? _value.categoriaId
+          : categoriaId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      talleId: freezed == talleId
+          ? _value.talleId
+          : talleId // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
+  const _$UpdateParticipantEventImpl(
+      {required this.partiId,
+      this.contNombre,
+      this.contTel,
+      this.domCiudad,
+      this.domCiudadNombre,
+      this.domProvincia,
+      this.domPais,
+      this.contInstagram,
+      this.contCelular,
+      this.contEmail,
+      this.insId,
+      this.circuitoId,
+      this.categoriaId,
+      this.talleId});
+
+  @override
+  final String partiId;
+  @override
+  final String? contNombre;
+  @override
+  final String? contTel;
+  @override
+  final String? domCiudad;
+  @override
+  final String? domCiudadNombre;
+  @override
+  final String? domProvincia;
+  @override
+  final String? domPais;
+  @override
+  final String? contInstagram;
+  @override
+  final String? contCelular;
+  @override
+  final String? contEmail;
+  @override
+  final String? insId;
+  @override
+  final String? circuitoId;
+  @override
+  final String? categoriaId;
+  @override
+  final String? talleId;
+
+  @override
+  String toString() {
+    return 'ParticipantEvent.updateParticipant(partiId: $partiId, contNombre: $contNombre, contTel: $contTel, domCiudad: $domCiudad, domCiudadNombre: $domCiudadNombre, domProvincia: $domProvincia, domPais: $domPais, contInstagram: $contInstagram, contCelular: $contCelular, contEmail: $contEmail, insId: $insId, circuitoId: $circuitoId, categoriaId: $categoriaId, talleId: $talleId)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UpdateParticipantEventImpl &&
+            (identical(other.partiId, partiId) || other.partiId == partiId) &&
+            (identical(other.contNombre, contNombre) ||
+                other.contNombre == contNombre) &&
+            (identical(other.contTel, contTel) || other.contTel == contTel) &&
+            (identical(other.domCiudad, domCiudad) ||
+                other.domCiudad == domCiudad) &&
+            (identical(other.domCiudadNombre, domCiudadNombre) ||
+                other.domCiudadNombre == domCiudadNombre) &&
+            (identical(other.domProvincia, domProvincia) ||
+                other.domProvincia == domProvincia) &&
+            (identical(other.domPais, domPais) || other.domPais == domPais) &&
+            (identical(other.contInstagram, contInstagram) ||
+                other.contInstagram == contInstagram) &&
+            (identical(other.contCelular, contCelular) ||
+                other.contCelular == contCelular) &&
+            (identical(other.contEmail, contEmail) ||
+                other.contEmail == contEmail) &&
+            (identical(other.insId, insId) || other.insId == insId) &&
+            (identical(other.circuitoId, circuitoId) ||
+                other.circuitoId == circuitoId) &&
+            (identical(other.categoriaId, categoriaId) ||
+                other.categoriaId == categoriaId) &&
+            (identical(other.talleId, talleId) || other.talleId == talleId));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      partiId,
+      contNombre,
+      contTel,
+      domCiudad,
+      domCiudadNombre,
+      domProvincia,
+      domPais,
+      contInstagram,
+      contCelular,
+      contEmail,
+      insId,
+      circuitoId,
+      categoriaId,
+      talleId);
+
+  /// Create a copy of ParticipantEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UpdateParticipantEventImplCopyWith<_$UpdateParticipantEventImpl>
+      get copyWith => __$$UpdateParticipantEventImplCopyWithImpl<
+          _$UpdateParticipantEventImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            String dni, String idEvento, String idOrg, String token)
+        authenticate,
+    required TResult Function(
+            String dni, String idOrg, String eventoId, String? roundId)
+        getDetail,
+    required TResult Function(String partiId, String contNombre, String contTel)
+        updateEmergency,
+    required TResult Function(
+            String partiId,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail)
+        updateContact,
+    required TResult Function(String partiId, String insId, String circuitoId,
+            String categoriaId, String talleId)
+        updateCircuito,
+    required TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)
+        updateParticipant,
+  }) {
+    return updateParticipant(
+        partiId,
+        contNombre,
+        contTel,
+        domCiudad,
+        domCiudadNombre,
+        domProvincia,
+        domPais,
+        contInstagram,
+        contCelular,
+        contEmail,
+        insId,
+        circuitoId,
+        categoriaId,
+        talleId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String dni, String idEvento, String idOrg, String token)?
+        authenticate,
+    TResult? Function(
+            String dni, String idOrg, String eventoId, String? roundId)?
+        getDetail,
+    TResult? Function(String partiId, String contNombre, String contTel)?
+        updateEmergency,
+    TResult? Function(
+            String partiId,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail)?
+        updateContact,
+    TResult? Function(String partiId, String insId, String circuitoId,
+            String categoriaId, String talleId)?
+        updateCircuito,
+    TResult? Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
+  }) {
+    return updateParticipant?.call(
+        partiId,
+        contNombre,
+        contTel,
+        domCiudad,
+        domCiudadNombre,
+        domProvincia,
+        domPais,
+        contInstagram,
+        contCelular,
+        contEmail,
+        insId,
+        circuitoId,
+        categoriaId,
+        talleId);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String dni, String idEvento, String idOrg, String token)?
+        authenticate,
+    TResult Function(
+            String dni, String idOrg, String eventoId, String? roundId)?
+        getDetail,
+    TResult Function(String partiId, String contNombre, String contTel)?
+        updateEmergency,
+    TResult Function(
+            String partiId,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail)?
+        updateContact,
+    TResult Function(String partiId, String insId, String circuitoId,
+            String categoriaId, String talleId)?
+        updateCircuito,
+    TResult Function(
+            String partiId,
+            String? contNombre,
+            String? contTel,
+            String? domCiudad,
+            String? domCiudadNombre,
+            String? domProvincia,
+            String? domPais,
+            String? contInstagram,
+            String? contCelular,
+            String? contEmail,
+            String? insId,
+            String? circuitoId,
+            String? categoriaId,
+            String? talleId)?
+        updateParticipant,
+    required TResult orElse(),
+  }) {
+    if (updateParticipant != null) {
+      return updateParticipant(
+          partiId,
+          contNombre,
+          contTel,
+          domCiudad,
+          domCiudadNombre,
+          domProvincia,
+          domPais,
+          contInstagram,
+          contCelular,
+          contEmail,
+          insId,
+          circuitoId,
+          categoriaId,
+          talleId);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Authenticate value) authenticate,
+    required TResult Function(GetDetail value) getDetail,
+    required TResult Function(UpdateEmergencyEvent value) updateEmergency,
+    required TResult Function(UpdateContactEvent value) updateContact,
+    required TResult Function(UpdateCircuitoEvent value) updateCircuito,
+    required TResult Function(UpdateParticipantEvent value) updateParticipant,
+  }) {
+    return updateParticipant(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Authenticate value)? authenticate,
+    TResult? Function(GetDetail value)? getDetail,
+    TResult? Function(UpdateEmergencyEvent value)? updateEmergency,
+    TResult? Function(UpdateContactEvent value)? updateContact,
+    TResult? Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult? Function(UpdateParticipantEvent value)? updateParticipant,
+  }) {
+    return updateParticipant?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Authenticate value)? authenticate,
+    TResult Function(GetDetail value)? getDetail,
+    TResult Function(UpdateEmergencyEvent value)? updateEmergency,
+    TResult Function(UpdateContactEvent value)? updateContact,
+    TResult Function(UpdateCircuitoEvent value)? updateCircuito,
+    TResult Function(UpdateParticipantEvent value)? updateParticipant,
+    required TResult orElse(),
+  }) {
+    if (updateParticipant != null) {
+      return updateParticipant(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class UpdateParticipantEvent implements ParticipantEvent {
+  const factory UpdateParticipantEvent(
+      {required final String partiId,
+      final String? contNombre,
+      final String? contTel,
+      final String? domCiudad,
+      final String? domCiudadNombre,
+      final String? domProvincia,
+      final String? domPais,
+      final String? contInstagram,
+      final String? contCelular,
+      final String? contEmail,
+      final String? insId,
+      final String? circuitoId,
+      final String? categoriaId,
+      final String? talleId}) = _$UpdateParticipantEventImpl;
+
+  String get partiId;
+  String? get contNombre;
+  String? get contTel;
+  String? get domCiudad;
+  String? get domCiudadNombre;
+  String? get domProvincia;
+  String? get domPais;
+  String? get contInstagram;
+  String? get contCelular;
+  String? get contEmail;
+  String? get insId;
+  String? get circuitoId;
+  String? get categoriaId;
+  String? get talleId;
+
+  /// Create a copy of ParticipantEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UpdateParticipantEventImplCopyWith<_$UpdateParticipantEventImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }

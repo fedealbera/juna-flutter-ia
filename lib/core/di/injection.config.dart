@@ -105,6 +105,8 @@ import '../../features/participant/domain/usecases/update_contact.dart'
     as _i614;
 import '../../features/participant/domain/usecases/update_emergency.dart'
     as _i296;
+import '../../features/participant/domain/usecases/update_participant.dart'
+    as _i470;
 import '../../features/participant/presentation/bloc/participant_bloc.dart'
     as _i822;
 import '../../features/registration/data/api/registration_api_service.dart'
@@ -301,6 +303,16 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i641.AuthenticateParticipant(gh<_i911.ParticipantRepository>()));
     gh.lazySingleton<_i1007.GetParticipantDetail>(
         () => _i1007.GetParticipantDetail(gh<_i911.ParticipantRepository>()));
+    gh.lazySingleton<_i470.UpdateParticipant>(
+        () => _i470.UpdateParticipant(gh<_i911.ParticipantRepository>()));
+    gh.factory<_i822.ParticipantBloc>(() => _i822.ParticipantBloc(
+          gh<_i641.AuthenticateParticipant>(),
+          gh<_i1007.GetParticipantDetail>(),
+          gh<_i296.UpdateEmergency>(),
+          gh<_i614.UpdateContact>(),
+          gh<_i444.UpdateCircuito>(),
+          gh<_i470.UpdateParticipant>(),
+        ));
     gh.lazySingleton<_i563.NotificationsRepository>(() =>
         _i201.NotificationsRepositoryImpl(
             gh<_i881.ParticipantRemoteDataSource>()));
@@ -332,13 +344,6 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.lazySingleton<_i954.GetEventContent>(
         () => _i954.GetEventContent(gh<_i1027.ContentRepository>()));
-    gh.factory<_i822.ParticipantBloc>(() => _i822.ParticipantBloc(
-          gh<_i641.AuthenticateParticipant>(),
-          gh<_i1007.GetParticipantDetail>(),
-          gh<_i296.UpdateEmergency>(),
-          gh<_i614.UpdateContact>(),
-          gh<_i444.UpdateCircuito>(),
-        ));
     gh.lazySingleton<_i978.EmergencyRepository>(() =>
         _i995.EmergencyRepositoryImpl(gh<_i706.EmergencyRemoteDataSource>()));
     gh.lazySingleton<_i1066.GetEventSettings>(

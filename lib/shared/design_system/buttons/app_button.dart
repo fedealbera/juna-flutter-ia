@@ -100,7 +100,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (hasIcon) ...[
-                Icon(widget.icon, size: 20),
+                Icon(widget.icon, size: 20, color: _getTextColor(theme)),
                 const SizedBox(width: 8),
               ],
               Text(

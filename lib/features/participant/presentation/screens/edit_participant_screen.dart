@@ -32,7 +32,6 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
   late final TextEditingController _emergencyPhoneController;
 
   bool _isLoading = false;
-  late final bool _hasNoPlaca;
 
   @override
   void initState() {
@@ -43,10 +42,6 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
     _instagramController = TextEditingController(text: p.contInstagram);
     _emergencyNameController = TextEditingController(text: p.contNombre);
     _emergencyPhoneController = TextEditingController(text: p.contTel);
-
-    // Checks if nroPlaca is zero (meaning no plate)
-    final placaStr = p.nroPlaca.trim();
-    _hasNoPlaca = placaStr == '0' || placaStr.isEmpty || placaStr.toLowerCase() == 'cero';
   }
 
   @override
@@ -65,16 +60,13 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       _isLoading = true;
     });
 
-    // Start with updateContact
-    _participantBloc.add(ParticipantEvent.updateContact(
+    _participantBloc.add(ParticipantEvent.updateParticipant(
       partiId: widget.participant.id,
-      domCiudad: widget.participant.domCiudad.isNotEmpty ? widget.participant.domCiudad : null,
-      domCiudadNombre: widget.participant.domCiudadNombre.isNotEmpty ? widget.participant.domCiudadNombre : null,
-      domProvincia: widget.participant.domProvincia.isNotEmpty ? widget.participant.domProvincia : null,
-      domPais: widget.participant.domPais.isNotEmpty ? widget.participant.domPais : null,
       contInstagram: _instagramController.text,
       contCelular: _phoneController.text,
       contEmail: _emailController.text,
+      contNombre: _emergencyNameController.text,
+      contTel: _emergencyPhoneController.text,
     ));
   }
 
@@ -93,29 +85,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                 _isLoading = true;
               });
             },
-            contactUpdated: (result) {
-              if (_hasNoPlaca) {
-                // Done!
-                setState(() {
-                  _isLoading = false;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Datos de contacto actualizados correctamente'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                context.pop(true);
-              } else {
-                // Now update emergency
-                _participantBloc.add(ParticipantEvent.updateEmergency(
-                  partiId: widget.participant.id,
-                  contNombre: _emergencyNameController.text,
-                  contTel: _emergencyPhoneController.text,
-                ));
-              }
-            },
-            emergencyUpdated: (result) {
+            participantUpdated: (result) {
               setState(() {
                 _isLoading = false;
               });
@@ -233,38 +203,36 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                   ],
                                 ),
                               ),
-                              if (!_hasNoPlaca) ...[
-                                const SizedBox(height: 28),
-                                // Section: Contacto de Emergencia
-                                _buildSectionTitle('CONTACTOS DE EMERGENCIA', primaryColor),
-                                const SizedBox(height: 16),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.03),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.white10, width: 1),
-                                  ),
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    children: [
-                                      AppTextField(
-                                        label: 'Nombre de Contacto',
-                                        hint: 'Nombre del contacto de emergencia',
-                                        prefixIcon: Icons.person_outline_rounded,
-                                        controller: _emergencyNameController,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      AppTextField(
-                                        label: 'Teléfono de Contacto',
-                                        hint: 'Teléfono del contacto de emergencia',
-                                        prefixIcon: Icons.phone_enabled_rounded,
-                                        controller: _emergencyPhoneController,
-                                        keyboardType: TextInputType.phone,
-                                      ),
-                                    ],
-                                  ),
+                              const SizedBox(height: 28),
+                              // Section: Contacto de Emergencia
+                              _buildSectionTitle('CONTACTOS DE EMERGENCIA', primaryColor),
+                              const SizedBox(height: 16),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.03),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.white10, width: 1),
                                 ),
-                              ],
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  children: [
+                                    AppTextField(
+                                      label: 'Nombre de Contacto',
+                                      hint: 'Nombre del contacto de emergencia',
+                                      prefixIcon: Icons.person_outline_rounded,
+                                      controller: _emergencyNameController,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    AppTextField(
+                                      label: 'Teléfono de Contacto',
+                                      hint: 'Teléfono del contacto de emergencia',
+                                      prefixIcon: Icons.phone_enabled_rounded,
+                                      controller: _emergencyPhoneController,
+                                      keyboardType: TextInputType.phone,
+                                    ),
+                                  ],
+                                ),
+                              ),
                               const SizedBox(height: 40),
                               // General Button
                               SizedBox(

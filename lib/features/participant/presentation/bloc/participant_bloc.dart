@@ -5,6 +5,7 @@ import '../../domain/usecases/get_participant_detail.dart';
 import '../../domain/usecases/update_circuito.dart';
 import '../../domain/usecases/update_contact.dart';
 import '../../domain/usecases/update_emergency.dart';
+import '../../domain/usecases/update_participant.dart';
 import 'participant_event.dart';
 import 'participant_state.dart';
 
@@ -15,6 +16,7 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
   final UpdateEmergency _updateEmergency;
   final UpdateContact _updateContact;
   final UpdateCircuito _updateCircuito;
+  final UpdateParticipant _updateParticipant;
 
   ParticipantBloc(
     this._authenticateParticipant,
@@ -22,6 +24,7 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
     this._updateEmergency,
     this._updateContact,
     this._updateCircuito,
+    this._updateParticipant,
   ) : super(const ParticipantState.initial()) {
     on<Authenticate>((event, emit) async {
       emit(const ParticipantState.loading());
@@ -97,6 +100,31 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
           talleId: event.talleId,
         );
         emit(ParticipantState.circuitoUpdated(result));
+      } catch (e) {
+        emit(ParticipantState.error(e.toString()));
+      }
+    });
+
+    on<UpdateParticipantEvent>((event, emit) async {
+      emit(const ParticipantState.loading());
+      try {
+        final result = await _updateParticipant(
+          partiId: event.partiId,
+          contNombre: event.contNombre,
+          contTel: event.contTel,
+          domCiudad: event.domCiudad,
+          domCiudadNombre: event.domCiudadNombre,
+          domProvincia: event.domProvincia,
+          domPais: event.domPais,
+          contInstagram: event.contInstagram,
+          contCelular: event.contCelular,
+          contEmail: event.contEmail,
+          insId: event.insId,
+          circuitoId: event.circuitoId,
+          categoriaId: event.categoriaId,
+          talleId: event.talleId,
+        );
+        emit(ParticipantState.participantUpdated(result));
       } catch (e) {
         emit(ParticipantState.error(e.toString()));
       }

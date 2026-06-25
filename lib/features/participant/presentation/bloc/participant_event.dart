@@ -42,4 +42,21 @@ class ParticipantEvent with _$ParticipantEvent {
     required String categoriaId,
     required String talleId,
   }) = UpdateCircuitoEvent;
+
+  const factory ParticipantEvent.updateParticipant({
+    required String partiId,
+    String? contNombre,
+    String? contTel,
+    String? domCiudad,
+    String? domCiudadNombre,
+    String? domProvincia,
+    String? domPais,
+    String? contInstagram,
+    String? contCelular,
+    String? contEmail,
+    String? insId,
+    String? circuitoId,
+    String? categoriaId,
+    String? talleId,
+  }) = UpdateParticipantEvent;
 }

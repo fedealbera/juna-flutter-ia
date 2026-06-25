@@ -4,12 +4,14 @@ import '../../domain/entities/participant_detail.dart';
 import '../../domain/entities/update_circuito_entity.dart';
 import '../../domain/entities/update_contact_entity.dart';
 import '../../domain/entities/update_emergency_entity.dart';
+import '../../domain/entities/update_participant_entity.dart';
 import '../../domain/repositories/participant_repository.dart';
 import '../datasource/participant_remote_datasource.dart';
 import '../dto/request/auth_participant_request_dto.dart';
 import '../dto/request/update_circuito_request_dto.dart';
 import '../dto/request/update_contact_request_dto.dart';
 import '../dto/request/update_emergency_request_dto.dart';
+import '../dto/request/update_participant_request_dto.dart';
 import '../mappers/participant_mapper.dart';
 
 @LazySingleton(as: ParticipantRepository)
@@ -112,6 +114,44 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
       ),
     );
     return ParticipantMapper.toCircuitoEntity(response);
+  }
+
+  @override
+  Future<UpdateParticipantEntity> updateParticipant({
+    required String partiId,
+    String? contNombre,
+    String? contTel,
+    String? domCiudad,
+    String? domCiudadNombre,
+    String? domProvincia,
+    String? domPais,
+    String? contInstagram,
+    String? contCelular,
+    String? contEmail,
+    String? insId,
+    String? circuitoId,
+    String? categoriaId,
+    String? talleId,
+  }) async {
+    final response = await _remoteDataSource.updateParticipant(
+      partiId,
+      UpdateParticipantRequestDto(
+        contNombre: contNombre,
+        contTel: contTel,
+        domCiudad: domCiudad,
+        domCiudadNombre: domCiudadNombre,
+        domProvincia: domProvincia,
+        domPais: domPais,
+        contInstagram: contInstagram,
+        contCelular: contCelular,
+        contEmail: contEmail,
+        insId: insId,
+        circuitoId: circuitoId,
+        categoriaId: categoriaId,
+        talleId: talleId,
+      ),
+    );
+    return ParticipantMapper.toParticipantEntity(response);
   }
 
   @override

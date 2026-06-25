@@ -5,12 +5,14 @@ import '../dto/request/auth_participant_request_dto.dart';
 import '../dto/request/update_circuito_request_dto.dart';
 import '../dto/request/update_contact_request_dto.dart';
 import '../dto/request/update_emergency_request_dto.dart';
+import '../dto/request/update_participant_request_dto.dart';
 import '../dto/request/update_push_token_request_dto.dart';
 import '../dto/response/auth_participant_response_dto.dart';
 import '../dto/response/participant_detail_response_dto.dart';
 import '../dto/response/update_circuito_response_dto.dart';
 import '../dto/response/update_contact_response_dto.dart';
 import '../dto/response/update_emergency_response_dto.dart';
+import '../dto/response/update_participant_response_dto.dart';
 import '../dto/response/update_push_token_response_dto.dart';
 
 abstract class ParticipantRemoteDataSource {
@@ -24,6 +26,7 @@ abstract class ParticipantRemoteDataSource {
   Future<UpdateEmergencyResponseDto> updateEmergency(String partiId, UpdateEmergencyRequestDto body);
   Future<UpdateContactResponseDto> updateContact(String partiId, UpdateContactRequestDto body);
   Future<UpdateCircuitoResponseDto> updateCircuito(String partiId, UpdateCircuitoRequestDto body);
+  Future<UpdateParticipantResponseDto> updateParticipant(String partiId, UpdateParticipantRequestDto body);
   Future<UpdatePushTokenResponseDto> updatePushToken(UpdatePushTokenRequestDto body);
   Future<Map<String, dynamic>> getParticipantDocuments(String partiId);
   Future<bool> uploadParticipantDocument({
@@ -67,6 +70,11 @@ class ParticipantRemoteDataSourceImpl implements ParticipantRemoteDataSource {
   @override
   Future<UpdateCircuitoResponseDto> updateCircuito(String partiId, UpdateCircuitoRequestDto body) {
     return _apiService.updateCircuito(partiId, body);
+  }
+
+  @override
+  Future<UpdateParticipantResponseDto> updateParticipant(String partiId, UpdateParticipantRequestDto body) {
+    return _apiService.updateParticipant(partiId, body);
   }
 
   @override

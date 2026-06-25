@@ -1,4 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -224,6 +226,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             if (detail.nroPlaca == '0')
               AppButton(
                 text: 'PAGAR',
+                textColor: Colors.white,
                 icon: Icons.payment_rounded,
                 onPressed: () {
                   if (detail.linkPago.isNotEmpty) {
@@ -238,6 +241,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             else
               AppButton(
                 text: 'DOCUMENTACIÓN',
+                textColor: Colors.white,
                 icon: Icons.description_rounded,
                 onPressed: () {
                   context.push('/inscripciones/documentacion', extra: detail);
@@ -640,7 +644,17 @@ class _RegistrationWebViewState extends State<RegistrationWebView>
 
     return Stack(
       children: [
-        WebViewWidget(controller: _controller),
+        WebViewWidget(
+          controller: _controller,
+          gestureRecognizers: {
+            Factory<VerticalDragGestureRecognizer>(
+              () => VerticalDragGestureRecognizer(),
+            ),
+            Factory<HorizontalDragGestureRecognizer>(
+              () => HorizontalDragGestureRecognizer(),
+            ),
+          },
+        ),
         if (_isLoading)
           Container(
             color: widget.activeTenant.backgroundColorRef,

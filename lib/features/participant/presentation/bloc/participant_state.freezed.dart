@@ -25,6 +25,8 @@ mixin _$ParticipantState {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -37,6 +39,7 @@ mixin _$ParticipantState {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -49,6 +52,7 @@ mixin _$ParticipantState {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) =>
@@ -63,6 +67,7 @@ mixin _$ParticipantState {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) =>
       throw _privateConstructorUsedError;
@@ -75,6 +80,7 @@ mixin _$ParticipantState {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) =>
       throw _privateConstructorUsedError;
@@ -87,6 +93,7 @@ mixin _$ParticipantState {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) =>
@@ -162,6 +169,8 @@ class _$ParticipantInitialImpl implements ParticipantInitial {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return initial();
@@ -177,6 +186,7 @@ class _$ParticipantInitialImpl implements ParticipantInitial {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return initial?.call();
@@ -192,6 +202,7 @@ class _$ParticipantInitialImpl implements ParticipantInitial {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -212,6 +223,7 @@ class _$ParticipantInitialImpl implements ParticipantInitial {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return initial(this);
@@ -227,6 +239,7 @@ class _$ParticipantInitialImpl implements ParticipantInitial {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return initial?.call(this);
@@ -242,6 +255,7 @@ class _$ParticipantInitialImpl implements ParticipantInitial {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {
@@ -304,6 +318,8 @@ class _$ParticipantLoadingImpl implements ParticipantLoading {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return loading();
@@ -319,6 +335,7 @@ class _$ParticipantLoadingImpl implements ParticipantLoading {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return loading?.call();
@@ -334,6 +351,7 @@ class _$ParticipantLoadingImpl implements ParticipantLoading {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -354,6 +372,7 @@ class _$ParticipantLoadingImpl implements ParticipantLoading {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return loading(this);
@@ -369,6 +388,7 @@ class _$ParticipantLoadingImpl implements ParticipantLoading {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return loading?.call(this);
@@ -384,6 +404,7 @@ class _$ParticipantLoadingImpl implements ParticipantLoading {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {
@@ -476,6 +497,8 @@ class _$ParticipantAuthenticatedImpl implements ParticipantAuthenticated {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return authenticated(auth);
@@ -491,6 +514,7 @@ class _$ParticipantAuthenticatedImpl implements ParticipantAuthenticated {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return authenticated?.call(auth);
@@ -506,6 +530,7 @@ class _$ParticipantAuthenticatedImpl implements ParticipantAuthenticated {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -526,6 +551,7 @@ class _$ParticipantAuthenticatedImpl implements ParticipantAuthenticated {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return authenticated(this);
@@ -541,6 +567,7 @@ class _$ParticipantAuthenticatedImpl implements ParticipantAuthenticated {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return authenticated?.call(this);
@@ -556,6 +583,7 @@ class _$ParticipantAuthenticatedImpl implements ParticipantAuthenticated {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {
@@ -657,6 +685,8 @@ class _$ParticipantDetailLoadedImpl implements ParticipantDetailLoaded {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return detailLoaded(detail);
@@ -672,6 +702,7 @@ class _$ParticipantDetailLoadedImpl implements ParticipantDetailLoaded {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return detailLoaded?.call(detail);
@@ -687,6 +718,7 @@ class _$ParticipantDetailLoadedImpl implements ParticipantDetailLoaded {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -707,6 +739,7 @@ class _$ParticipantDetailLoadedImpl implements ParticipantDetailLoaded {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return detailLoaded(this);
@@ -722,6 +755,7 @@ class _$ParticipantDetailLoadedImpl implements ParticipantDetailLoaded {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return detailLoaded?.call(this);
@@ -737,6 +771,7 @@ class _$ParticipantDetailLoadedImpl implements ParticipantDetailLoaded {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {
@@ -839,6 +874,8 @@ class _$ParticipantEmergencyUpdatedImpl implements ParticipantEmergencyUpdated {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return emergencyUpdated(result);
@@ -854,6 +891,7 @@ class _$ParticipantEmergencyUpdatedImpl implements ParticipantEmergencyUpdated {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return emergencyUpdated?.call(result);
@@ -869,6 +907,7 @@ class _$ParticipantEmergencyUpdatedImpl implements ParticipantEmergencyUpdated {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -889,6 +928,7 @@ class _$ParticipantEmergencyUpdatedImpl implements ParticipantEmergencyUpdated {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return emergencyUpdated(this);
@@ -904,6 +944,7 @@ class _$ParticipantEmergencyUpdatedImpl implements ParticipantEmergencyUpdated {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return emergencyUpdated?.call(this);
@@ -919,6 +960,7 @@ class _$ParticipantEmergencyUpdatedImpl implements ParticipantEmergencyUpdated {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {
@@ -1021,6 +1063,8 @@ class _$ParticipantContactUpdatedImpl implements ParticipantContactUpdated {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return contactUpdated(result);
@@ -1036,6 +1080,7 @@ class _$ParticipantContactUpdatedImpl implements ParticipantContactUpdated {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return contactUpdated?.call(result);
@@ -1051,6 +1096,7 @@ class _$ParticipantContactUpdatedImpl implements ParticipantContactUpdated {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -1071,6 +1117,7 @@ class _$ParticipantContactUpdatedImpl implements ParticipantContactUpdated {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return contactUpdated(this);
@@ -1086,6 +1133,7 @@ class _$ParticipantContactUpdatedImpl implements ParticipantContactUpdated {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return contactUpdated?.call(this);
@@ -1101,6 +1149,7 @@ class _$ParticipantContactUpdatedImpl implements ParticipantContactUpdated {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {
@@ -1203,6 +1252,8 @@ class _$ParticipantCircuitoUpdatedImpl implements ParticipantCircuitoUpdated {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return circuitoUpdated(result);
@@ -1218,6 +1269,7 @@ class _$ParticipantCircuitoUpdatedImpl implements ParticipantCircuitoUpdated {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return circuitoUpdated?.call(result);
@@ -1233,6 +1285,7 @@ class _$ParticipantCircuitoUpdatedImpl implements ParticipantCircuitoUpdated {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -1253,6 +1306,7 @@ class _$ParticipantCircuitoUpdatedImpl implements ParticipantCircuitoUpdated {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return circuitoUpdated(this);
@@ -1268,6 +1322,7 @@ class _$ParticipantCircuitoUpdatedImpl implements ParticipantCircuitoUpdated {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return circuitoUpdated?.call(this);
@@ -1283,6 +1338,7 @@ class _$ParticipantCircuitoUpdatedImpl implements ParticipantCircuitoUpdated {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {
@@ -1304,6 +1360,192 @@ abstract class ParticipantCircuitoUpdated implements ParticipantState {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ParticipantCircuitoUpdatedImplCopyWith<_$ParticipantCircuitoUpdatedImpl>
       get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ParticipantUpdatedImplCopyWith<$Res> {
+  factory _$$ParticipantUpdatedImplCopyWith(_$ParticipantUpdatedImpl value,
+          $Res Function(_$ParticipantUpdatedImpl) then) =
+      __$$ParticipantUpdatedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({UpdateParticipantEntity result});
+}
+
+/// @nodoc
+class __$$ParticipantUpdatedImplCopyWithImpl<$Res>
+    extends _$ParticipantStateCopyWithImpl<$Res, _$ParticipantUpdatedImpl>
+    implements _$$ParticipantUpdatedImplCopyWith<$Res> {
+  __$$ParticipantUpdatedImplCopyWithImpl(_$ParticipantUpdatedImpl _value,
+      $Res Function(_$ParticipantUpdatedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ParticipantState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? result = null,
+  }) {
+    return _then(_$ParticipantUpdatedImpl(
+      null == result
+          ? _value.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as UpdateParticipantEntity,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$ParticipantUpdatedImpl implements ParticipantUpdated {
+  const _$ParticipantUpdatedImpl(this.result);
+
+  @override
+  final UpdateParticipantEntity result;
+
+  @override
+  String toString() {
+    return 'ParticipantState.participantUpdated(result: $result)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ParticipantUpdatedImpl &&
+            (identical(other.result, result) || other.result == result));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, result);
+
+  /// Create a copy of ParticipantState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ParticipantUpdatedImplCopyWith<_$ParticipantUpdatedImpl> get copyWith =>
+      __$$ParticipantUpdatedImplCopyWithImpl<_$ParticipantUpdatedImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initial,
+    required TResult Function() loading,
+    required TResult Function(ParticipantAuth auth) authenticated,
+    required TResult Function(ParticipantDetail detail) detailLoaded,
+    required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
+    required TResult Function(UpdateContactEntity result) contactUpdated,
+    required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
+    required TResult Function(String message) error,
+  }) {
+    return participantUpdated(result);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? initial,
+    TResult? Function()? loading,
+    TResult? Function(ParticipantAuth auth)? authenticated,
+    TResult? Function(ParticipantDetail detail)? detailLoaded,
+    TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
+    TResult? Function(UpdateContactEntity result)? contactUpdated,
+    TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
+    TResult? Function(String message)? error,
+  }) {
+    return participantUpdated?.call(result);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? initial,
+    TResult Function()? loading,
+    TResult Function(ParticipantAuth auth)? authenticated,
+    TResult Function(ParticipantDetail detail)? detailLoaded,
+    TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
+    TResult Function(UpdateContactEntity result)? contactUpdated,
+    TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
+    TResult Function(String message)? error,
+    required TResult orElse(),
+  }) {
+    if (participantUpdated != null) {
+      return participantUpdated(result);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(ParticipantInitial value) initial,
+    required TResult Function(ParticipantLoading value) loading,
+    required TResult Function(ParticipantAuthenticated value) authenticated,
+    required TResult Function(ParticipantDetailLoaded value) detailLoaded,
+    required TResult Function(ParticipantEmergencyUpdated value)
+        emergencyUpdated,
+    required TResult Function(ParticipantContactUpdated value) contactUpdated,
+    required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
+    required TResult Function(ParticipantError value) error,
+  }) {
+    return participantUpdated(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(ParticipantInitial value)? initial,
+    TResult? Function(ParticipantLoading value)? loading,
+    TResult? Function(ParticipantAuthenticated value)? authenticated,
+    TResult? Function(ParticipantDetailLoaded value)? detailLoaded,
+    TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
+    TResult? Function(ParticipantContactUpdated value)? contactUpdated,
+    TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
+    TResult? Function(ParticipantError value)? error,
+  }) {
+    return participantUpdated?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(ParticipantInitial value)? initial,
+    TResult Function(ParticipantLoading value)? loading,
+    TResult Function(ParticipantAuthenticated value)? authenticated,
+    TResult Function(ParticipantDetailLoaded value)? detailLoaded,
+    TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
+    TResult Function(ParticipantContactUpdated value)? contactUpdated,
+    TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
+    TResult Function(ParticipantError value)? error,
+    required TResult orElse(),
+  }) {
+    if (participantUpdated != null) {
+      return participantUpdated(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ParticipantUpdated implements ParticipantState {
+  const factory ParticipantUpdated(final UpdateParticipantEntity result) =
+      _$ParticipantUpdatedImpl;
+
+  UpdateParticipantEntity get result;
+
+  /// Create a copy of ParticipantState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ParticipantUpdatedImplCopyWith<_$ParticipantUpdatedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1382,6 +1624,8 @@ class _$ParticipantErrorImpl implements ParticipantError {
     required TResult Function(UpdateEmergencyEntity result) emergencyUpdated,
     required TResult Function(UpdateContactEntity result) contactUpdated,
     required TResult Function(UpdateCircuitoEntity result) circuitoUpdated,
+    required TResult Function(UpdateParticipantEntity result)
+        participantUpdated,
     required TResult Function(String message) error,
   }) {
     return error(message);
@@ -1397,6 +1641,7 @@ class _$ParticipantErrorImpl implements ParticipantError {
     TResult? Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult? Function(UpdateContactEntity result)? contactUpdated,
     TResult? Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult? Function(UpdateParticipantEntity result)? participantUpdated,
     TResult? Function(String message)? error,
   }) {
     return error?.call(message);
@@ -1412,6 +1657,7 @@ class _$ParticipantErrorImpl implements ParticipantError {
     TResult Function(UpdateEmergencyEntity result)? emergencyUpdated,
     TResult Function(UpdateContactEntity result)? contactUpdated,
     TResult Function(UpdateCircuitoEntity result)? circuitoUpdated,
+    TResult Function(UpdateParticipantEntity result)? participantUpdated,
     TResult Function(String message)? error,
     required TResult orElse(),
   }) {
@@ -1432,6 +1678,7 @@ class _$ParticipantErrorImpl implements ParticipantError {
         emergencyUpdated,
     required TResult Function(ParticipantContactUpdated value) contactUpdated,
     required TResult Function(ParticipantCircuitoUpdated value) circuitoUpdated,
+    required TResult Function(ParticipantUpdated value) participantUpdated,
     required TResult Function(ParticipantError value) error,
   }) {
     return error(this);
@@ -1447,6 +1694,7 @@ class _$ParticipantErrorImpl implements ParticipantError {
     TResult? Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult? Function(ParticipantContactUpdated value)? contactUpdated,
     TResult? Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult? Function(ParticipantUpdated value)? participantUpdated,
     TResult? Function(ParticipantError value)? error,
   }) {
     return error?.call(this);
@@ -1462,6 +1710,7 @@ class _$ParticipantErrorImpl implements ParticipantError {
     TResult Function(ParticipantEmergencyUpdated value)? emergencyUpdated,
     TResult Function(ParticipantContactUpdated value)? contactUpdated,
     TResult Function(ParticipantCircuitoUpdated value)? circuitoUpdated,
+    TResult Function(ParticipantUpdated value)? participantUpdated,
     TResult Function(ParticipantError value)? error,
     required TResult orElse(),
   }) {

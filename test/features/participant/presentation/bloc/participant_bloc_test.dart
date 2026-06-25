@@ -6,6 +6,7 @@ import 'package:event_platform_v3/features/participant/domain/usecases/get_parti
 import 'package:event_platform_v3/features/participant/domain/usecases/update_circuito.dart';
 import 'package:event_platform_v3/features/participant/domain/usecases/update_contact.dart';
 import 'package:event_platform_v3/features/participant/domain/usecases/update_emergency.dart';
+import 'package:event_platform_v3/features/participant/domain/usecases/update_participant.dart';
 import 'package:event_platform_v3/features/participant/domain/entities/participant_auth.dart';
 import 'package:event_platform_v3/features/participant/domain/entities/participant_detail.dart';
 import 'package:event_platform_v3/features/participant/presentation/bloc/participant_bloc.dart';
@@ -17,6 +18,7 @@ class MockGetParticipantDetail extends Mock implements GetParticipantDetail {}
 class MockUpdateCircuito extends Mock implements UpdateCircuito {}
 class MockUpdateContact extends Mock implements UpdateContact {}
 class MockUpdateEmergency extends Mock implements UpdateEmergency {}
+class MockUpdateParticipant extends Mock implements UpdateParticipant {}
 
 void main() {
   late MockAuthenticateParticipant mockAuthenticateParticipant;
@@ -24,6 +26,7 @@ void main() {
   late MockUpdateCircuito mockUpdateCircuito;
   late MockUpdateContact mockUpdateContact;
   late MockUpdateEmergency mockUpdateEmergency;
+  late MockUpdateParticipant mockUpdateParticipant;
   late ParticipantBloc bloc;
 
   setUp(() {
@@ -32,12 +35,14 @@ void main() {
     mockUpdateCircuito = MockUpdateCircuito();
     mockUpdateContact = MockUpdateContact();
     mockUpdateEmergency = MockUpdateEmergency();
+    mockUpdateParticipant = MockUpdateParticipant();
     bloc = ParticipantBloc(
       mockAuthenticateParticipant,
       mockGetParticipantDetail,
       mockUpdateEmergency,
       mockUpdateContact,
       mockUpdateCircuito,
+      mockUpdateParticipant,
     );
   });
 
