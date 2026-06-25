@@ -293,17 +293,11 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: Colors.redAccent,
-                        width: 1.5,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
+                  child: AppButton(
+                    text: 'DESVINCULAR',
+                    type: AppButtonType.outlined,
+                    textColor: Colors.redAccent,
+                    borderColor: Colors.redAccent,
                     onPressed: () async {
                       await getIt<HiveService>().delete<Map>(
                         'participant_box',
@@ -319,26 +313,14 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         });
                       }
                     },
-                    child: const Text(
-                      'DESVINCULAR',
-                      style: TextStyle(
-                        color: Colors.redAccent,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: activeTenant.primaryColorRef,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
+                  child: AppButton(
+                    text: 'EDITAR DATOS',
+                    color: activeTenant.primaryColorRef,
+                    textColor: Colors.white,
                     onPressed: () async {
                       final result = await context.push<bool>(
                         '/inscripciones/editar-datos',
@@ -358,14 +340,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         );
                       }
                     },
-                    child: const Text(
-                      'EDITAR DATOS',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ),
               ],
