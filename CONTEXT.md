@@ -140,8 +140,12 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 ### Layout Layouts & Screens
 * **`MainShellScreen`:** Implements responsive design—rendering a Bottom Navigation Bar on mobile viewports and switching to a persistent Sidebar on desktop/tablet viewports. The mobile burger menu (and corresponding slide-out Drawer) has been completely removed. Dynamic tenant configuration swapping is handled directly via a custom Dropdown button placed in the `AppBar`'s `actions` list on mobile viewports, and at the bottom of the persistent navigation Sidebar on desktop viewports.
 * **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons. The hero banner image is loaded dynamically from the settings key `IMAGE_BANNER`. All explicit fallback banner URLs have been removed, and the banner container is hidden conditionally if `IMAGE_BANNER` is empty or not provided. The **Next Event Countdown card** uses a dynamic gradient computed from the active tenant's primary and secondary colors: if the secondary color has high luminance (bright), the gradient blends toward the dark background `#1E1E1E` for contrast; otherwise it uses the secondary color directly. The **"Ver Inscripción"** button uses luminance-aware coloring—if the primary color is very dark, it uses the tenant's accent color for both border and text to ensure visibility.
-* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI" and has an uppercase "DESVINCULAR" button next to "EDITAR DATOS".
-* **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency section is rendered conditionally and is hidden if the participant has no assigned plate number (`nroPlaca == 0`).
+* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". In the "VER PARTICIPANTE" tab:
+  * The "PAGAR" and "DOCUMENTACIÓN" buttons are styled with explicit white font and icon colors.
+  * If the participant details response contains a discount code (`insCodDesc`), a glassmorphic **Código de Descuento** card section is conditionally displayed below the participant details card. This card contains an input field (`AppTextField` without a label) to edit the discount code and a validate button (`Validar`) that triggers simulated validation.
+  * The "DESVINCULAR" and "EDITAR DATOS" buttons are refactored to use the unified design system `AppButton` component, ensuring a consistent height of `52dp` and standard scaling/cursor animations.
+  * The `RegistrationWebView` uses vertical and horizontal drag gesture recognizers on the `WebViewWidget` constructor to prevent scroll blocking.
+* **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency contact section is displayed always (the condition hiding it when `nroPlaca == 0` has been removed). Saving data on this screen triggers a single unified `PUT /api/participantes/{partiId}` request to save both contact and emergency info in one action.
 * **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, etc.).
 * **`LiveScreen`:** Outputs live leaderboard listings categorized by age divisions and quick social links.
 * **`MoreScreen`:** Embeds document download directories, contact messages, and application sharing options. The **"Acerca de"** section displays: 1) custom logo PNG asset (`assets/images/juna_app_logo.png`), 2) app description text, 3) clickable mailto link to `churomobile@gmail.com`, 4) app version, and 5) an **Actualizar la App** button (with explicit `textColor: Colors.white`). The update button parses `URL_STORES` dynamically, determines the current platform using `Theme.of(context).platform`, and redirects to either the `ANDROID` or `IOS` store URL. Font sizes in this section are: `ACERCA DE` header at `13`, and all body texts (description, email, version) at `15`.
@@ -151,13 +155,16 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 * `color` — overrides the background fill color for any button type.
 * `textColor` — overrides the label/icon text color.
 * `borderColor` — overrides the border color (also activates a border if type is not `outlined`).
-These allow per-usage custom styling without subclassing, enabling tenant-aware coloring directly at the call site.
+These allow per-usage custom styling without subclassing, enabling tenant-aware coloring directly at the call site. The inner `Icon` dynamically inherits the button's text color (`_getTextColor(theme)`) to ensure complete visual consistency.
+
+### Design System — `AppTextField`
+`AppTextField` (`lib/shared/design_system/text_fields/app_text_field.dart`) supports an optional `label` parameter (defaulting to `""`). When no label is provided or is empty, the label widget and its accompanying vertical spacing are omitted from the layout, facilitating cleaner UI designs.
 
 ---
 
 ## 8. Participant REST API Updates
 
-Participant update endpoints in `ParticipantApiService` are refactored to remove the `{partiId}` path parameters:
+Participant update endpoints in `ParticipantApiService` are refactored to remove the `{partiId}` path parameters where applicable, and a single unified update endpoint is added:
 
 | Description | Old Endpoint | New Endpoint | Parameter Passing |
 |---|---|---|---|
@@ -166,6 +173,7 @@ Participant update endpoints in `ParticipantApiService` are refactored to remove
 | Update Circuit | `/api/participantes/{partiId}/circuito` | `/api/participantes/circuito` | Query Parameter (`parti_id`) |
 | List Documentation | N/A | `/api/participantes/{id}/archivos` | Path Parameter (`id`) |
 | Upload Document | N/A | `/api/participantes/archivos` | Multipart Parameters (`parti_id`, `tipo`, `file`) |
+| Update Participant | N/A | `/api/participantes/{partiId}` | Path Parameter (`partiId`) & JSON Body |
 
 ---
 
