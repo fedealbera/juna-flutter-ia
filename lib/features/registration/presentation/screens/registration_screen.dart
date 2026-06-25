@@ -30,7 +30,8 @@ class RegistrationScreen extends StatefulWidget {
   State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> with SingleTickerProviderStateMixin {
+class _RegistrationScreenState extends State<RegistrationScreen>
+    with SingleTickerProviderStateMixin {
   final TenantManager _tenantManager = getIt<TenantManager>();
 
   late TabController _tabController;
@@ -40,9 +41,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
 
   // Search input controllers
   final TextEditingController _dniController = TextEditingController();
+  final TextEditingController _discountCodeController = TextEditingController();
 
   ParticipantDetail? _linkedParticipant;
   bool _checkingCache = true;
+  bool _isValidatingDiscountCode = false;
+  bool? _isDiscountCodeValid;
+  String? _discountCodeErrorMessage;
 
   @override
   void initState() {
@@ -58,11 +63,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
 
   Future<void> _loadLinkedParticipant() async {
     final hiveService = getIt<HiveService>();
-    final Map? cachedJson = await hiveService.get<Map>('participant_box', 'cached_participant');
+    final Map? cachedJson = await hiveService.get<Map>(
+      'participant_box',
+      'cached_participant',
+    );
     if (cachedJson != null) {
       if (mounted) {
         setState(() {
-          _linkedParticipant = ParticipantDetail(cachedJson.cast<String, dynamic>());
+          final detail = ParticipantDetail(cachedJson.cast<String, dynamic>());
+          _linkedParticipant = detail;
+          _discountCodeController.text = detail.insCodDesc;
           _checkingCache = false;
         });
       }
@@ -90,7 +100,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
       } catch (_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se pudo abrir la página de pago.')),
+            const SnackBar(
+              content: Text('No se pudo abrir la página de pago.'),
+            ),
           );
         }
       }
@@ -102,6 +114,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     _tenantManager.removeListener(_onTenantChanged);
     _tabController.dispose();
     _dniController.dispose();
+    _discountCodeController.dispose();
     super.dispose();
   }
 
@@ -127,7 +140,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
             labelColor: activeTenant.primaryColorRef,
             unselectedLabelColor: Colors.grey.shade400,
             tabs: const [
-              Tab(text: 'NUEVA INSCRIPCIÓN', icon: Icon(Icons.add_task_rounded)),
+              Tab(
+                text: 'NUEVA INSCRIPCIÓN',
+                icon: Icon(Icons.add_task_rounded),
+              ),
               Tab(text: 'VER PARTICIPANTE', icon: Icon(Icons.badge_outlined)),
             ],
           ),
@@ -142,7 +158,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                   },
                   error: (msg) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error de Token Push: $msg'), backgroundColor: Colors.red),
+                      SnackBar(
+                        content: Text('Error de Token Push: $msg'),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                   },
                   orElse: () {},
@@ -161,18 +180,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                     if (mounted) {
                       setState(() {
                         _linkedParticipant = detail;
+                        _discountCodeController.text = detail.insCodDesc;
+                        _isDiscountCodeValid = null;
+                        _discountCodeErrorMessage = null;
                       });
                     }
 
                     try {
                       final token = await FirebaseMessaging.instance.getToken();
                       if (token != null && token.isNotEmpty) {
-                        _notificationsBloc.add(NotificationsEvent.registerToken(
-                          documento: detail.dni,
-                          idEvento: '1',
-                          idOrg: '1',
-                          token: token,
-                        ));
+                        _notificationsBloc.add(
+                          NotificationsEvent.registerToken(
+                            documento: detail.dni,
+                            idEvento: '1',
+                            idOrg: '1',
+                            token: token,
+                          ),
+                        );
                       } else {
                         debugPrint('FCM Token returned null or empty');
                       }
@@ -199,7 +223,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
     );
   }
 
-
   Widget _buildViewLookupTab(TenantConfig activeTenant) {
     if (_checkingCache) {
       return const Center(child: CircularProgressIndicator.adaptive());
@@ -207,8 +230,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
 
     if (_linkedParticipant != null) {
       final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
-      final fechaAcreditacion = cachedSettings?.getSetting('FECHA_ACREDITACION') ?? '5 y 6 de Junio';
-      final fechaCarrera = cachedSettings?.getSetting('FECHA_CARRERA') ?? '7 de Junio';
+      final fechaAcreditacion =
+          cachedSettings?.getSetting('FECHA_ACREDITACION') ?? '5 y 6 de Junio';
+      final fechaCarrera =
+          cachedSettings?.getSetting('FECHA_CARRERA') ?? '7 de Junio';
       final detail = _linkedParticipant!;
 
       return SingleChildScrollView(
@@ -218,10 +243,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
           children: [
             const Text(
               'Corredor Vinculado',
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
-            _buildParticipantCard(detail, fechaAcreditacion, fechaCarrera, activeTenant),
+            _buildParticipantCard(
+              detail,
+              fechaAcreditacion,
+              fechaCarrera,
+              activeTenant,
+            ),
+            if (detail.insCodDesc.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _buildDiscountCodeSection(detail, activeTenant),
+            ],
             const SizedBox(height: 24),
             if (detail.nroPlaca == '0')
               AppButton(
@@ -233,7 +271,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                     _launchURL(detail.linkPago);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('No hay link de pago disponible para este participante.')),
+                      const SnackBar(
+                        content: Text(
+                          'No hay link de pago disponible para este participante.',
+                        ),
+                      ),
                     );
                   }
                 },
@@ -253,22 +295,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                 Expanded(
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.redAccent, width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: const BorderSide(
+                        color: Colors.redAccent,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () async {
-                      await getIt<HiveService>().delete<Map>('participant_box', 'cached_participant');
+                      await getIt<HiveService>().delete<Map>(
+                        'participant_box',
+                        'cached_participant',
+                      );
                       _dniController.clear();
                       if (mounted) {
                         setState(() {
                           _linkedParticipant = null;
+                          _discountCodeController.clear();
+                          _isDiscountCodeValid = null;
+                          _discountCodeErrorMessage = null;
                         });
                       }
                     },
                     child: const Text(
                       'DESVINCULAR',
-                      style: TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -277,23 +334,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: activeTenant.primaryColorRef,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () async {
-                      final result = await context.push<bool>('/inscripciones/editar-datos', extra: detail);
+                      final result = await context.push<bool>(
+                        '/inscripciones/editar-datos',
+                        extra: detail,
+                      );
                       if (result == true) {
-                        _participantBloc.add(ParticipantEvent.getDetail(
-                          dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-                          idOrg: '1',
-                          eventoId: '1',
-                          roundId: '1',
-                        ));
+                        _participantBloc.add(
+                          ParticipantEvent.getDetail(
+                            dni:
+                                detail.dni.isNotEmpty
+                                    ? detail.dni
+                                    : _dniController.text,
+                            idOrg: '1',
+                            eventoId: '1',
+                            roundId: '1',
+                          ),
+                        );
                       }
                     },
                     child: const Text(
                       'EDITAR DATOS',
-                      style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -311,7 +382,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
         children: [
           const Text(
             'Buscar Corredor',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -339,19 +414,29 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: activeTenant.primaryColorRef,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   onPressed: () {
                     if (_dniController.text.isNotEmpty) {
-                      _participantBloc.add(ParticipantEvent.getDetail(
-                        dni: _dniController.text,
-                        idOrg: '1',
-                        eventoId: '1',
-                        roundId: '1',
-                      ));
+                      _participantBloc.add(
+                        ParticipantEvent.getDetail(
+                          dni: _dniController.text,
+                          idOrg: '1',
+                          eventoId: '1',
+                          roundId: '1',
+                        ),
+                      );
                     }
                   },
-                  child: const Text('Buscar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Buscar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -360,7 +445,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
           BlocBuilder<ParticipantBloc, ParticipantState>(
             builder: (context, state) {
               return state.maybeWhen(
-                loading: () => const Center(child: CircularProgressIndicator.adaptive()),
+                loading:
+                    () => const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    ),
                 error: (msg) {
                   return Container(
                     padding: const EdgeInsets.all(16),
@@ -376,16 +464,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                     ),
                   );
                 },
-                orElse: () => Container(
-                  padding: const EdgeInsets.all(32),
-                  child: const Center(
-                    child: Text(
-                      'Ingresa un DNI para buscar registros de participación.',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
-                      textAlign: TextAlign.center,
+                orElse:
+                    () => Container(
+                      padding: const EdgeInsets.all(32),
+                      child: const Center(
+                        child: Text(
+                          'Ingresa un DNI para buscar registros de participación.',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
               );
             },
           ),
@@ -416,22 +505,38 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      detail.fullName.isNotEmpty ? detail.fullName : 'Corredor Encontrado',
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      detail.fullName.isNotEmpty
+                          ? detail.fullName
+                          : 'Corredor Encontrado',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     if (!isPreInscripto)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.green.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.green.withValues(alpha: 0.5), width: 1.2),
+                          border: Border.all(
+                            color: Colors.green.withValues(alpha: 0.5),
+                            width: 1.2,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: Colors.green,
+                              size: 14,
+                            ),
                             const SizedBox(width: 6),
                             const Text(
                               'PAGO CONFIRMADO',
@@ -447,16 +552,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                       )
                     else
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.orange.withValues(alpha: 0.5), width: 1.2),
+                          border: Border.all(
+                            color: Colors.orange.withValues(alpha: 0.5),
+                            width: 1.2,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.info_rounded, color: Colors.orange, size: 14),
+                            const Icon(
+                              Icons.info_rounded,
+                              color: Colors.orange,
+                              size: 14,
+                            ),
                             const SizedBox(width: 6),
                             const Text(
                               'PRE-INSCRIPTO',
@@ -476,13 +591,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
               if (!isPreInscripto) ...[
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: activeTenant.primaryColorRef,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: activeTenant.primaryColorRef.withValues(alpha: 0.3),
+                        color: activeTenant.primaryColorRef.withValues(
+                          alpha: 0.3,
+                        ),
                         blurRadius: 6,
                         offset: const Offset(0, 3),
                       ),
@@ -493,12 +613,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
                     children: [
                       const Text(
                         'PLACA',
-                        style: TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         detail.nroPlaca.isNotEmpty ? detail.nroPlaca : '---',
-                        style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ],
                   ),
@@ -509,40 +639,74 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
           const SizedBox(height: 16),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           const SizedBox(height: 8),
-          _buildInfoRow('Nombre:', detail.fullName.isNotEmpty ? detail.fullName : 'No especificado'),
-          _buildInfoRow('DNI:', detail.dni.isNotEmpty ? detail.dni : _dniController.text),
+          _buildInfoRow(
+            'Nombre:',
+            detail.fullName.isNotEmpty ? detail.fullName : 'No especificado',
+          ),
+          _buildInfoRow(
+            'DNI:',
+            detail.dni.isNotEmpty ? detail.dni : _dniController.text,
+          ),
           _buildInfoRow('Fecha de Acreditación:', fechaAcreditacion),
           _buildInfoRow('Fecha de la Carrera:', fechaCarrera),
-          _buildInfoRow('Circuito:', detail.circuito.isNotEmpty ? detail.circuito : 'No especificado'),
-          _buildInfoRow('Categoría:', detail.categoria.isNotEmpty ? detail.categoria : 'No especificado'),
-          _buildInfoRow('Hora de Agrupamiento:', detail.agrupamiento.isNotEmpty ? detail.agrupamiento : 'No especificado'),
-          _buildInfoRow('Largada:', detail.largada.isNotEmpty ? detail.largada : 'No especificado'),
+          _buildInfoRow(
+            'Circuito:',
+            detail.circuito.isNotEmpty ? detail.circuito : 'No especificado',
+          ),
+          _buildInfoRow(
+            'Categoría:',
+            detail.categoria.isNotEmpty ? detail.categoria : 'No especificado',
+          ),
+          _buildInfoRow(
+            'Hora de Agrupamiento:',
+            detail.agrupamiento.isNotEmpty
+                ? detail.agrupamiento
+                : 'No especificado',
+          ),
+          _buildInfoRow(
+            'Largada:',
+            detail.largada.isNotEmpty ? detail.largada : 'No especificado',
+          ),
           if (detail.articulos.isNotEmpty) ...[
             const SizedBox(height: 16),
             Divider(color: Colors.white.withValues(alpha: 0.1)),
             const SizedBox(height: 8),
             const Text(
               'Artículos Adicionales:',
-              style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
-            ...detail.articulos.map((art) => Padding(
-                  padding: const EdgeInsets.only(left: 4.0, bottom: 6.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle_outline_rounded, color: activeTenant.primaryColorRef, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        art,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                )),
+            ...detail.articulos.map(
+              (art) => Padding(
+                padding: const EdgeInsets.only(left: 4.0, bottom: 6.0),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline_rounded,
+                      color: activeTenant.primaryColorRef,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      art,
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
             const Text(
               '* Estos artículos se entregan durante la acreditación.',
-              style: TextStyle(color: Colors.grey, fontSize: 11, fontStyle: FontStyle.italic),
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ],
@@ -557,22 +721,203 @@ class _RegistrationScreenState extends State<RegistrationScreen> with SingleTick
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildDiscountCodeSection(
+    ParticipantDetail detail,
+    TenantConfig activeTenant,
+  ) {
+    return AppCard(
+      style: AppCardStyle.glassmorphic,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.confirmation_number_outlined,
+                color: activeTenant.primaryColorRef,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Código de Descuento',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: AppTextField(
+                  controller: _discountCodeController,
+                  hint: 'Ingresa tu código de descuento',
+                  enabled: !_isValidatingDiscountCode,
+                  onChanged: (val) {
+                    if (_isDiscountCodeValid != null) {
+                      setState(() {
+                        _isDiscountCodeValid = null;
+                        _discountCodeErrorMessage = null;
+                      });
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: activeTenant.primaryColorRef,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  onPressed:
+                      _isValidatingDiscountCode ? null : _validateDiscountCode,
+                  child:
+                      _isValidatingDiscountCode
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                          : const Text(
+                            'Validar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                ),
+              ),
+            ],
+          ),
+          if (_isDiscountCodeValid != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color:
+                    _isDiscountCodeValid!
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.redAccent.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color:
+                      _isDiscountCodeValid!
+                          ? Colors.green.withValues(alpha: 0.4)
+                          : Colors.redAccent.withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _isDiscountCodeValid!
+                        ? Icons.check_circle_rounded
+                        : Icons.error_rounded,
+                    color:
+                        _isDiscountCodeValid! ? Colors.green : Colors.redAccent,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _isDiscountCodeValid!
+                          ? 'Código de descuento válido'
+                          : (_discountCodeErrorMessage ?? 'Código inválido'),
+                      style: TextStyle(
+                        color:
+                            _isDiscountCodeValid!
+                                ? Colors.green
+                                : Colors.redAccent,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
+  Future<void> _validateDiscountCode() async {
+    final code = _discountCodeController.text.trim();
+    if (code.isEmpty) {
+      setState(() {
+        _isDiscountCodeValid = false;
+        _discountCodeErrorMessage = 'El código no puede estar vacío';
+      });
+      return;
+    }
+
+    setState(() {
+      _isValidatingDiscountCode = true;
+      _isDiscountCodeValid = null;
+      _discountCodeErrorMessage = null;
+    });
+
+    try {
+      // Simulating API validation request (the endpoint will be implemented later)
+      await Future.delayed(const Duration(milliseconds: 1200));
+
+      if (mounted) {
+        setState(() {
+          _isValidatingDiscountCode = false;
+          if (code.length >= 4) {
+            _isDiscountCodeValid = true;
+          } else {
+            _isDiscountCodeValid = false;
+            _discountCodeErrorMessage =
+                'El código ingresado no es válido o ya expiró';
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isValidatingDiscountCode = false;
+          _isDiscountCodeValid = false;
+          _discountCodeErrorMessage = 'Error al validar el código: $e';
+        });
+      }
+    }
+  }
 }
 
 class RegistrationWebView extends StatefulWidget {
   final TenantConfig activeTenant;
 
-  const RegistrationWebView({
-    super.key,
-    required this.activeTenant,
-  });
+  const RegistrationWebView({super.key, required this.activeTenant});
 
   @override
   State<RegistrationWebView> createState() => _RegistrationWebViewState();
@@ -592,41 +937,43 @@ class _RegistrationWebViewState extends State<RegistrationWebView>
   void initState() {
     super.initState();
     final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
-    final urlString = cachedSettings?.urlInscripciones ?? 'https://juna.net.ar/desafio2026/';
+    final urlString =
+        cachedSettings?.urlInscripciones ?? 'https://juna.net.ar/desafio2026/';
     _url = urlString;
 
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            if (mounted) {
-              setState(() {
-                _loadingProgress = progress / 100.0;
-              });
-            }
-          },
-          onPageStarted: (String url) {
-            if (mounted) {
-              setState(() {
-                _isLoading = true;
-              });
-            }
-          },
-          onPageFinished: (String url) {
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint("WebView error: ${error.description}");
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(urlString));
+    _controller =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setBackgroundColor(Colors.transparent)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onProgress: (int progress) {
+                if (mounted) {
+                  setState(() {
+                    _loadingProgress = progress / 100.0;
+                  });
+                }
+              },
+              onPageStarted: (String url) {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                }
+              },
+              onPageFinished: (String url) {
+                if (mounted) {
+                  setState(() {
+                    _isLoading = false;
+                  });
+                }
+              },
+              onWebResourceError: (WebResourceError error) {
+                debugPrint("WebView error: ${error.description}");
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse(urlString));
   }
 
   @override

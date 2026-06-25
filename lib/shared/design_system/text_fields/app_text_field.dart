@@ -19,7 +19,7 @@ class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,
     this.controller,
-    required this.label,
+    this.label = '',
     this.hint,
     this.prefixIcon,
     this.suffixIcon,
@@ -48,15 +48,17 @@ class _AppTextFieldState extends State<AppTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          widget.label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+        if (widget.label.isNotEmpty) ...[
+          Text(
+            widget.label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
+        ],
         TextFormField(
           controller: widget.controller,
           obscureText: widget.isPassword && _obscureText,

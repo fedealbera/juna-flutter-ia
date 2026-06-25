@@ -31,6 +31,7 @@ class ParticipantDetail extends Equatable {
   String get domCiudadNombre => _data['domCiudadNombre']?.toString() ?? '';
   String get domProvincia => _data['domProvincia']?.toString() ?? '';
   String get domPais => _data['domPais']?.toString() ?? '';
+  String get insCodDesc => _data['insCodDesc']?.toString() ?? '';
 
   @override
   List<Object?> get props => [rawJson];
