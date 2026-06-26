@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:dio/dio.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -17,6 +18,7 @@ import '../../../settings/presentation/bloc/settings_bloc.dart';
 import '../../../settings/presentation/bloc/settings_event.dart';
 import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
+import '../../../settings/domain/entities/event_settings.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,6 +44,12 @@ class _HomeScreenState extends State<HomeScreen> {
   );
   int? _raceTimestamp;
 
+  // Weather parameters
+  bool _isLoadingWeather = true;
+  double? _weatherTempBase;
+  int _weatherCodeBase = 0;
+  double? _weatherWindBase;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _timeLeft = difference.inSeconds > 0 ? difference : Duration.zero;
         }
       }
+      _loadWeatherForSettings(cached);
     }
 
     // Load active event content and settings
@@ -183,6 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         });
                       }
                     }
+                    _loadWeatherForSettings(settings);
                   },
                   orElse: () {},
                 );
@@ -541,6 +551,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 20),
                     ],
+
+                    // 2.5. Weather Advisory Card
+                    _buildWeatherAdvisoryCard(activeTenant),
+                    const SizedBox(height: 20),
                   ],
                 ),
               );
@@ -586,6 +600,103 @@ class _HomeScreenState extends State<HomeScreen> {
         return null;
       }
     }
+  }
+
+  Future<void> _fetchWeather(double lat, double lng) async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingWeather = true;
+    });
+
+    try {
+      final dio = Dio();
+      final response = await dio.get(
+        'https://api.open-meteo.com/v1/forecast',
+        queryParameters: {
+          'latitude': lat,
+          'longitude': lng,
+          'current': 'temperature_2m,weather_code,wind_speed_10m',
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final current = response.data['current'];
+        if (current != null && mounted) {
+          setState(() {
+            _weatherTempBase = (current['temperature_2m'] as num?)?.toDouble();
+            _weatherCodeBase = (current['weather_code'] as num?)?.toInt() ?? 0;
+            _weatherWindBase = (current['wind_speed_10m'] as num?)?.toDouble();
+            _isLoadingWeather = false;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching weather data: $e');
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoadingWeather = false;
+      });
+    }
+  }
+
+  void _loadWeatherForSettings(EventSettings settings) {
+    final lat = settings.latLargada ?? -26.824;
+    final lon = settings.lonLargada ?? -65.221;
+    _fetchWeather(lat, lon);
+  }
+
+  Map<String, dynamic> _getWeatherInfo(int code) {
+    if (code == 0) {
+      return {
+        'desc': 'Despejado',
+        'icon': Icons.wb_sunny_rounded,
+        'color': Colors.amber,
+      };
+    } else if (code >= 1 && code <= 3) {
+      return {
+        'desc': 'Algo Nublado',
+        'icon': Icons.cloud_queue_rounded,
+        'color': Colors.blueGrey,
+      };
+    } else if (code == 45 || code == 48) {
+      return {
+        'desc': 'Niebla',
+        'icon': Icons.blur_on_rounded,
+        'color': Colors.grey,
+      };
+    } else if ((code >= 51 && code <= 57) || (code >= 80 && code <= 82)) {
+      return {
+        'desc': 'Llovizna',
+        'icon': Icons.umbrella_rounded,
+        'color': Colors.lightBlue,
+      };
+    } else if (code >= 61 && code <= 67) {
+      return {
+        'desc': 'Lluvia',
+        'icon': Icons.grain_rounded,
+        'color': Colors.blue,
+      };
+    } else if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+      return {
+        'desc': 'Nieve',
+        'icon': Icons.ac_unit_rounded,
+        'color': Colors.lightBlueAccent,
+      };
+    } else if (code >= 95) {
+      return {
+        'desc': 'Tormenta',
+        'icon': Icons.thunderstorm_rounded,
+        'color': Colors.deepPurpleAccent,
+      };
+    }
+    return {
+      'desc': 'Despejado',
+      'icon': Icons.wb_sunny_rounded,
+      'color': Colors.amber,
+    };
   }
 
   void _showSosConfirmDialog(BuildContext context) {
@@ -757,6 +868,250 @@ class _HomeScreenState extends State<HomeScreen> {
           fontWeight: FontWeight.w900,
         ),
       ),
+    );
+  }
+
+  Widget _buildWeatherAdvisoryCard(TenantConfig activeTenant) {
+    return AppCard(
+      style: AppCardStyle.glassmorphic,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.wb_sunny_outlined,
+                color: activeTenant.accentColorRef,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Clima & Equipamiento',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_isLoadingWeather)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.0),
+                child: CircularProgressIndicator.adaptive(),
+              ),
+            )
+          else if (_weatherTempBase == null)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.0),
+                child: Text(
+                  'No se pudo cargar la información del clima.',
+                  style: TextStyle(color: Colors.white60, fontSize: 13),
+                ),
+              ),
+            )
+          else ...[
+            Builder(
+              builder: (context) {
+                final baseTemp = _weatherTempBase ?? 0.0;
+                final baseWind = _weatherWindBase ?? 0.0;
+                
+                final baseInfo = _getWeatherInfo(_weatherCodeBase);
+                
+                final summitTemp = baseTemp - 10.0;
+                final summitWind = baseWind * 2.5;
+                final summitInfo = summitWind > 30 
+                    ? {
+                        'desc': 'Viento Fuerte',
+                        'icon': Icons.air_rounded,
+                        'color': Colors.lightBlueAccent,
+                      }
+                    : baseInfo;
+                
+                final arrivalTemp = baseTemp + 1.0;
+                final arrivalInfo = baseInfo;
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildWeatherMetricItem(
+                      title: 'BASE (LARGADA)',
+                      temp: '${baseTemp.toStringAsFixed(1)}°C',
+                      desc: baseInfo['desc'] as String,
+                      icon: baseInfo['icon'] as IconData,
+                      iconColor: baseInfo['color'] as Color,
+                    ),
+                    _buildWeatherMetricDivider(),
+                    _buildWeatherMetricItem(
+                      title: 'CUMBRE',
+                      temp: '${summitTemp.toStringAsFixed(1)}°C',
+                      desc: summitInfo['desc'] as String,
+                      icon: summitInfo['icon'] as IconData,
+                      iconColor: summitInfo['color'] as Color,
+                    ),
+                    _buildWeatherMetricDivider(),
+                    _buildWeatherMetricItem(
+                      title: 'LLEGADA',
+                      temp: '${arrivalTemp.toStringAsFixed(1)}°C',
+                      desc: arrivalInfo['desc'] as String,
+                      icon: arrivalInfo['icon'] as IconData,
+                      iconColor: arrivalInfo['color'] as Color,
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 18),
+            const Divider(color: Colors.white10, height: 1),
+            const SizedBox(height: 14),
+            Builder(
+              builder: (context) {
+                final baseTemp = _weatherTempBase ?? 0.0;
+                final baseWind = _weatherWindBase ?? 0.0;
+                final summitTemp = baseTemp - 10.0;
+                final summitWind = baseWind * 2.5;
+
+                IconData warningIcon = Icons.info_outline_rounded;
+                Color warningColor = Colors.grey;
+                String warningMsg = 'Clima templado en cumbre. Equipamiento estándar sugerido.';
+                
+                if (summitWind > 30 || summitTemp < 10) {
+                  warningIcon = Icons.warning_amber_rounded;
+                  warningColor = Colors.orangeAccent;
+                  warningMsg = 'Alerta en Cumbre: Viento de ${summitWind.toStringAsFixed(0)} km/h a ${summitTemp.toStringAsFixed(1)}°C. Rompevientos obligatorio.';
+                } else if (summitTemp < 5) {
+                  warningIcon = Icons.ac_unit_rounded;
+                  warningColor = Colors.lightBlueAccent;
+                  warningMsg = 'Alerta en Cumbre: Temperatura muy baja (${summitTemp.toStringAsFixed(1)}°C). Abrigarse con capas adicionales.';
+                }
+
+                String uvMsg = 'Índice UV: Moderado. Se recomienda uso de protector solar.';
+                Color uvColor = Colors.amber;
+                if (_weatherCodeBase == 0 || _weatherCodeBase == 1) {
+                  if (baseTemp > 22) {
+                    uvMsg = 'Índice UV: Muy Alto. Llevar protector solar, gorra y anteojos.';
+                    uvColor = Colors.orangeAccent;
+                  } else {
+                    uvMsg = 'Índice UV: Alto. Llevar protector solar y anteojos.';
+                  }
+                }
+
+                String hydrationMsg = 'Hidratación: Clima templado. Llevar mínimo 1.5L de líquido.';
+                Color hydrationColor = Colors.blueAccent;
+                if (baseTemp > 25) {
+                  hydrationMsg = 'Hidratación: Temperatura elevada (${baseTemp.toStringAsFixed(1)}°C). Llevar mínimo 2.0L de líquido y sales.';
+                  hydrationColor = Colors.orange;
+                } else if (baseTemp < 10) {
+                  hydrationMsg = 'Hidratación: Clima frío. Llevar mínimo 1.0L de líquido templado.';
+                  hydrationColor = Colors.lightBlue;
+                }
+
+                return Column(
+                  children: [
+                    _buildWeatherAdvisoryRow(
+                      icon: warningIcon,
+                      iconColor: warningColor,
+                      message: warningMsg,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildWeatherAdvisoryRow(
+                      icon: Icons.wb_sunny_rounded,
+                      iconColor: uvColor,
+                      message: uvMsg,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildWeatherAdvisoryRow(
+                      icon: Icons.water_drop_rounded,
+                      iconColor: hydrationColor,
+                      message: hydrationMsg,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeatherMetricItem({
+    required String title,
+    required String temp,
+    required String desc,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: iconColor, size: 24),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            temp,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            desc,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 9,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeatherMetricDivider() {
+    return Container(
+      height: 40,
+      width: 1,
+      color: Colors.white10,
+    );
+  }
+
+  Widget _buildWeatherAdvisoryRow({
+    required IconData icon,
+    required Color iconColor,
+    required String message,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: iconColor, size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            message,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 11,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
