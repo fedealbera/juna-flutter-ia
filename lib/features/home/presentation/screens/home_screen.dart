@@ -386,119 +386,220 @@ class _HomeScreenState extends State<HomeScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                      child: isRaceDay
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      'PRÓXIMA EDICIÓN ($edicion)',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.7,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'EDICIÓN EN CURSO ($edicion)',
+                                            style: TextStyle(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            appTitle,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            tipoCarrera,
+                                            style: TextStyle(
+                                              color: activeTenant.accentColorRef,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      Icons.directions_run_rounded,
+                                      color: activeTenant.accentColorRef,
+                                      size: 28,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.4),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: activeTenant.accentColorRef.withValues(alpha: 0.3),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: Colors.redAccent,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.redAccent.withValues(alpha: 0.6),
+                                              blurRadius: 8,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
                                         ),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        '¡EL EVENTO ESTÁ EN MARCHA!',
+                                        style: TextStyle(
+                                          color: activeTenant.accentColorRef,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'PRÓXIMA EDICIÓN ($edicion)',
+                                            style: TextStyle(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            appTitle,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            tipoCarrera,
+                                            style: TextStyle(
+                                              color: activeTenant.accentColorRef,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      Icons.timer_outlined,
+                                      color: activeTenant.accentColorRef,
+                                      size: 28,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today_rounded,
+                                      color: activeTenant.accentColorRef,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
                                     Text(
-                                      appTitle,
+                                      'FECHA DEL EVENTO: $fechaCarrera',
                                       style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      tipoCarrera,
-                                      style: TextStyle(
-                                        color: activeTenant.accentColorRef,
-                                        fontSize: 12,
+                                        color: Colors.white70,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(
-                                Icons.timer_outlined,
-                                color: activeTenant.accentColorRef,
-                                size: 28,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.calendar_today_rounded,
-                                color: activeTenant.accentColorRef,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'FECHA DEL EVENTO: $fechaCarrera',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                                const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _buildCountdownBlock(
+                                      _timeLeft.inDays.toString(),
+                                      'DÍAS',
+                                      activeTenant,
+                                    ),
+                                    _buildCountdownDivider(activeTenant),
+                                    _buildCountdownBlock(
+                                      (_timeLeft.inHours.remainder(
+                                        24,
+                                      )).toString().padLeft(2, '0'),
+                                      'HORAS',
+                                      activeTenant,
+                                    ),
+                                    _buildCountdownDivider(activeTenant),
+                                    _buildCountdownBlock(
+                                      (_timeLeft.inMinutes.remainder(
+                                        60,
+                                      )).toString().padLeft(2, '0'),
+                                      'MINUTOS',
+                                      activeTenant,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildCountdownBlock(
-                                _timeLeft.inDays.toString(),
-                                'DÍAS',
-                                activeTenant,
-                              ),
-                              _buildCountdownDivider(activeTenant),
-                              _buildCountdownBlock(
-                                (_timeLeft.inHours.remainder(
-                                  24,
-                                )).toString().padLeft(2, '0'),
-                                'HORAS',
-                                activeTenant,
-                              ),
-                              _buildCountdownDivider(activeTenant),
-                              _buildCountdownBlock(
-                                (_timeLeft.inMinutes.remainder(
-                                  60,
-                                )).toString().padLeft(2, '0'),
-                                'MINUTOS',
-                                activeTenant,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          AppButton(
-                            text: 'Ver Inscripción',
-                            onPressed: () => context.go('/inscripciones'),
-                            type: AppButtonType.outlined,
-                            borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
-                                ? activeTenant.accentColorRef
-                                : activeTenant.primaryColorRef,
-                            textColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
-                                ? activeTenant.accentColorRef
-                                : activeTenant.primaryColorRef,
-                          ),
-                        ],
-                      ),
+                                const SizedBox(height: 24),
+                                AppButton(
+                                  text: 'Ver Inscripción',
+                                  onPressed: () => context.go('/inscripciones'),
+                                  type: AppButtonType.outlined,
+                                  borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                      ? activeTenant.accentColorRef
+                                      : activeTenant.primaryColorRef,
+                                  textColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                      ? activeTenant.accentColorRef
+                                      : activeTenant.primaryColorRef,
+                                ),
+                              ],
+                            ),
                     ),
                     const SizedBox(height: 20),
 
