@@ -18,7 +18,7 @@ class RegistrationRepositoryImpl implements RegistrationRepository {
   }) async {
     final response = await _remoteDataSource.validateDiscount(
       insId,
-      ValidateDiscountRequestDto(cod: code),
+      ValidateDiscountRequestDto(codigo: code),
     );
     return RegistrationMapper.toEntity(response);
   }

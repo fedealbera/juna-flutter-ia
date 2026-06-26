@@ -6,7 +6,7 @@ part 'validate_discount_request_dto.g.dart';
 @freezed
 class ValidateDiscountRequestDto with _$ValidateDiscountRequestDto {
   const factory ValidateDiscountRequestDto({
-    @JsonKey(name: 'cod') String? cod,
+    @JsonKey(name: 'codigo') String? codigo,
   }) = _ValidateDiscountRequestDto;
 
   factory ValidateDiscountRequestDto.fromJson(Map<String, dynamic> json) =>

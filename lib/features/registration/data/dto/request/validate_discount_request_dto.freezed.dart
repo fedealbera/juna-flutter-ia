@@ -21,8 +21,8 @@ ValidateDiscountRequestDto _$ValidateDiscountRequestDtoFromJson(
 
 /// @nodoc
 mixin _$ValidateDiscountRequestDto {
-  @JsonKey(name: 'cod')
-  String? get cod => throw _privateConstructorUsedError;
+  @JsonKey(name: 'codigo')
+  String? get codigo => throw _privateConstructorUsedError;
 
   /// Serializes this ValidateDiscountRequestDto to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -41,7 +41,7 @@ abstract class $ValidateDiscountRequestDtoCopyWith<$Res> {
       _$ValidateDiscountRequestDtoCopyWithImpl<$Res,
           ValidateDiscountRequestDto>;
   @useResult
-  $Res call({@JsonKey(name: 'cod') String? cod});
+  $Res call({@JsonKey(name: 'codigo') String? codigo});
 }
 
 /// @nodoc
@@ -60,12 +60,12 @@ class _$ValidateDiscountRequestDtoCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cod = freezed,
+    Object? codigo = freezed,
   }) {
     return _then(_value.copyWith(
-      cod: freezed == cod
-          ? _value.cod
-          : cod // ignore: cast_nullable_to_non_nullable
+      codigo: freezed == codigo
+          ? _value.codigo
+          : codigo // ignore: cast_nullable_to_non_nullable
               as String?,
     ) as $Val);
   }
@@ -80,7 +80,7 @@ abstract class _$$ValidateDiscountRequestDtoImplCopyWith<$Res>
       __$$ValidateDiscountRequestDtoImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({@JsonKey(name: 'cod') String? cod});
+  $Res call({@JsonKey(name: 'codigo') String? codigo});
 }
 
 /// @nodoc
@@ -98,12 +98,12 @@ class __$$ValidateDiscountRequestDtoImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? cod = freezed,
+    Object? codigo = freezed,
   }) {
     return _then(_$ValidateDiscountRequestDtoImpl(
-      cod: freezed == cod
-          ? _value.cod
-          : cod // ignore: cast_nullable_to_non_nullable
+      codigo: freezed == codigo
+          ? _value.codigo
+          : codigo // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
   }
@@ -112,19 +112,20 @@ class __$$ValidateDiscountRequestDtoImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ValidateDiscountRequestDtoImpl implements _ValidateDiscountRequestDto {
-  const _$ValidateDiscountRequestDtoImpl({@JsonKey(name: 'cod') this.cod});
+  const _$ValidateDiscountRequestDtoImpl(
+      {@JsonKey(name: 'codigo') this.codigo});
 
   factory _$ValidateDiscountRequestDtoImpl.fromJson(
           Map<String, dynamic> json) =>
       _$$ValidateDiscountRequestDtoImplFromJson(json);
 
   @override
-  @JsonKey(name: 'cod')
-  final String? cod;
+  @JsonKey(name: 'codigo')
+  final String? codigo;
 
   @override
   String toString() {
-    return 'ValidateDiscountRequestDto(cod: $cod)';
+    return 'ValidateDiscountRequestDto(codigo: $codigo)';
   }
 
   @override
@@ -132,12 +133,12 @@ class _$ValidateDiscountRequestDtoImpl implements _ValidateDiscountRequestDto {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ValidateDiscountRequestDtoImpl &&
-            (identical(other.cod, cod) || other.cod == cod));
+            (identical(other.codigo, codigo) || other.codigo == codigo));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, cod);
+  int get hashCode => Object.hash(runtimeType, codigo);
 
   /// Create a copy of ValidateDiscountRequestDto
   /// with the given fields replaced by the non-null parameter values.
@@ -159,15 +160,15 @@ class _$ValidateDiscountRequestDtoImpl implements _ValidateDiscountRequestDto {
 abstract class _ValidateDiscountRequestDto
     implements ValidateDiscountRequestDto {
   const factory _ValidateDiscountRequestDto(
-          {@JsonKey(name: 'cod') final String? cod}) =
+          {@JsonKey(name: 'codigo') final String? codigo}) =
       _$ValidateDiscountRequestDtoImpl;
 
   factory _ValidateDiscountRequestDto.fromJson(Map<String, dynamic> json) =
       _$ValidateDiscountRequestDtoImpl.fromJson;
 
   @override
-  @JsonKey(name: 'cod')
-  String? get cod;
+  @JsonKey(name: 'codigo')
+  String? get codigo;
 
   /// Create a copy of ValidateDiscountRequestDto
   /// with the given fields replaced by the non-null parameter values.

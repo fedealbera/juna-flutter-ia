@@ -22,6 +22,8 @@ import '../../../participant/presentation/bloc/participant_state.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../bloc/registration_bloc.dart';
+import '../bloc/registration_event.dart';
+import '../bloc/registration_state.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -202,6 +204,118 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       }
                     } catch (e) {
                       debugPrint('Error getting Firebase token: $e');
+                    }
+                  },
+                  orElse: () {},
+                );
+              },
+            ),
+            BlocListener<RegistrationBloc, RegistrationState>(
+              listener: (context, state) {
+                state.maybeWhen(
+                  loading: () {
+                    if (mounted) {
+                      setState(() {
+                        _isValidatingDiscountCode = true;
+                      });
+                    }
+                  },
+                  discountValidated: (result) {
+                    final json = result.rawJson;
+                    final dispoCod = json['dispo_cod'] as String?;
+                    final isVigente = dispoCod == 'VIGENTE';
+
+                    if (mounted) {
+                      setState(() {
+                        _isValidatingDiscountCode = false;
+                        _isDiscountCodeValid = isVigente;
+                        if (!isVigente) {
+                          _discountCodeErrorMessage = json['dispo_msg'] as String? ?? 'Código no validado';
+                        }
+                      });
+                    }
+
+                    if (isVigente) {
+                      final inicio = json['locd_fecha_inicio'] as String? ?? '';
+                      final fin = json['locd_fecha_fin'] as String? ?? '';
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: activeTenant.backgroundColorRef,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: const Row(
+                            children: [
+                              Icon(Icons.check_circle_outline_rounded, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text(
+                                'Código Confirmado',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          content: Text(
+                            'El código fue confirmado y tiene fecha vigente desde $inicio hasta $fin.',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text(
+                                'Aceptar',
+                                style: TextStyle(color: activeTenant.primaryColorRef),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      final errorMsg = json['dispo_msg'] as String? ?? 'Código no validado';
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: activeTenant.backgroundColorRef,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: const Row(
+                            children: [
+                              Icon(Icons.error_outline_rounded, color: Colors.redAccent),
+                              SizedBox(width: 8),
+                              Text(
+                                'Código No Validado',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          content: Text(
+                            errorMsg,
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text(
+                                'Aceptar',
+                                style: TextStyle(color: activeTenant.primaryColorRef),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  error: (msg) {
+                    if (mounted) {
+                      setState(() {
+                        _isValidatingDiscountCode = false;
+                        _isDiscountCodeValid = false;
+                        _discountCodeErrorMessage = msg;
+                      });
                     }
                   },
                   orElse: () {},
@@ -765,8 +879,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
-                  onPressed:
-                      _isValidatingDiscountCode ? null : _validateDiscountCode,
+                  onPressed: _isValidatingDiscountCode
+                      ? null
+                      : () => _validateDiscountCode(detail.id),
                   child:
                       _isValidatingDiscountCode
                           ? const SizedBox(
@@ -844,7 +959,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     );
   }
 
-  Future<void> _validateDiscountCode() async {
+  void _validateDiscountCode(String insId) {
     final code = _discountCodeController.text.trim();
     if (code.isEmpty) {
       setState(() {
@@ -854,37 +969,12 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       return;
     }
 
-    setState(() {
-      _isValidatingDiscountCode = true;
-      _isDiscountCodeValid = null;
-      _discountCodeErrorMessage = null;
-    });
-
-    try {
-      // Simulating API validation request (the endpoint will be implemented later)
-      await Future.delayed(const Duration(milliseconds: 1200));
-
-      if (mounted) {
-        setState(() {
-          _isValidatingDiscountCode = false;
-          if (code.length >= 4) {
-            _isDiscountCodeValid = true;
-          } else {
-            _isDiscountCodeValid = false;
-            _discountCodeErrorMessage =
-                'El código ingresado no es válido o ya expiró';
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isValidatingDiscountCode = false;
-          _isDiscountCodeValid = false;
-          _discountCodeErrorMessage = 'Error al validar el código: $e';
-        });
-      }
-    }
+    _registrationBloc.add(
+      RegistrationEvent.validateDiscount(
+        insId: insId,
+        code: code,
+      ),
+    );
   }
 }
 

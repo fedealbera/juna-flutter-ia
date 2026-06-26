@@ -9,11 +9,11 @@ part of 'validate_discount_request_dto.dart';
 _$ValidateDiscountRequestDtoImpl _$$ValidateDiscountRequestDtoImplFromJson(
         Map<String, dynamic> json) =>
     _$ValidateDiscountRequestDtoImpl(
-      cod: json['cod'] as String?,
+      codigo: json['codigo'] as String?,
     );
 
 Map<String, dynamic> _$$ValidateDiscountRequestDtoImplToJson(
         _$ValidateDiscountRequestDtoImpl instance) =>
     <String, dynamic>{
-      'cod': instance.cod,
+      'codigo': instance.codigo,
     };
