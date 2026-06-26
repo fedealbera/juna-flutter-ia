@@ -85,6 +85,11 @@ Based on the value of `nroPlaca` returned by the runner details endpoint:
   * Renders a highly highlighted plate code container showing the plate number.
   * Displays a `DOCUMENTACIÓN` button that routes to the document upload screen.
 
+### Discount Code Validation Mapping
+Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{insId}/descuento` sending a body containing `codigo`. The response is mapped as follows:
+* **`dispo_cod == "VIGENTE"`:** Displays an `AlertDialog` confirming the code validation and detailing its validity range (`locd_fecha_inicio` to `locd_fecha_fin`) with a font size of 16.
+* **Otherwise:** Displays an `AlertDialog` with the error `dispo_msg` returned from the API, and sets the local validation state to false.
+
 ---
 
 ## 4. Participant Documentation & Camera Upload Workflow
@@ -142,7 +147,7 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 * **`HomeScreen`:** Displays dynamic banner carousels based on sports categories, event countdown clocks, and custom SOS buttons. The hero banner image is loaded dynamically from the settings key `IMAGE_BANNER`. All explicit fallback banner URLs have been removed, and the banner container is hidden conditionally if `IMAGE_BANNER` is empty or not provided. The **Next Event Countdown card** uses a dynamic gradient computed from the active tenant's primary and secondary colors: if the secondary color has high luminance (bright), the gradient blends toward the dark background `#1E1E1E` for contrast; otherwise it uses the secondary color directly. The **"Ver Inscripción"** button uses luminance-aware coloring—if the primary color is very dark, it uses the tenant's accent color for both border and text to ensure visibility.
 * **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". In the "VER PARTICIPANTE" tab:
   * The "PAGAR" and "DOCUMENTACIÓN" buttons are styled with explicit white font and icon colors.
-  * If the participant details response contains a discount code (`insCodDesc`), a glassmorphic **Código de Descuento** card section is conditionally displayed below the participant details card. This card contains an input field (`AppTextField` without a label) to edit the discount code and a validate button (`Validar`) that triggers simulated validation.
+  * If the participant details response contains a discount code (`insCodDesc`), a glassmorphic **Código de Descuento** card section is conditionally displayed below the participant details card. This card contains an input field (`AppTextField` without a label) to edit the discount code and a validate button (`Validar`) that triggers the real validation.
   * The "DESVINCULAR" and "EDITAR DATOS" buttons are refactored to use the unified design system `AppButton` component, ensuring a consistent height of `52dp` and standard scaling/cursor animations.
   * The `RegistrationWebView` uses vertical and horizontal drag gesture recognizers on the `WebViewWidget` constructor to prevent scroll blocking.
 * **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency contact section is displayed always (the condition hiding it when `nroPlaca == 0` has been removed). Saving data on this screen triggers a single unified `PUT /api/participantes/{partiId}` request to save both contact and emergency info in one action.
@@ -159,6 +164,13 @@ These allow per-usage custom styling without subclassing, enabling tenant-aware 
 
 ### Design System — `AppTextField`
 `AppTextField` (`lib/shared/design_system/text_fields/app_text_field.dart`) supports an optional `label` parameter (defaulting to `""`). When no label is provided or is empty, the label widget and its accompanying vertical spacing are omitted from the layout, facilitating cleaner UI designs.
+
+### Design System — Fallback Branding Logo
+The fallback logo container (`_fallbackLogo` inside `BrandingManager`) has been redesigned into a premium glowing pill-style badge. It features:
+* A linear gradient background blending the tenant's primary theme color at different opacities.
+* A sharp, colored neon border.
+* Uppercase typography with custom letter spacing for high-end sport aesthetics.
+* A live glowing circular status dot in the primary color, making it look modern and alive.
 
 ---
 
