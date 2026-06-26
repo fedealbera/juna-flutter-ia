@@ -50,6 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
   int _weatherCodeBase = 0;
   double? _weatherWindBase;
 
+  // Scroll parameters for visual indicator
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollIndicator = true;
+
   @override
   void initState() {
     super.initState();
@@ -116,6 +120,20 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     });
+
+    _scrollController.addListener(() {
+      if (_scrollController.hasClients) {
+        if (_scrollController.offset > 30 && _showScrollIndicator) {
+          setState(() {
+            _showScrollIndicator = false;
+          });
+        } else if (_scrollController.offset <= 30 && !_showScrollIndicator) {
+          setState(() {
+            _showScrollIndicator = true;
+          });
+        }
+      }
+    });
   }
 
   void _loadEventContent() {
@@ -136,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _tenantManager.removeListener(_onTenantChanged);
     _countdownTimer.cancel();
+    _scrollController.dispose();
     _settingsBloc.close();
     super.dispose();
   }
@@ -255,12 +274,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               }
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 20.0,
-                ),
-                child: Column(
+              return Stack(
+                children: [
+                  SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 20.0,
+                    ),
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (bannerImage.isNotEmpty) ...[
@@ -557,7 +579,64 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 20),
                   ],
                 ),
-              );
+              ),
+              Positioned(
+                bottom: 16,
+                left: 0,
+                right: 0,
+                child: IgnorePointer(
+                  ignoring: true,
+                  child: AnimatedOpacity(
+                    opacity: _showScrollIndicator ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: activeTenant.accentColorRef.withValues(alpha: 0.5),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: activeTenant.accentColorRef.withValues(alpha: 0.25),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'MÁS INFORMACIÓN',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              Icons.keyboard_double_arrow_down_rounded,
+                              color: activeTenant.accentColorRef,
+                              size: 14,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
             },
           ),
         ),
