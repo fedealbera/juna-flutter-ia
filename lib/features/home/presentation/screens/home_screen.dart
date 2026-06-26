@@ -426,15 +426,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'Cronómetro Oficial',
-                                            style: TextStyle(
-                                              color: activeTenant.accentColorRef,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
+
                                         ],
                                       ),
                                     ),
