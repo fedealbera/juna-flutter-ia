@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -528,6 +529,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 16),
                             AppButton(
                               text: 'ENVIAR ALERTA SOS',
+                              textColor: isEnabledSosSetting && isRaceDay ? Colors.white : null,
                               onPressed:
                                   isEnabledSosSetting && isRaceDay
                                       ? () => _showSosConfirmDialog(context)
@@ -549,65 +551,150 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    try {
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return null;
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return null;
+      }
+
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 6),
+        ),
+      );
+    } catch (_) {
+      try {
+        return await Geolocator.getLastKnownPosition();
+      } catch (_) {
+        return null;
+      }
+    }
+  }
+
   void _showSosConfirmDialog(BuildContext context) {
     final activeTenant = _tenantManager.value;
+    bool isFetchingLocation = false;
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        return BlocProvider<EmergencyBloc>.value(
-          value: _emergencyBloc,
-          child: AlertDialog(
-            backgroundColor: activeTenant.backgroundColorRef,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.2)),
-            ),
-            title: const Row(
-              children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
-                SizedBox(width: 10),
-                Text(
-                  'Confirmar Emergencia',
-                  style: TextStyle(color: Colors.white),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return BlocProvider<EmergencyBloc>.value(
+              value: _emergencyBloc,
+              child: AlertDialog(
+                backgroundColor: activeTenant.backgroundColorRef,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.2)),
                 ),
-              ],
-            ),
-            content: const Text(
-              '¿Estás seguro de que deseas enviar una alerta de rescate SOS? Esto compartirá tu ubicación GPS actual con el equipo médico de la organización.',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: const Text(
-                  'CANCELAR',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                ),
-                onPressed: () {
-                  _emergencyBloc.add(
-                    const EmergencyEvent.sendSos(
-                      partiId: 'parti_demo_1',
-                      eventoId: '1',
-                      orgId: '1',
-                      latitud: '-34.6037',
-                      longitud: '-58.3816',
+                title: Row(
+                  children: const [
+                    Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Confirmar Emergencia',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
-                  );
-                  Navigator.pop(dialogContext);
-                },
-                child: const Text(
-                  'ENVIAR SOS',
-                  style: TextStyle(color: Colors.white),
+                  ],
                 ),
+                content: const Text(
+                  '¿Estás seguro de que deseas enviar una alerta de rescate SOS? Esto compartirá tu ubicación GPS actual con el equipo médico de la organización.',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: isFetchingLocation ? null : () => Navigator.pop(dialogContext),
+                    child: const Text(
+                      'CANCELAR',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                    ),
+                    onPressed: isFetchingLocation
+                        ? null
+                        : () async {
+                            setDialogState(() {
+                              isFetchingLocation = true;
+                            });
+
+                            final position = await _getCurrentLocation();
+                            
+                            // Default fallback coordinates if fetching fails
+                            String lat = '-34.6037';
+                            String lng = '-58.3816';
+
+                            if (position != null) {
+                              lat = position.latitude.toString();
+                              lng = position.longitude.toString();
+                            } else {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'No se pudo obtener la ubicación GPS precisa. Se enviaron coordenadas predeterminadas de emergencia.',
+                                    ),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              }
+                            }
+
+                            _emergencyBloc.add(
+                              EmergencyEvent.sendSos(
+                                partiId: 'parti_demo_1',
+                                eventoId: '1',
+                                orgId: '1',
+                                latitud: lat,
+                                longitud: lng,
+                              ),
+                            );
+
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                          },
+                    child: isFetchingLocation
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'ENVIAR SOS',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

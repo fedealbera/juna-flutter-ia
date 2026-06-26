@@ -245,13 +245,15 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          title: const Row(
-                            children: [
+                          title: Row(
+                            children: const [
                               Icon(Icons.check_circle_outline_rounded, color: Colors.green),
                               SizedBox(width: 8),
-                              Text(
-                                'Código Confirmado',
-                                style: TextStyle(color: Colors.white),
+                              Expanded(
+                                child: Text(
+                                  'Código Confirmado',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ],
                           ),
@@ -282,13 +284,15 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          title: const Row(
-                            children: [
+                          title: Row(
+                            children: const [
                               Icon(Icons.error_outline_rounded, color: Colors.redAccent),
                               SizedBox(width: 8),
-                              Text(
-                                'Código No Validado',
-                                style: TextStyle(color: Colors.white),
+                              Expanded(
+                                child: Text(
+                                  'Código No Validado',
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ],
                           ),
