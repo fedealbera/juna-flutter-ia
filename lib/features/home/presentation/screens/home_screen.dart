@@ -240,12 +240,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   settings?.tipoCarrera.isNotEmpty == true
                       ? settings!.tipoCarrera
                       : 'MOUNTAIN BIKE';
-              final fechaCarrera =
-                  settings?.fechaCarrera.isNotEmpty == true
-                      ? settings!.fechaCarrera
-                      : '7 de Junio';
+               final fechaCarrera =
+                   settings?.fechaCarrera.isNotEmpty == true
+                       ? settings!.fechaCarrera
+                       : '7 de Junio';
 
-              final isVisibleSos =
+              final bool isBikeRace = tipoCarrera.toUpperCase().contains('BIKE') ||
+                  tipoCarrera.toUpperCase().contains('CICLI') ||
+                  tipoCarrera.toUpperCase().contains('MTB');
+              final IconData sportIcon = isBikeRace 
+                  ? Icons.directions_bike_rounded 
+                  : Icons.directions_run_rounded;
+
+               final isVisibleSos =
                   settings != null
                       ? settings.getSetting('ISVISIBLE_SOS') == 'TRUE'
                       : activeTenant.enableLiveTracking;
@@ -409,9 +416,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           ),
                                           const SizedBox(height: 4),
-                                          Text(
-                                            appTitle,
-                                            style: const TextStyle(
+                                          const Text(
+                                            'Evento en Marcha',
+                                            style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
@@ -421,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            tipoCarrera,
+                                            'Cronómetro Oficial',
                                             style: TextStyle(
                                               color: activeTenant.accentColorRef,
                                               fontSize: 12,
@@ -433,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Icon(
-                                      Icons.directions_run_rounded,
+                                      sportIcon,
                                       color: activeTenant.accentColorRef,
                                       size: 28,
                                     ),
@@ -509,9 +516,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                           ),
                                           const SizedBox(height: 4),
-                                          Text(
-                                            appTitle,
-                                            style: const TextStyle(
+                                          const Text(
+                                            'Cuenta Regresiva',
+                                            style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
@@ -521,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            tipoCarrera,
+                                            'Cronómetro Oficial',
                                             style: TextStyle(
                                               color: activeTenant.accentColorRef,
                                               fontSize: 12,
@@ -533,7 +540,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Icon(
-                                      Icons.timer_outlined,
+                                      sportIcon,
                                       color: activeTenant.accentColorRef,
                                       size: 28,
                                     ),
