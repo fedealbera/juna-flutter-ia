@@ -633,6 +633,7 @@ class _MapsScreenState extends State<MapsScreen> {
                   child: AppButton(
                     text: 'CÓMO LLEGAR',
                     icon: Icons.directions_rounded,
+                    textColor: Colors.white,
                     onPressed: () => _launchNavigation(lat!, lon!),
                     type: AppButtonType.primary,
                   ),
