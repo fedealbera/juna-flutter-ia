@@ -445,6 +445,7 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                                             if (estado == 'SD' || estado == 'OB')
                                               AppButton(
                                                 text: 'Subir',
+                                                textColor: Colors.white,
                                                 icon: Icons.photo_camera_rounded,
                                                 onPressed: () => _handleUpload(key),
                                                 width: 140,
@@ -452,6 +453,7 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                                             if (estado == 'AP')
                                               AppButton(
                                                 text: 'VER',
+                                                textColor: Colors.white,
                                                 icon: Icons.visibility_rounded,
                                                 onPressed: () => _viewDocument(publicUrl),
                                                 type: AppButtonType.outlined,

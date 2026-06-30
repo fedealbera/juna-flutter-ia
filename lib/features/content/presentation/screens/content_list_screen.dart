@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
+import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../maps/presentation/screens/maps_screen.dart';
 import '../bloc/content_bloc.dart';
 import '../bloc/content_event.dart';
@@ -105,180 +106,275 @@ class _ContentListScreenState extends State<ContentListScreen> {
             ),
           ],
         ),
-        body: BlocBuilder<ContentBloc, ContentState>(
-          builder: (context, state) {
-            return state.when(
-              initial: () => const Center(child: CircularProgressIndicator.adaptive()),
-              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-              error: (message) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 48),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error al cargar contenidos:\n$message',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white70),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                activeTenant.primaryColorRef.withValues(alpha: 0.15),
+                activeTenant.secondaryColorRef.withValues(alpha: 0.05),
+                Colors.black,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: BlocBuilder<ContentBloc, ContentState>(
+            builder: (context, state) {
+              return state.when(
+                initial: () => const Center(child: CircularProgressIndicator.adaptive()),
+                loading: () => const Center(child: CircularProgressIndicator.adaptive()),
+                error: (message) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 48),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error al cargar contenidos:\n$message',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                        const SizedBox(height: 24),
+                        AppButton(
+                          text: 'REINTENTAR',
+                          textColor: Colors.white,
+                          onPressed: _loadContent,
+                          width: 160,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _loadContent,
-                      child: const Text('Reintentar'),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              loaded: (content) {
-                final List<dynamic> archivos = content.rawJson['archivos'] ?? [];
-                final filtered = archivos.where((item) {
-                  final tc = item['tipoContenido'];
-                  final tcInt = int.tryParse(tc?.toString() ?? '');
-                  return tcInt == widget.tipoContenido;
-                }).toList();
+                loaded: (content) {
+                  final List<dynamic> archivos = content.rawJson['archivos'] ?? [];
+                  final filtered = archivos.where((item) {
+                    final tc = item['tipoContenido'];
+                    final tcInt = int.tryParse(tc?.toString() ?? '');
+                    return tcInt == widget.tipoContenido;
+                  }).toList();
 
-                if (filtered.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No hay contenidos disponibles en esta sección.',
-                      style: TextStyle(color: Colors.white54, fontSize: 15),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final item = filtered[index];
-                    final String name = item['nombre']?.toString() ?? 'Sin título';
-                    final String desc = item['descripcion']?.toString() ?? '';
-                    final String tipo = item['tipoArchivo']?.toString() ?? '';
-                    final String link = item['link']?.toString() ?? '';
-                    final String extLink = item['extLink']?.toString() ?? '';
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: AppCard(
-                        style: AppCardStyle.glassmorphic,
-                        padding: EdgeInsets.zero,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () {
-                            final resolvedUrl = _resolveUrl(link);
-                            if (tipo == 'IMG') {
-                              if (extLink.isNotEmpty) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => CircuitWebViewScreen(
-                                      title: name,
-                                      url: _resolveUrl(extLink),
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ImageViewerScreen(
-                                      title: name,
-                                      imageUrl: resolvedUrl,
-                                    ),
-                                  ),
-                                );
-                              }
-                            } else if (tipo == 'VID') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => VideoPlayerScreen(
-                                    title: name,
-                                    videoUrl: resolvedUrl,
-                                  ),
-                                ),
-                              );
-                            } else if (tipo == 'PDF') {
-                              _handlePdfLaunch(link);
-                            } else if (tipo == 'URL') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CircuitWebViewScreen(
-                                    title: name,
-                                    url: resolvedUrl,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(14.0),
-                            child: Row(
-                              children: [
-                                // Thumbnail / Media Badge on the Left
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Container(
-                                    width: 56,
-                                    height: 56,
-                                    color: Colors.white.withValues(alpha: 0.05),
-                                    child: _buildMediaPreview(tipo, link),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-
-                                // Text contents
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        name,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      if (desc.isNotEmpty) ...[
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          desc,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(alpha: 0.5),
-                                            fontSize: 12,
+                  return RefreshIndicator(
+                    onRefresh: () async => _loadContent(),
+                    color: activeTenant.primaryColorRef,
+                    backgroundColor: Colors.grey.shade900,
+                    child: filtered.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(
+                                height: MediaQuery.of(context).size.height * 0.7,
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(32.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        // Glowing Icon Container
+                                        Container(
+                                          padding: const EdgeInsets.all(24),
+                                          decoration: BoxDecoration(
+                                            color: activeTenant.primaryColorRef.withValues(alpha: 0.1),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: activeTenant.primaryColorRef.withValues(alpha: 0.25),
+                                              width: 2,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: activeTenant.primaryColorRef.withValues(alpha: 0.15),
+                                                blurRadius: 24,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Icon(
+                                            widget.tipoContenido == 2
+                                                ? Icons.newspaper_rounded
+                                                : Icons.info_outline_rounded,
+                                            color: activeTenant.primaryColorRef,
+                                            size: 64,
                                           ),
                                         ),
+                                        const SizedBox(height: 32),
+                                        // Title
+                                        Text(
+                                          (widget.tipoContenido == 2
+                                              ? 'Sin novedades por el momento'
+                                              : 'Sin información disponible').toUpperCase(),
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.0,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        // Subtitle
+                                        Text(
+                                          widget.tipoContenido == 2
+                                              ? 'Las últimas noticias y anuncios de la carrera aparecerán aquí.'
+                                              : 'Reglamentos, cronogramas y accesos importantes se publicarán en esta sección.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.6),
+                                            fontSize: 14,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 32),
+                                        // Action Button
+                                        AppButton(
+                                          text: 'ACTUALIZAR',
+                                          icon: Icons.refresh_rounded,
+                                          textColor: Colors.white,
+                                          onPressed: _loadContent,
+                                          width: 180,
+                                        ),
                                       ],
-                                    ],
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final item = filtered[index];
+                              final String name = item['nombre']?.toString() ?? 'Sin título';
+                              final String desc = item['descripcion']?.toString() ?? '';
+                              final String tipo = item['tipoArchivo']?.toString() ?? '';
+                              final String link = item['link']?.toString() ?? '';
+                              final String extLink = item['extLink']?.toString() ?? '';
 
-                                // Play or Open chevron icon indicator
-                                Icon(
-                                  tipo == 'VID'
-                                      ? Icons.play_arrow_rounded
-                                      : Icons.arrow_forward_ios_rounded,
-                                  color: Colors.white.withValues(alpha: 0.4),
-                                  size: 16,
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12.0),
+                                child: AppCard(
+                                  style: AppCardStyle.glassmorphic,
+                                  padding: EdgeInsets.zero,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () {
+                                      final resolvedUrl = _resolveUrl(link);
+                                      if (tipo == 'IMG') {
+                                        if (extLink.isNotEmpty) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => CircuitWebViewScreen(
+                                                title: name,
+                                                url: _resolveUrl(extLink),
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ImageViewerScreen(
+                                                title: name,
+                                                imageUrl: resolvedUrl,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } else if (tipo == 'VID') {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => VideoPlayerScreen(
+                                              title: name,
+                                              videoUrl: resolvedUrl,
+                                            ),
+                                          ),
+                                        );
+                                      } else if (tipo == 'PDF') {
+                                        _handlePdfLaunch(link);
+                                      } else if (tipo == 'URL') {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => CircuitWebViewScreen(
+                                              title: name,
+                                              url: resolvedUrl,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(14.0),
+                                      child: Row(
+                                        children: [
+                                          // Thumbnail / Media Badge on the Left
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: Container(
+                                              width: 56,
+                                              height: 56,
+                                              color: Colors.white.withValues(alpha: 0.05),
+                                              child: _buildMediaPreview(tipo, link),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 14),
+
+                                          // Text contents
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  name,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                if (desc.isNotEmpty) ...[
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    desc,
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      color: Colors.white.withValues(alpha: 0.5),
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+
+                                          // Play or Open chevron icon indicator
+                                          Icon(
+                                            tipo == 'VID'
+                                                ? Icons.play_arrow_rounded
+                                                : Icons.arrow_forward_ios_rounded,
+                                            color: Colors.white.withValues(alpha: 0.4),
+                                            size: 16,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          },
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

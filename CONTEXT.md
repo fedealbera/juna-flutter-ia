@@ -99,9 +99,9 @@ Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{ins
 The document sub-route `/inscripciones/documentacion` manages all required runner certifications:
 
 1. **Document Requirements (GET):** The screen queries `GET /api/participantes/{id}/archivos` using the participant's ID. It retrieves document files and checks their status:
-   * `SD` (Sin Entregar) or `OB` (Observado/Rechazado): Shows a **"Subir"** button to capture files.
+   * `SD` (Sin Entregar) or `OB` (Observado/Rechazado): Shows a **"Subir"** button (styled with explicit white text and icon color) to capture files.
    * `PE` (En Revisión): Shows a text indicating validation is pending.
-   * `AP` (Aprobado): Shows a **"VER"** button opening the public image URL.
+   * `AP` (Aprobado): Shows a **"VER"** button (styled with explicit white text and icon color) opening the public image URL.
 2. **Camera Access & Multipart Upload (POST):** Clicking **"Subir"** triggers the native camera via `image_picker`. The photo is sent via a Multipart request to `POST /api/participantes/archivos` containing parameters:
    * `parti_id` (runner ID)
    * `tipo` (e.g. `CERTIFICADO_MEDICO`, `DESLINDE_RESPONSABILIDAD`, `AUTORIZACION_MENORES`)
@@ -155,6 +155,7 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 * **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency contact section is displayed always (the condition hiding it when `nroPlaca == 0` has been removed). Saving data on this screen triggers a single unified `PUT /api/participantes/{partiId}` request to save both contact and emergency info in one action.
 * **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, etc.).
 * **`LiveScreen`:** Outputs live leaderboard listings categorized by age divisions and quick social links.
+* **`ContentListScreen`:** Displays vertical feeds of news articles or information documents categorized by event content types. It features a background gradient dynamically blended using the active tenant's branding colors. When no content is available, it displays a premium centered empty state featuring a glowing icon container, contextual title, description matching the section type (Novedades or Info Importante), and a white-colored "ACTUALIZAR" action button supporting standard Pull-to-Refresh gestures.
 * **`MoreScreen`:** Embeds document download directories, contact messages, and application sharing options. The **"Acerca de"** section displays: 1) custom logo PNG asset (`assets/images/juna_app_logo.png`), 2) app description text, 3) clickable mailto link to `churomobile@gmail.com`, 4) app version, and 5) an **Actualizar la App** button (with explicit `textColor: Colors.white`). The update button parses `URL_STORES` dynamically, determines the current platform using `Theme.of(context).platform`, and redirects to either the `ANDROID` or `IOS` store URL. Font sizes in this section are: `ACERCA DE` header at `13`, and all body texts (description, email, version) at `15`.
 
 ### Design System — `AppButton`
