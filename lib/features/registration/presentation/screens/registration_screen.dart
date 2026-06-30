@@ -33,7 +33,7 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final TenantManager _tenantManager = getIt<TenantManager>();
 
   late TabController _tabController;
@@ -50,10 +50,12 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   bool _isValidatingDiscountCode = false;
   bool? _isDiscountCodeValid;
   String? _discountCodeErrorMessage;
+  bool _verificandoPago = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 2, vsync: this);
     _participantBloc = getIt<ParticipantBloc>();
     _registrationBloc = getIt<RegistrationBloc>();
@@ -113,11 +115,42 @@ class _RegistrationScreenState extends State<RegistrationScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tenantManager.removeListener(_onTenantChanged);
     _tabController.dispose();
     _dniController.dispose();
     _discountCodeController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final p = _linkedParticipant;
+      if (p != null && p.nroPlaca == '0') {
+        _verificarPagoServidor();
+      }
+    }
+  }
+
+  void _verificarPagoServidor() {
+    final detail = _linkedParticipant;
+    if (detail == null) return;
+
+    if (mounted) {
+      setState(() {
+        _verificandoPago = true;
+      });
+    }
+
+    _participantBloc.add(
+      ParticipantEvent.getDetail(
+        dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
+        idOrg: '1',
+        eventoId: '1',
+        roundId: '1',
+      ),
+    );
   }
 
   @override
@@ -185,6 +218,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         _discountCodeController.text = detail.insCodDesc;
                         _isDiscountCodeValid = null;
                         _discountCodeErrorMessage = null;
+                        _verificandoPago = false;
                       });
                     }
 
@@ -204,6 +238,13 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       }
                     } catch (e) {
                       debugPrint('Error getting Firebase token: $e');
+                    }
+                  },
+                  error: (msg) {
+                    if (mounted) {
+                      setState(() {
+                        _verificandoPago = false;
+                      });
                     }
                   },
                   orElse: () {},
@@ -379,26 +420,43 @@ class _RegistrationScreenState extends State<RegistrationScreen>
               _buildDiscountCodeSection(detail, activeTenant),
             ],
             const SizedBox(height: 24),
-            if (detail.nroPlaca == '0')
+            if (detail.nroPlaca == '0') ...[
               AppButton(
-                text: 'PAGAR',
+                text: _verificandoPago ? 'VERIFICANDO PAGO...' : 'PAGAR',
                 textColor: Colors.white,
-                icon: Icons.payment_rounded,
-                onPressed: () {
-                  if (detail.linkPago.isNotEmpty) {
-                    _launchURL(detail.linkPago);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'No hay link de pago disponible para este participante.',
-                        ),
-                      ),
-                    );
-                  }
-                },
-              )
-            else
+                icon: _verificandoPago ? Icons.sync : Icons.payment_rounded,
+                onPressed: _verificandoPago
+                    ? null
+                    : () {
+                        if (detail.linkPago.isNotEmpty) {
+                          _launchURL(detail.linkPago);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'No hay link de pago disponible para este participante.',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+              ),
+              if (!_verificandoPago) ...[
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  icon: Icon(Icons.refresh, size: 16, color: activeTenant.primaryColorRef),
+                  label: Text(
+                    '¿Ya pagaste? Verificar estado',
+                    style: TextStyle(
+                      color: activeTenant.primaryColorRef,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: _verificarPagoServidor,
+                ),
+              ],
+            ] else
               AppButton(
                 text: 'DOCUMENTACIÓN',
                 textColor: Colors.white,
