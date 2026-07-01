@@ -14,6 +14,12 @@
             "problemMatcher": []
         },
         {
+            "label": "build-ddln-apk-dev",
+            "type": "shell",
+            "command": "make build-ddln-apk-dev",
+            "problemMatcher": []
+        },
+        {
             "label": "build-ddln-apk-prod",
             "type": "shell",
             "command": "make build-ddln-apk-prod",
@@ -29,6 +35,12 @@
             "label": "build-ddln-ipa-prod",
             "type": "shell",
             "command": "make build-ddln-ipa-prod",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-21klg-apk-dev",
+            "type": "shell",
+            "command": "make build-21klg-apk-dev",
             "problemMatcher": []
         },
         {

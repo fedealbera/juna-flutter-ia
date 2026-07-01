@@ -1,6 +1,6 @@
 export ANDROID_HOME := /Users/federicoalbera/Library/Android/sdk
 
-.PHONY: config-ddln config-21klg run-dev run-qa run-prod build-apk-dev build-apk-qa build-apk-prod build-aab-dev build-aab-qa build-aab-prod build-ipa-dev build-ipa-qa build-ipa-prod build-ddln-apk-prod build-ddln-aab-prod build-ddln-ipa-prod build-21klg-apk-prod build-21klg-aab-prod build-21klg-ipa-prod clean get help
+.PHONY: config-ddln config-21klg run-dev run-qa run-prod build-apk-dev build-apk-qa build-apk-prod build-aab-dev build-aab-qa build-aab-prod build-ipa-dev build-ipa-qa build-ipa-prod build-ddln-apk-dev build-ddln-apk-prod build-ddln-aab-prod build-ddln-ipa-prod build-21klg-apk-dev build-21klg-apk-prod build-21klg-aab-prod build-21klg-ipa-prod clean get help
 
 help:
 	@echo "Available commands:"
@@ -18,6 +18,10 @@ help:
 	@echo "  make build-ipa-dev         - Build iOS IPA in DEVELOPMENT environment"
 	@echo "  make build-ipa-qa          - Build iOS IPA in QA environment"
 	@echo "  make build-ipa-prod        - Build iOS IPA in PRODUCTION environment"
+	@echo ""
+	@echo "Combined DEV Builds:"
+	@echo "  make build-ddln-apk-dev    - Configure DDLN and build development APK"
+	@echo "  make build-21klg-apk-dev   - Configure 21kLG and build development APK"
 	@echo ""
 	@echo "Combined Production Builds:"
 	@echo "  make build-ddln-apk-prod   - Configure DDLN and build production APK"
@@ -73,10 +77,16 @@ build-ipa-qa:
 build-ipa-prod:
 	flutter build ipa -t lib/main_production.dart
 
+# DDLN Combined DEV Builds
+build-ddln-apk-dev: config-ddln build-apk-dev
+
 # DDLN Combined Production Builds
 build-ddln-apk-prod: config-ddln build-apk-prod
 build-ddln-aab-prod: config-ddln build-aab-prod
 build-ddln-ipa-prod: config-ddln build-ipa-prod
+
+# 21kLG Combined DEV Builds
+build-21klg-apk-dev: config-21klg build-apk-dev
 
 # 21kLG Combined Production Builds
 build-21klg-apk-prod: config-21klg build-apk-prod

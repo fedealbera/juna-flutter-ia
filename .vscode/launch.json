@@ -16,6 +16,13 @@
             "preLaunchTask": "configure-ddln"
         },
         {
+            "name": "🔨 BUILD APK - DDLN (DEV)",
+            "request": "launch",
+            "type": "dart",
+            "program": "scripts/noop.dart",
+            "preLaunchTask": "build-ddln-apk-dev"
+        },
+        {
             "name": "🔨 BUILD APK - DDLN (PROD)",
             "request": "launch",
             "type": "dart",
@@ -49,6 +56,13 @@
             "type": "dart",
             "program": "lib/main_production.dart",
             "preLaunchTask": "configure-21klg"
+        },
+        {
+            "name": "🔨 BUILD APK - 21kLG (DEV)",
+            "request": "launch",
+            "type": "dart",
+            "program": "scripts/noop.dart",
+            "preLaunchTask": "build-21klg-apk-dev"
         },
         {
             "name": "🔨 BUILD APK - 21kLG (PROD)",

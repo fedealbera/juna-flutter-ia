@@ -710,17 +710,34 @@ class _CircuitWebViewScreenState extends State<CircuitWebViewScreen> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
+      ..enableZoom(true)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
+            if (mounted) {
+              setState(() {
+                _isLoading = true;
+              });
+            }
           },
           onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+            // Forces pinch-to-zoom support even if the HTML viewport disables user scaling
+            _controller.runJavaScript('''
+              var meta = document.querySelector('meta[name="viewport"]');
+              if (meta) {
+                meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+              } else {
+                meta = document.createElement('meta');
+                meta.name = 'viewport';
+                meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
+                document.getElementsByTagName('head')[0].appendChild(meta);
+              }
+            ''');
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint("WebView error: ${error.description}");
