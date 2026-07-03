@@ -293,89 +293,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (bannerImage.isNotEmpty) ...[
-                      // 1. Dynamic Hero Banner Carousel with premium dark overlay
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          children: [
-                            Image.network(
-                              bannerImage,
-                              height: 220,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, progress) {
-                                if (progress == null) return child;
-                                return Container(
-                                  height: 220,
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  child: const Center(
-                                    child: CircularProgressIndicator.adaptive(),
-                                  ),
-                                );
-                              },
-                            ),
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.black.withValues(alpha: 0.8),
-                                      Colors.black.withValues(alpha: 0.2),
-                                    ],
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 16,
-                              left: 16,
-                              right: 16,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: activeTenant.primaryColorRef,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      tipoCarrera,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Edición $edicion - Inscripciones Abiertas',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    appTitle,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      DynamicHeroBanner(
+                        imageUrl: bannerImage,
+                        tipoCarrera: tipoCarrera,
+                        edicion: edicion,
+                        appTitle: appTitle,
+                        activeTenant: activeTenant,
                       ),
                       const SizedBox(height: 20),
                     ],
@@ -496,18 +419,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            'PRÓXIMA EDICIÓN ($edicion)',
-                                            style: TextStyle(
-                                              color: Colors.white.withValues(
-                                                alpha: 0.7,
-                                              ),
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 1,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
                                           const Text(
                                             'Cuenta Regresiva',
                                             style: TextStyle(
@@ -1294,3 +1205,286 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+class DynamicHeroBanner extends StatefulWidget {
+  final String imageUrl;
+  final String tipoCarrera;
+  final String edicion;
+  final String appTitle;
+  final dynamic activeTenant;
+
+  const DynamicHeroBanner({
+    super.key,
+    required this.imageUrl,
+    required this.tipoCarrera,
+    required this.edicion,
+    required this.appTitle,
+    required this.activeTenant,
+  });
+
+  @override
+  State<DynamicHeroBanner> createState() => _DynamicHeroBannerState();
+}
+
+class _DynamicHeroBannerState extends State<DynamicHeroBanner> {
+  double? _aspectRatio;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveImage();
+  }
+
+  @override
+  void didUpdateWidget(covariant DynamicHeroBanner oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _resolveImage();
+    }
+  }
+
+  void _resolveImage() {
+    if (widget.imageUrl.isEmpty) {
+      setState(() {
+        _loading = false;
+        _aspectRatio = null;
+      });
+      return;
+    }
+    setState(() {
+      _loading = true;
+    });
+    final ImageStream stream = NetworkImage(widget.imageUrl).resolve(ImageConfiguration.empty);
+    late ImageStreamListener listener;
+    listener = ImageStreamListener(
+      (ImageInfo info, bool _) {
+        if (mounted) {
+          setState(() {
+            _aspectRatio = info.image.width / info.image.height;
+            _loading = false;
+          });
+        }
+        stream.removeListener(listener);
+      },
+      onError: (exception, stackTrace) {
+        if (mounted) {
+          setState(() {
+            _loading = false;
+          });
+        }
+        stream.removeListener(listener);
+      },
+    );
+    stream.addListener(listener);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.imageUrl.isEmpty) return const SizedBox.shrink();
+
+    if (_loading) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 220,
+          color: Colors.white.withValues(alpha: 0.05),
+          child: const Center(
+            child: CircularProgressIndicator.adaptive(),
+          ),
+        ),
+      );
+    }
+
+    final double aspectRatio = _aspectRatio ?? 1.64;
+    final bool isWide = aspectRatio > 2.0;
+
+    if (isWide) {
+      return Container(
+        height: 160,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              widget.activeTenant.secondaryColorRef.withValues(alpha: 0.95),
+              widget.activeTenant.secondaryColorRef.withValues(alpha: 0.75),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: widget.activeTenant.primaryColorRef.withValues(alpha: 0.15),
+            width: 1.5,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top part: Dynamic Aspect Ratio Banner Image
+              // Since height is determined by AspectRatio, the image is rendered with ZERO cropping or stretching!
+              AspectRatio(
+                aspectRatio: aspectRatio,
+                child: Image.network(
+                  widget.imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return Container(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      child: const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Bottom part: Thematic Details Info Card
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: widget.activeTenant.primaryColorRef,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              widget.tipoCarrera,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            'Edición ${widget.edicion}',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        widget.appTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Proportional/Recommended Banner Layout: Fully immersive covered image
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            Image.network(
+              widget.imageUrl,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return Container(
+                  height: 220,
+                  color: Colors.white.withValues(alpha: 0.05),
+                  child: const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                );
+              },
+            ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withValues(alpha: 0.8),
+                      Colors.black.withValues(alpha: 0.2),
+                    ],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: widget.activeTenant.primaryColorRef,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      widget.tipoCarrera,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Edición ${widget.edicion} - Inscripciones Abiertas',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.appTitle,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+}
+
