@@ -1,7 +1,7 @@
 flutter_icons:
-  image_path_android: "assets/21klg/app_logo_android.png"
+  image_path_android: "assets/21klg/app_logo_ios.png"
   adaptive_icon_foreground: "assets/21klg/app_logo_android.png"
-  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_background: "assets/21klg/adaptive_background.png"
   image_path_ios: "assets/21klg/app_logo_ios.png"
   remove_alpha_ios: true
   android: true
