@@ -727,6 +727,7 @@ class _CircuitWebViewScreenState extends State<CircuitWebViewScreen> {
               });
             }
             // Forces pinch-to-zoom support even if the HTML viewport disables user scaling
+            // and auto-zooms out / fits raw images to the screen width and height.
             _controller.runJavaScript('''
               var meta = document.querySelector('meta[name="viewport"]');
               if (meta) {
@@ -736,6 +737,43 @@ class _CircuitWebViewScreenState extends State<CircuitWebViewScreen> {
                 meta.name = 'viewport';
                 meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
                 document.getElementsByTagName('head')[0].appendChild(meta);
+              }
+
+              // Detect if loading a direct image or a page containing only an image
+              var isImage = false;
+              if (document.contentType && document.contentType.indexOf('image/') !== -1) {
+                isImage = true;
+              } else if (document.body) {
+                var images = document.body.getElementsByTagName('img');
+                if (images.length === 1 && document.body.innerText.trim() === '') {
+                  isImage = true;
+                }
+              }
+
+              if (isImage) {
+                var img = document.getElementsByTagName('img')[0];
+                if (img) {
+                  img.style.maxWidth = '100%';
+                  img.style.maxHeight = '100%';
+                  img.style.width = 'auto';
+                  img.style.height = 'auto';
+                  img.style.objectFit = 'contain';
+                  img.style.display = 'block';
+                  img.style.margin = 'auto';
+
+                  if (document.body) {
+                    document.body.style.margin = '0';
+                    document.body.style.padding = '0';
+                    document.body.style.display = 'flex';
+                    document.body.style.alignItems = 'center';
+                    document.body.style.justifyContent = 'center';
+                    document.body.style.height = '100vh';
+                    document.body.style.backgroundColor = '#121212';
+                  }
+                  if (document.documentElement) {
+                    document.documentElement.style.height = '100vh';
+                  }
+                }
               }
             ''');
           },
