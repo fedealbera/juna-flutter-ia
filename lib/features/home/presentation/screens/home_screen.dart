@@ -586,7 +586,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
 
                     // 2.5. Weather Advisory Card
-                    _buildWeatherAdvisoryCard(activeTenant),
+                    _buildWeatherAdvisoryCard(activeTenant, settings),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -961,7 +961,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildWeatherAdvisoryCard(TenantConfig activeTenant) {
+  Widget _buildWeatherAdvisoryCard(TenantConfig activeTenant, EventSettings? settings) {
+    final String tipoCarrera = settings?.tipoCarrera ?? 'MOUNTAIN BIKE';
+    final bool isMountainRace = tipoCarrera.toUpperCase().contains('TRAIL') ||
+        tipoCarrera.toUpperCase().contains('MOUNTAIN') ||
+        tipoCarrera.toUpperCase().contains('MTB') ||
+        tipoCarrera.toUpperCase().contains('AVENTURA') ||
+        tipoCarrera.toUpperCase().contains('DESAFÍO');
+
     return AppCard(
       style: AppCardStyle.glassmorphic,
       child: Column(
@@ -1026,6 +1033,29 @@ class _HomeScreenState extends State<HomeScreen> {
                 final arrivalTemp = baseTemp + 1.0;
                 final arrivalInfo = baseInfo;
 
+                if (!isMountainRace) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildWeatherMetricItem(
+                        title: 'TEMPERATURA',
+                        temp: '${baseTemp.toStringAsFixed(1)}°C',
+                        desc: baseInfo['desc'] as String,
+                        icon: baseInfo['icon'] as IconData,
+                        iconColor: baseInfo['color'] as Color,
+                      ),
+                      _buildWeatherMetricDivider(),
+                      _buildWeatherMetricItem(
+                        title: 'VIENTO',
+                        temp: '${baseWind.toStringAsFixed(1)} km/h',
+                        desc: _getWindDescription(baseWind),
+                        icon: Icons.air_rounded,
+                        iconColor: Colors.blueGrey.shade300,
+                      ),
+                    ],
+                  );
+                }
+
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -1068,16 +1098,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 IconData warningIcon = Icons.info_outline_rounded;
                 Color warningColor = Colors.grey;
-                String warningMsg = 'Clima templado en cumbre. Equipamiento estándar sugerido.';
+                String warningMsg = '';
                 
-                if (summitWind > 30 || summitTemp < 10) {
-                  warningIcon = Icons.warning_amber_rounded;
-                  warningColor = Colors.orangeAccent;
-                  warningMsg = 'Alerta en Cumbre: Viento de ${summitWind.toStringAsFixed(0)} km/h a ${summitTemp.toStringAsFixed(1)}°C. Rompevientos obligatorio.';
-                } else if (summitTemp < 5) {
-                  warningIcon = Icons.ac_unit_rounded;
-                  warningColor = Colors.lightBlueAccent;
-                  warningMsg = 'Alerta en Cumbre: Temperatura muy baja (${summitTemp.toStringAsFixed(1)}°C). Abrigarse con capas adicionales.';
+                if (isMountainRace) {
+                  warningMsg = 'Clima templado en cumbre. Equipamiento estándar sugerido.';
+                  if (summitWind > 30 || summitTemp < 10) {
+                    warningIcon = Icons.warning_amber_rounded;
+                    warningColor = Colors.orangeAccent;
+                    warningMsg = 'Alerta en Cumbre: Viento de ${summitWind.toStringAsFixed(0)} km/h a ${summitTemp.toStringAsFixed(1)}°C. Rompevientos obligatorio.';
+                  } else if (summitTemp < 5) {
+                    warningIcon = Icons.ac_unit_rounded;
+                    warningColor = Colors.lightBlueAccent;
+                    warningMsg = 'Alerta en Cumbre: Temperatura muy baja (${summitTemp.toStringAsFixed(1)}°C). Abrigarse con capas adicionales.';
+                  }
+                } else {
+                  warningMsg = 'Clima agradable para correr. ¡Disfruta de la carrera!';
+                  if (baseTemp > 30) {
+                    warningIcon = Icons.warning_amber_rounded;
+                    warningColor = Colors.orangeAccent;
+                    warningMsg = 'Alerta de Calor: Temperatura elevada (${baseTemp.toStringAsFixed(1)}°C). Correr a ritmo controlado y priorizar hidratación.';
+                  } else if (baseTemp < 8) {
+                    warningIcon = Icons.ac_unit_rounded;
+                    warningColor = Colors.lightBlueAccent;
+                    warningMsg = 'Alerta de Frío: Temperatura baja (${baseTemp.toStringAsFixed(1)}°C). Se recomienda precalentamiento prolongado y abrigo liviano.';
+                  } else if (_weatherCodeBase >= 51 && _weatherCodeBase <= 67) {
+                    warningIcon = Icons.umbrella_rounded;
+                    warningColor = Colors.lightBlue;
+                    warningMsg = 'Pronóstico de Lluvia: Se sugiere rompevientos impermeable y calzado con buena tracción.';
+                  } else if (_weatherCodeBase >= 95) {
+                    warningIcon = Icons.thunderstorm_rounded;
+                    warningColor = Colors.deepPurpleAccent;
+                    warningMsg = 'Alerta de Tormenta: Precaución en el circuito por posibles calzadas resbaladizas o tormentas eléctricas.';
+                  }
                 }
 
                 String uvMsg = 'Índice UV: Moderado. Se recomienda uso de protector solar.';
@@ -1128,6 +1180,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  String _getWindDescription(double speed) {
+    if (speed < 10) return 'Calma';
+    if (speed < 20) return 'Brisa leve';
+    if (speed < 30) return 'Viento mod.';
+    return 'Viento fuerte';
   }
 
   Widget _buildWeatherMetricItem({
