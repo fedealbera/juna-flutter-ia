@@ -78,6 +78,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
           _linkedParticipant = detail;
           _discountCodeController.text = detail.insCodDesc;
           _checkingCache = false;
+          _tabController.index = 1;
         });
       }
     } else {
@@ -219,6 +220,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         _isDiscountCodeValid = null;
                         _discountCodeErrorMessage = null;
                         _verificandoPago = false;
+                        _tabController.index = 1;
                       });
                     }
 
@@ -486,6 +488,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                           _discountCodeController.clear();
                           _isDiscountCodeValid = null;
                           _discountCodeErrorMessage = null;
+                          _tabController.index = 0;
                         });
                       }
                     },

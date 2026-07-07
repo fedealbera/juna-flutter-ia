@@ -4,9 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dio/dio.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
+import '../../../../core/storage/hive_service.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
 import '../../../content/presentation/bloc/content_bloc.dart';
@@ -19,6 +21,7 @@ import '../../../settings/presentation/bloc/settings_event.dart';
 import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../../../settings/domain/entities/event_settings.dart';
+import '../../../participant/domain/entities/participant_detail.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -54,12 +57,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _showScrollIndicator = true;
 
+  // Participant parameters
+  ParticipantDetail? _linkedParticipant;
+
   @override
   void initState() {
     super.initState();
     _contentBloc = getIt<ContentBloc>();
     _emergencyBloc = getIt<EmergencyBloc>();
     _settingsBloc = getIt<SettingsBloc>();
+
+    _loadLinkedParticipant();
 
     // Try to load cached settings instantly to avoid countdown jump
     final cached = getIt<SettingsRepository>().getCachedSettings();
@@ -142,11 +150,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _loadLinkedParticipant() async {
+    try {
+      final hiveService = getIt<HiveService>();
+      final Map? cachedJson = await hiveService.get<Map>(
+        'participant_box',
+        'cached_participant',
+      );
+      if (cachedJson != null && mounted) {
+        setState(() {
+          _linkedParticipant = ParticipantDetail(cachedJson.cast<String, dynamic>());
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading participant on home: $e');
+    }
+  }
+
   void _onTenantChanged() {
     _loadEventContent();
     _settingsBloc.add(
       const SettingsEvent.getSettings(eventId: '1', idOrg: '1'),
     );
+    _loadLinkedParticipant();
     setState(() {});
   }
 
@@ -300,6 +326,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         appTitle: appTitle,
                         activeTenant: activeTenant,
                       ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    if (_linkedParticipant != null) ...[
+                      _buildRunnerPassCard(activeTenant),
                       const SizedBox(height: 20),
                     ],
 
@@ -496,21 +527,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 24),
-                                AppButton(
-                                  text: 'Ver Inscripción',
-                                  onPressed: () => context.go('/inscripciones'),
-                                  type: AppButtonType.outlined,
-                                  borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
-                                      ? activeTenant.accentColorRef
-                                      : activeTenant.primaryColorRef,
-                                  textColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
-                                      ? activeTenant.accentColorRef
-                                      : activeTenant.primaryColorRef,
-                                ),
+                                if (_linkedParticipant == null) ...[
+                                  const SizedBox(height: 24),
+                                  AppButton(
+                                    text: 'Ver Inscripción',
+                                    onPressed: () => context.go('/inscripciones'),
+                                    type: AppButtonType.outlined,
+                                    borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                        ? activeTenant.accentColorRef
+                                        : activeTenant.primaryColorRef,
+                                    textColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                        ? activeTenant.accentColorRef
+                                        : activeTenant.primaryColorRef,
+                                  ),
+                                ],
                               ],
                             ),
                     ),
+                    const SizedBox(height: 20),
+
+                    // 2.2. Quick Actions Grid
+                    _buildQuickActionsGrid(activeTenant),
                     const SizedBox(height: 20),
 
                     // 3. Context-sensitive SOS and Quick Actions
@@ -898,6 +935,380 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       },
+    );
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    if (urlString.isEmpty) return;
+    final uri = Uri.parse(urlString);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se pudo abrir la página de pago.'),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildRunnerPassCard(TenantConfig activeTenant) {
+    if (_linkedParticipant == null) return const SizedBox.shrink();
+
+    final detail = _linkedParticipant!;
+    final bool hasPlate = detail.nroPlaca.isNotEmpty && detail.nroPlaca != '0';
+    final bool hasPendingPayment = !hasPlate && detail.linkPago.isNotEmpty;
+
+    return AppCard(
+      style: AppCardStyle.gradient,
+      padding: EdgeInsets.zero,
+      customGradient: LinearGradient(
+        colors: [
+          activeTenant.primaryColorRef,
+          activeTenant.secondaryColorRef,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      child: InkWell(
+        onTap: () => context.go('/inscripciones'),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.badge_outlined,
+                        color: activeTenant.accentColorRef,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'TARJETA DE CORREDOR',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: hasPlate ? Colors.greenAccent : Colors.amberAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          hasPlate ? 'INSCRIPCIÓN ACTIVA' : 'PAGO PENDIENTE',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          detail.fullName.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        if (detail.circuito.isNotEmpty)
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.route_outlined,
+                                color: activeTenant.accentColorRef,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Circuito: ${detail.circuito}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        const SizedBox(height: 4),
+                        if (detail.categoria.isNotEmpty)
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.emoji_events_outlined,
+                                color: activeTenant.accentColorRef,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Categoría: ${detail.categoria}',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (detail.largada.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.play_circle_outline_rounded,
+                                color: activeTenant.accentColorRef,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Largada: ${detail.largada}',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Dorsal Box
+                  if (hasPlate)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'DORSAL',
+                            style: TextStyle(
+                              color: activeTenant.primaryColorRef,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            detail.nroPlaca,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          if (hasPendingPayment) ...[
+            const SizedBox(height: 14),
+            const Divider(color: Colors.white24, height: 1),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () => _launchURL(detail.linkPago),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.amberAccent.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.amberAccent.withValues(alpha: 0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.payment_rounded,
+                      color: Colors.amberAccent,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Pago Pendiente. Toca aquí para abonar.',
+                        style: TextStyle(
+                          color: Colors.amberAccent,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.amberAccent,
+                      size: 10,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  ),
+);
+}
+
+  Widget _buildQuickActionsGrid(TenantConfig activeTenant) {
+    final items = [
+      _QuickActionItem(
+        icon: Icons.badge_outlined,
+        label: 'Mi Ficha',
+        description: 'Tus datos de carrera',
+        onTap: () => context.go('/inscripciones'),
+      ),
+      _QuickActionItem(
+        icon: Icons.map_outlined,
+        label: 'Circuitos',
+        description: 'Mapas e información',
+        onTap: () => context.go('/mapas'),
+      ),
+      _QuickActionItem(
+        icon: Icons.sensors_rounded,
+        label: 'En Vivo',
+        description: 'Seguimiento y crono',
+        onTap: () => context.go('/vivo'),
+      ),
+      _QuickActionItem(
+        icon: Icons.info_outline_rounded,
+        label: 'Ayuda',
+        description: 'Contacto y reglamento',
+        onTap: () => context.go('/mas'),
+      ),
+    ];
+
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.5,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: items.map((item) {
+        return AppCard(
+          style: AppCardStyle.glassmorphic,
+          padding: EdgeInsets.zero,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: item.onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: activeTenant.primaryColorRef.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      item.icon,
+                      color: activeTenant.accentColorRef,
+                      size: 20,
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        item.label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.description,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 10,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -1547,3 +1958,16 @@ class _DynamicHeroBannerState extends State<DynamicHeroBanner> {
   }
 }
 
+class _QuickActionItem {
+  final IconData icon;
+  final String label;
+  final String description;
+  final VoidCallback onTap;
+
+  _QuickActionItem({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.onTap,
+  });
+}
