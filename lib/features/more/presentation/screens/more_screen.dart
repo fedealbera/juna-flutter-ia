@@ -272,132 +272,140 @@ class _MoreScreenState extends State<MoreScreen> {
                               ? '${info.appVersion} ($typeVersion)'
                               : info.appVersion;
 
-                      return AppCard(
-                        style: AppCardStyle.glassmorphic,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 24,
-                          horizontal: 20,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 5),
-
-                            // 1) PNG image adapted so it doesn't expand too much
-                            Image.asset(
-                              'assets/images/juna_app_logo.png',
-                              height: 100,
-                              fit: BoxFit.contain,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          AppCard(
+                            style: AppCardStyle.glassmorphic,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 20,
                             ),
-                            const SizedBox(height: 16),
-
-                            // 2) App description text
-                            Text(
-                              'App de alto rendimiento Android & iOS',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6),
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-
-                            // 3) Email address
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
+                                const SizedBox(height: 5),
+
+                                // 1) PNG image adapted so it doesn't expand too much
+                                Image.asset(
+                                  'assets/images/juna_app_logo.png',
+                                  height: 80,
+                                  fit: BoxFit.contain,
+                                ),
+                                const SizedBox(height: 16),
+
+                                // 2) App description text
                                 Text(
-                                  'Email: ',
+                                  'App de alto rendimiento Android & iOS',
                                   style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.6),
-                                    fontSize: 15,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w400,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                GestureDetector(
-                                  onTap:
-                                      () => _launchURL(
-                                        'mailto:churomobile@gmail.com',
+                                const SizedBox(height: 8),
+
+                                // 3) Email address
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Email: ',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
                                       ),
-                                  child: Text(
-                                    'churomobile@gmail.com',
-                                    style: TextStyle(
-                                      color: activeTenant.primaryColorRef,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                      decoration: TextDecoration.underline,
                                     ),
-                                  ),
+                                    GestureDetector(
+                                      onTap:
+                                          () => _launchURL(
+                                            'mailto:churomobile@gmail.com',
+                                          ),
+                                      child: Text(
+                                        'churomobile@gmail.com',
+                                        style: TextStyle(
+                                          color: activeTenant.primaryColorRef,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+
+                                // 4) Actualizar la App Button using AppButton design system style
+                                AppButton(
+                                  text: 'Actualizar la App',
+                                  icon: Icons.file_download_rounded,
+                                  textColor: Colors.white,
+                                  type: AppButtonType.primary,
+                                  onPressed: () {
+                                    final stores =
+                                        _settings?.urlStoresMap ?? const {};
+                                    final iosLink = stores['IOS']?.toString() ?? '';
+                                    final androidLink =
+                                        stores['ANDROID']?.toString() ?? '';
+
+                                    final platform = Theme.of(context).platform;
+                                    if (platform == TargetPlatform.iOS) {
+                                      if (iosLink.isNotEmpty) {
+                                        _launchURL(iosLink);
+                                      }
+                                    } else if (platform == TargetPlatform.android) {
+                                      if (androidLink.isNotEmpty) {
+                                        _launchURL(androidLink);
+                                      }
+                                    } else {
+                                      // Fallback for other environments
+                                      if (androidLink.isNotEmpty) {
+                                        _launchURL(androidLink);
+                                      } else if (iosLink.isNotEmpty) {
+                                        _launchURL(iosLink);
+                                      }
+                                    }
+                                  },
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                          ),
+                          const SizedBox(height: 24),
 
-                            // 4) Divider & Version text
-                            Divider(color: Colors.white.withValues(alpha: 0.1)),
-                            const SizedBox(height: 12),
-                            Text(
+                          // Conditional "Cerrar App" Button for Android only (Compliance with iOS)
+                          if (Theme.of(context).platform == TargetPlatform.android) ...[
+                            AppButton(
+                              text: 'Cerrar App',
+                              icon: Icons.logout_rounded,
+                              onPressed: () {
+                                SystemNavigator.pop();
+                              },
+                              type: AppButtonType.outlined,
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+
+                          // Footer Version Text
+                          Center(
+                            child: Text(
                               'Versión $versionDisplay',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 15,
+                                color: Colors.white.withValues(alpha: 0.35),
+                                fontSize: 13,
                                 fontWeight: FontWeight.w400,
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 16),
-
-                            // 5) Actualizar la App Button using AppButton design system style
-                            AppButton(
-                              text: 'Actualizar la App',
-                              icon: Icons.file_download_rounded,
-                              textColor: Colors.white,
-                              type: AppButtonType.primary,
-                              onPressed: () {
-                                final stores =
-                                    _settings?.urlStoresMap ?? const {};
-                                final iosLink = stores['IOS']?.toString() ?? '';
-                                final androidLink =
-                                    stores['ANDROID']?.toString() ?? '';
-
-                                final platform = Theme.of(context).platform;
-                                if (platform == TargetPlatform.iOS) {
-                                  if (iosLink.isNotEmpty) {
-                                    _launchURL(iosLink);
-                                  }
-                                } else if (platform == TargetPlatform.android) {
-                                  if (androidLink.isNotEmpty) {
-                                    _launchURL(androidLink);
-                                  }
-                                } else {
-                                  // Fallback for other environments
-                                  if (androidLink.isNotEmpty) {
-                                    _launchURL(androidLink);
-                                  } else if (iosLink.isNotEmpty) {
-                                    _launchURL(iosLink);
-                                  }
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
                       );
                     },
                     orElse: () => const SizedBox.shrink(),
                   );
                 },
-              ),
-              const SizedBox(height: 24),
-
-              // 5. Logout Action
-              AppButton(
-                text: 'Salir / Cerrar Sesión',
-                icon: Icons.logout_rounded,
-                onPressed: () {
-                  SystemNavigator.pop();
-                },
-                type: AppButtonType.outlined,
               ),
               const SizedBox(height: 20),
             ],
@@ -415,7 +423,7 @@ class _MoreScreenState extends State<MoreScreen> {
     required bool isEnabled,
     required VoidCallback? onTap,
   }) {
-    return AppCard(
+    final card = AppCard(
       style: AppCardStyle.glassmorphic,
       padding: EdgeInsets.zero,
       child: InkWell(
@@ -482,5 +490,7 @@ class _MoreScreenState extends State<MoreScreen> {
         ),
       ),
     );
+
+    return isEnabled ? card : Opacity(opacity: 0.4, child: card);
   }
 }

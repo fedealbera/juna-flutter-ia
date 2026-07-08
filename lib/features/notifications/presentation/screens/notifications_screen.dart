@@ -142,7 +142,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             onPressed: () => Navigator.pop(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
-                              foregroundColor: Colors.black,
+                              foregroundColor: Colors.white,
                               textStyle: const TextStyle(fontWeight: FontWeight.bold),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
