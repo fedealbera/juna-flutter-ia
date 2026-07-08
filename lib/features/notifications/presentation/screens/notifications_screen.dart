@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/firebase/notification_service.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -34,6 +36,94 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (mounted) {
       setState(() {});
     }
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    if (urlString.isEmpty) return;
+    final uri = Uri.parse(urlString);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se pudo abrir el enlace.')),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildLinkifiedBody(String bodyText, Color primaryColor) {
+    final regex = RegExp(r'(https?:\/\/[^\s]+)');
+    final matches = regex.allMatches(bodyText);
+
+    if (matches.isEmpty) {
+      return Text(
+        bodyText,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 14,
+          height: 1.4,
+        ),
+      );
+    }
+
+    final spans = <TextSpan>[];
+    int start = 0;
+
+    for (final match in matches) {
+      // Text before match
+      if (match.start > start) {
+        spans.add(
+          TextSpan(
+            text: bodyText.substring(start, match.start),
+            style: const TextStyle(color: Colors.white70),
+          ),
+        );
+      }
+
+      // Link text
+      final url = match.group(0)!;
+      spans.add(
+        TextSpan(
+          text: url,
+          style: TextStyle(
+            color: primaryColor,
+            decoration: TextDecoration.underline,
+            fontWeight: FontWeight.w500,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              _launchURL(url);
+            },
+        ),
+      );
+
+      start = match.end;
+    }
+
+    // Remaining text
+    if (start < bodyText.length) {
+      spans.add(
+        TextSpan(
+          text: bodyText.substring(start),
+          style: const TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(
+          fontSize: 14,
+          height: 1.4,
+        ),
+        children: spans,
+      ),
+    );
   }
 
   String _formatTimestamp(DateTime dateTime) {
@@ -127,14 +217,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          notification.body,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            height: 1.4,
-                          ),
-                        ),
+                        _buildLinkifiedBody(notification.body, primaryColor),
                         const SizedBox(height: 24),
                         Align(
                           alignment: Alignment.centerRight,
