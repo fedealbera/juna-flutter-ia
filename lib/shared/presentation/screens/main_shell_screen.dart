@@ -83,7 +83,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       const BottomNavigationBarItem(
         icon: Icon(Icons.app_registration_rounded),
         activeIcon: Icon(Icons.app_registration_sharp),
-        label: 'Inscripciones',
+        label: 'Registro',
       ),
       const BottomNavigationBarItem(
         icon: Icon(Icons.map_outlined),
