@@ -110,14 +110,43 @@ class _MoreScreenState extends State<MoreScreen> {
                 title: 'Escribinos por WhatsApp',
                 subtitle:
                     _settings?.isEnabledWhatsapp == true
-                        ? Text(
-                          'WhatsApp: ${_settings?.whatsappPhone ?? ""}',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'WhatsApp: ',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.4),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      _formatWhatsappPhone(_settings?.whatsappPhone ?? ""),
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.8),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (_settings?.contactoMensajeWhatsapp.isNotEmpty == true) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  _settings!.contactoMensajeWhatsapp,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          )
                         : const Text(
                           'Canal no Habilitado',
                           style: TextStyle(color: Colors.white24, fontSize: 13),
@@ -413,6 +442,38 @@ class _MoreScreenState extends State<MoreScreen> {
         ),
       ),
     );
+  }
+
+  String _formatWhatsappPhone(String phone) {
+    if (phone.isEmpty) return '';
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    final hasPlus = phone.startsWith('+');
+
+    if (digits.startsWith('549') && digits.length == 13) {
+      final country = digits.substring(0, 2);
+      final prefix = digits.substring(2, 3);
+      final area = digits.substring(3, 6);
+      final localPart1 = digits.substring(6, 9);
+      final localPart2 = digits.substring(9, 13);
+      return '${hasPlus ? "+" : ""}$country $prefix $area $localPart1-$localPart2';
+    } else if (digits.startsWith('54') && digits.length == 12) {
+      final country = digits.substring(0, 2);
+      final area = digits.substring(2, 5);
+      final localPart1 = digits.substring(5, 8);
+      final localPart2 = digits.substring(8, 12);
+      return '${hasPlus ? "+" : ""}$country $area $localPart1-$localPart2';
+    }
+
+    if (digits.length > 10) {
+      final countryLen = digits.length - 10;
+      final country = digits.substring(0, countryLen);
+      final area = digits.substring(countryLen, countryLen + 3);
+      final part1 = digits.substring(countryLen + 3, countryLen + 6);
+      final part2 = digits.substring(countryLen + 6);
+      return '${hasPlus ? "+" : ""}$country $area $part1-$part2';
+    }
+
+    return phone;
   }
 
   Widget _buildContactCard({

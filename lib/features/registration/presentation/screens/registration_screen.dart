@@ -473,9 +473,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                 Expanded(
                   child: AppButton(
                     text: 'DESVINCULAR',
-                    type: AppButtonType.outlined,
-                    textColor: Colors.redAccent,
-                    borderColor: Colors.redAccent,
+                    color: Colors.red,
+                    textColor: Colors.white,
                     onPressed: () async {
                       await getIt<HiveService>().delete<Map>(
                         'participant_box',
@@ -764,9 +763,11 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'PLACA',
-                        style: TextStyle(
+                      Text(
+                        activeTenant.name.toLowerCase().contains('21k')
+                            ? 'DORSAL'
+                            : 'PLACA',
+                        style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 8,
                           fontWeight: FontWeight.bold,
@@ -800,8 +801,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             'DNI:',
             detail.dni.isNotEmpty ? detail.dni : _dniController.text,
           ),
-          _buildInfoRow('Fecha de Acreditación:', fechaAcreditacion),
-          _buildInfoRow('Fecha de la Carrera:', fechaCarrera),
           _buildInfoRow(
             'Circuito:',
             detail.circuito.isNotEmpty ? detail.circuito : 'No especificado',
@@ -810,6 +809,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             'Categoría:',
             detail.categoria.isNotEmpty ? detail.categoria : 'No especificado',
           ),
+          _buildInfoRow('Fecha de la Carrera:', fechaCarrera),
           _buildInfoRow(
             'Hora de Agrupamiento:',
             detail.agrupamiento.isNotEmpty

@@ -1145,7 +1145,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         children: [
                           Text(
-                            'DORSAL',
+                            activeTenant.name.toLowerCase().contains('21k')
+                                ? 'DORSAL'
+                                : 'PLACA',
                             style: TextStyle(
                               color: activeTenant.primaryColorRef,
                               fontSize: 9,
