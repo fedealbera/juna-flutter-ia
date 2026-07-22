@@ -295,11 +295,14 @@ class _MoreScreenState extends State<MoreScreen> {
                           child: CircularProgressIndicator.adaptive(),
                         ),
                     loaded: (info) {
+                      final fullVersion = info.buildNumber.isNotEmpty
+                          ? '${info.appVersion}+${info.buildNumber}'
+                          : info.appVersion;
                       final typeVersion = _settings?.typeVersion ?? '';
                       final versionDisplay =
                           typeVersion.isNotEmpty
-                              ? '${info.appVersion} ($typeVersion)'
-                              : info.appVersion;
+                              ? '$fullVersion ($typeVersion)'
+                              : fullVersion;
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
