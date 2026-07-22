@@ -106,8 +106,10 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
     });
 
     on<UpdateParticipantEvent>((event, emit) async {
+      print('ParticipantBloc: UpdateParticipantEvent received for partiId: ${event.partiId}');
       emit(const ParticipantState.loading());
       try {
+        print('ParticipantBloc: Calling _updateParticipant use case...');
         final result = await _updateParticipant(
           partiId: event.partiId,
           contNombre: event.contNombre,
@@ -124,8 +126,11 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
           categoriaId: event.categoriaId,
           talleId: event.talleId,
         );
+        print('ParticipantBloc: UpdateParticipant success. Result rawJson: ${result.rawJson}');
         emit(ParticipantState.participantUpdated(result));
-      } catch (e) {
+      } catch (e, stacktrace) {
+        print('ParticipantBloc: Error during updateParticipant: $e');
+        print(stacktrace);
         emit(ParticipantState.error(e.toString()));
       }
     });

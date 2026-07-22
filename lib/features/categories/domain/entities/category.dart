@@ -5,8 +5,8 @@ class Category extends Equatable {
 
   const Category(this.rawJson);
 
-  String get id => rawJson['id']?.toString() ?? '';
-  String get name => rawJson['nombre']?.toString() ?? '';
+  String get id => rawJson['id']?.toString() ?? rawJson['categId']?.toString() ?? '';
+  String get name => rawJson['nombre']?.toString() ?? rawJson['categNombre']?.toString() ?? '';
 
   @override
   List<Object?> get props => [rawJson];

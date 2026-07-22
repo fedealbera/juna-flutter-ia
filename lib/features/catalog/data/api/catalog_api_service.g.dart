@@ -22,12 +22,12 @@ class _CatalogApiService implements CatalogApiService {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<List<CircuitoResponseDto>> getCircuitos() async {
+  Future<dynamic> getCircuitos() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<List<CircuitoResponseDto>>(Options(
+    final _options = _setStreamType<dynamic>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -43,22 +43,13 @@ class _CatalogApiService implements CatalogApiService {
           _dio.options.baseUrl,
           baseUrl,
         )));
-    final _result = await _dio.fetch<List<dynamic>>(_options);
-    late List<CircuitoResponseDto> _value;
-    try {
-      _value = _result.data!
-          .map((dynamic i) =>
-              CircuitoResponseDto.fromJson(i as Map<String, dynamic>))
-          .toList();
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
-      rethrow;
-    }
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
     return _value;
   }
 
   @override
-  Future<List<CategoriaResponseDto>> getCategorias(
+  Future<dynamic> getCategorias(
     String circuitoId,
     String dni,
   ) async {
@@ -66,7 +57,7 @@ class _CatalogApiService implements CatalogApiService {
     final queryParameters = <String, dynamic>{r'dni': dni};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<List<CategoriaResponseDto>>(Options(
+    final _options = _setStreamType<dynamic>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -82,27 +73,18 @@ class _CatalogApiService implements CatalogApiService {
           _dio.options.baseUrl,
           baseUrl,
         )));
-    final _result = await _dio.fetch<List<dynamic>>(_options);
-    late List<CategoriaResponseDto> _value;
-    try {
-      _value = _result.data!
-          .map((dynamic i) =>
-              CategoriaResponseDto.fromJson(i as Map<String, dynamic>))
-          .toList();
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
-      rethrow;
-    }
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
     return _value;
   }
 
   @override
-  Future<List<TalleResponseDto>> getTalles() async {
+  Future<dynamic> getTalles() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<List<TalleResponseDto>>(Options(
+    final _options = _setStreamType<dynamic>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -118,17 +100,8 @@ class _CatalogApiService implements CatalogApiService {
           _dio.options.baseUrl,
           baseUrl,
         )));
-    final _result = await _dio.fetch<List<dynamic>>(_options);
-    late List<TalleResponseDto> _value;
-    try {
-      _value = _result.data!
-          .map((dynamic i) =>
-              TalleResponseDto.fromJson(i as Map<String, dynamic>))
-          .toList();
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
-      rethrow;
-    }
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
     return _value;
   }
 

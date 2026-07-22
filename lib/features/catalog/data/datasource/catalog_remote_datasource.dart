@@ -17,17 +17,23 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
   CatalogRemoteDataSourceImpl(this._apiService);
 
   @override
-  Future<List<CircuitoResponseDto>> getCircuitos() {
-    return _apiService.getCircuitos();
+  Future<List<CircuitoResponseDto>> getCircuitos() async {
+    final response = await _apiService.getCircuitos() as Map<String, dynamic>;
+    final list = response['categorias'] as List<dynamic>? ?? [];
+    return list.map((item) => CircuitoResponseDto.fromJson(item as Map<String, dynamic>)).toList();
   }
 
   @override
-  Future<List<CategoriaResponseDto>> getCategorias(String circuitoId, String dni) {
-    return _apiService.getCategorias(circuitoId, dni);
+  Future<List<CategoriaResponseDto>> getCategorias(String circuitoId, String dni) async {
+    final response = await _apiService.getCategorias(circuitoId, dni) as Map<String, dynamic>;
+    final list = response['categorias'] as List<dynamic>? ?? [];
+    return list.map((item) => CategoriaResponseDto.fromJson(item as Map<String, dynamic>)).toList();
   }
 
   @override
-  Future<List<TalleResponseDto>> getTalles() {
-    return _apiService.getTalles();
+  Future<List<TalleResponseDto>> getTalles() async {
+    final response = await _apiService.getTalles() as Map<String, dynamic>;
+    final list = response['categorias'] as List<dynamic>? ?? [];
+    return list.map((item) => TalleResponseDto.fromJson(item as Map<String, dynamic>)).toList();
   }
 }

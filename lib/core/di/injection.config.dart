@@ -299,12 +299,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i614.UpdateContact(gh<_i911.ParticipantRepository>()));
     gh.lazySingleton<_i444.UpdateCircuito>(
         () => _i444.UpdateCircuito(gh<_i911.ParticipantRepository>()));
+    gh.lazySingleton<_i470.UpdateParticipant>(
+        () => _i470.UpdateParticipant(gh<_i911.ParticipantRepository>()));
     gh.lazySingleton<_i641.AuthenticateParticipant>(
         () => _i641.AuthenticateParticipant(gh<_i911.ParticipantRepository>()));
     gh.lazySingleton<_i1007.GetParticipantDetail>(
         () => _i1007.GetParticipantDetail(gh<_i911.ParticipantRepository>()));
-    gh.lazySingleton<_i470.UpdateParticipant>(
-        () => _i470.UpdateParticipant(gh<_i911.ParticipantRepository>()));
     gh.factory<_i822.ParticipantBloc>(() => _i822.ParticipantBloc(
           gh<_i641.AuthenticateParticipant>(),
           gh<_i1007.GetParticipantDetail>(),

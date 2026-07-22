@@ -5,8 +5,8 @@ class Circuit extends Equatable {
 
   const Circuit(this.rawJson);
 
-  String get id => rawJson['id']?.toString() ?? '';
-  String get name => rawJson['nombre']?.toString() ?? '';
+  String get id => rawJson['id']?.toString() ?? rawJson['circuitoId']?.toString() ?? '';
+  String get name => rawJson['nombre']?.toString() ?? rawJson['circuitoNombre']?.toString() ?? '';
 
   @override
   List<Object?> get props => [rawJson];

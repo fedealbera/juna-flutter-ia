@@ -33,6 +33,11 @@ class ParticipantDetail extends Equatable {
   String get domPais => _data['domPais']?.toString() ?? '';
   String get insCodDesc => _data['insCodDesc']?.toString() ?? '';
 
+  String get insId => _data['ins']?.toString() ?? _data['insId']?.toString() ?? _data['id']?.toString() ?? '';
+  String get idCircuito => _data['idCircuito']?.toString() ?? '';
+  String get idCategoria => _data['idCategoria']?.toString() ?? '';
+  String get partTalleId => _data['partTalleId']?.toString() ?? '';
+
   @override
   List<Object?> get props => [rawJson];
 }
