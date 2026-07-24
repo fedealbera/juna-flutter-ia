@@ -6,6 +6,7 @@ import '../../features/registration/presentation/screens/registration_screen.dar
 import '../../features/participant/domain/entities/participant_detail.dart';
 import '../../features/participant/presentation/screens/participant_documentation_screen.dart';
 import '../../features/participant/presentation/screens/edit_participant_screen.dart';
+import '../../features/participant/presentation/screens/kit_authorization_screen.dart';
 import '../../features/maps/presentation/screens/maps_screen.dart';
 import '../../features/live/presentation/screens/live_screen.dart';
 import '../../features/more/presentation/screens/more_screen.dart';
@@ -55,6 +56,14 @@ class AppRouter {
                 builder: (BuildContext context, GoRouterState state) {
                   final participant = state.extra as ParticipantDetail;
                   return EditParticipantScreen(participant: participant);
+                },
+              ),
+              GoRoute(
+                path: 'autorizar-kit',
+                name: 'autorizar-kit',
+                builder: (BuildContext context, GoRouterState state) {
+                  final participant = state.extra as ParticipantDetail;
+                  return KitAuthorizationScreen(participant: participant);
                 },
               ),
             ],

@@ -69,4 +69,13 @@ abstract class ParticipantRepository {
     required String tipo,
     required String filePath,
   });
+
+  Future<dynamic> authorizeKit({
+    String? dni,
+    int? insId,
+    String? idEvento,
+    String? idOrg,
+    required String autorizadoDni,
+    required String autorizadoNombre,
+  });
 }

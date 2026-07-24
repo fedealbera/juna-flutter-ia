@@ -7,6 +7,7 @@ import '../dto/request/update_contact_request_dto.dart';
 import '../dto/request/update_emergency_request_dto.dart';
 import '../dto/request/update_participant_request_dto.dart';
 import '../dto/request/update_push_token_request_dto.dart';
+import '../dto/request/kit_authorization_request_dto.dart';
 import '../dto/response/auth_participant_response_dto.dart';
 import '../dto/response/participant_detail_response_dto.dart';
 import '../dto/response/update_circuito_response_dto.dart';
@@ -34,6 +35,7 @@ abstract class ParticipantRemoteDataSource {
     required String tipo,
     required String filePath,
   });
+  Future<dynamic> authorizeKit(KitAuthorizationRequestDto body);
 }
 
 @LazySingleton(as: ParticipantRemoteDataSource)
@@ -104,5 +106,10 @@ class ParticipantRemoteDataSourceImpl implements ParticipantRemoteDataSource {
     } catch (_) {
       return false;
     }
+  }
+
+  @override
+  Future<dynamic> authorizeKit(KitAuthorizationRequestDto body) {
+    return _apiService.authorizeKit(body);
   }
 }

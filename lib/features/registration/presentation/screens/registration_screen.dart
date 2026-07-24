@@ -19,6 +19,7 @@ import '../../../participant/presentation/bloc/participant_bloc.dart';
 import '../../../participant/presentation/bloc/participant_event.dart';
 import '../../../participant/domain/entities/participant_detail.dart';
 import '../../../participant/presentation/bloc/participant_state.dart';
+import '../../../participant/domain/repositories/participant_repository.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../bloc/registration_bloc.dart';
@@ -44,6 +45,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   // Search input controllers
   final TextEditingController _dniController = TextEditingController();
   final TextEditingController _discountCodeController = TextEditingController();
+  final FocusNode _dniFocusNode = FocusNode();
 
   ParticipantDetail? _linkedParticipant;
   bool _checkingCache = true;
@@ -51,12 +53,16 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   bool? _isDiscountCodeValid;
   String? _discountCodeErrorMessage;
   bool _verificandoPago = false;
+  bool _isCheckingKitAuth = false;
+  int _previousTabIndex = 0;
+  bool _shouldSkipRefresh = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabSelection);
     _participantBloc = getIt<ParticipantBloc>();
     _registrationBloc = getIt<RegistrationBloc>();
     _notificationsBloc = getIt<NotificationsBloc>();
@@ -118,9 +124,11 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _tenantManager.removeListener(_onTenantChanged);
+    _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
     _dniController.dispose();
     _discountCodeController.dispose();
+    _dniFocusNode.dispose();
     super.dispose();
   }
 
@@ -143,6 +151,33 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         _verificandoPago = true;
       });
     }
+
+    _participantBloc.add(
+      ParticipantEvent.getDetail(
+        dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
+        idOrg: '1',
+        eventoId: '1',
+        roundId: '1',
+      ),
+    );
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.index == 1 && !_tabController.indexIsChanging) {
+      if (_tabController.index != _previousTabIndex) {
+        if (_shouldSkipRefresh) {
+          _shouldSkipRefresh = false;
+        } else {
+          _refreshParticipantIfLinked();
+        }
+      }
+    }
+    _previousTabIndex = _tabController.index;
+  }
+
+  void _refreshParticipantIfLinked() {
+    final detail = _linkedParticipant;
+    if (detail == null) return;
 
     _participantBloc.add(
       ParticipantEvent.getDetail(
@@ -220,6 +255,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         _isDiscountCodeValid = null;
                         _discountCodeErrorMessage = null;
                         _verificandoPago = false;
+                        _shouldSkipRefresh = true;
                         _tabController.index = 1;
                       });
                     }
@@ -393,8 +429,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
       final fechaAcreditacion =
           cachedSettings?.getSetting('FECHA_ACREDITACION') ?? '5 y 6 de Junio';
-      final fechaCarrera =
-          cachedSettings?.getSetting('FECHA_CARRERA') ?? '7 de Junio';
       final detail = _linkedParticipant!;
 
       return SingleChildScrollView(
@@ -414,10 +448,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             _buildParticipantCard(
               detail,
               fechaAcreditacion,
-              fechaCarrera,
               activeTenant,
             ),
-            if (detail.insCodDesc.isNotEmpty) ...[
+            if (detail.nroPlaca == '0') ...[
               const SizedBox(height: 16),
               _buildDiscountCodeSection(detail, activeTenant),
             ],
@@ -458,7 +491,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   onPressed: _verificarPagoServidor,
                 ),
               ],
-            ] else
+            ] else ...[
               AppButton(
                 text: 'DOCUMENTACIÓN',
                 textColor: Colors.white,
@@ -467,6 +500,17 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   context.push('/inscripciones/documentacion', extra: detail);
                 },
               ),
+              const SizedBox(height: 12),
+              AppButton(
+                text: 'AUTORIZAR RETIRO DE KIT',
+                textColor: Colors.white,
+                icon: Icons.assignment_turned_in_rounded,
+                isLoading: _isCheckingKitAuth,
+                onPressed: _isCheckingKitAuth
+                    ? null
+                    : () => _handleKitAuthorization(detail),
+              ),
+            ],
             const SizedBox(height: 12),
             Row(
               children: [
@@ -487,8 +531,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                           _discountCodeController.clear();
                           _isDiscountCodeValid = null;
                           _discountCodeErrorMessage = null;
-                          _tabController.index = 0;
                         });
+                        _dniFocusNode.requestFocus();
                       }
                     },
                   ),
@@ -555,6 +599,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   hint: 'Ingresa DNI del corredor',
                   prefixIcon: Icons.search_rounded,
                   controller: _dniController,
+                  focusNode: _dniFocusNode,
                   keyboardType: TextInputType.number,
                   maxLength: 8,
                 ),
@@ -638,7 +683,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   Widget _buildParticipantCard(
     ParticipantDetail detail,
     String fechaAcreditacion,
-    String fechaCarrera,
     TenantConfig activeTenant,
   ) {
     final bool isPreInscripto = detail.nroPlaca == '0';
@@ -809,7 +853,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             'Categoría:',
             detail.categoria.isNotEmpty ? detail.categoria : 'No especificado',
           ),
-          _buildInfoRow('Fecha de la Carrera:', fechaCarrera),
           _buildInfoRow(
             'Hora de Agrupamiento:',
             detail.agrupamiento.isNotEmpty
@@ -1040,6 +1083,92 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         code: code,
       ),
     );
+  }
+
+  Future<void> _handleKitAuthorization(ParticipantDetail detail) async {
+    setState(() {
+      _isCheckingKitAuth = true;
+    });
+
+    try {
+      final participantRepository = getIt<ParticipantRepository>();
+      final response = await participantRepository.getParticipantDocuments(detail.id);
+
+      if (response['success'] == true && response['archivos'] is Map) {
+        final archivos = Map<String, dynamic>.from(response['archivos'] as Map);
+        bool hasPending = false;
+
+        for (final key in archivos.keys) {
+          final doc = archivos[key] as Map? ?? {};
+          final String estado = doc['estado']?.toString() ?? 'SD';
+          if (estado != 'AP') {
+            hasPending = true;
+            break;
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            _isCheckingKitAuth = false;
+          });
+
+          if (hasPending) {
+            showDialog(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                backgroundColor: Colors.grey[900],
+                title: const Text(
+                  'Autorización no Habilitada',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+                content: const Text(
+                  'Estimado participante, no se encuentra habilitado para autorizar el retiro de su kit por parte de un tercero. Para proceder con esta solicitud, es requisito indispensable que toda la documentación requerida esté previamente verificada y aprobada por la organización.',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                actions: [
+                  AppButton(
+                    text: 'Aceptar',
+                    textColor: Colors.white,
+                    width: 120,
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            context.push('/inscripciones/autorizar-kit', extra: detail);
+          }
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isCheckingKitAuth = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se pudo cargar la información de los documentos.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isCheckingKitAuth = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al conectar con el servidor: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

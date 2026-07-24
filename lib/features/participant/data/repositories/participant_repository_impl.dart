@@ -12,6 +12,7 @@ import '../dto/request/update_circuito_request_dto.dart';
 import '../dto/request/update_contact_request_dto.dart';
 import '../dto/request/update_emergency_request_dto.dart';
 import '../dto/request/update_participant_request_dto.dart';
+import '../dto/request/kit_authorization_request_dto.dart';
 import '../mappers/participant_mapper.dart';
 
 @LazySingleton(as: ParticipantRepository)
@@ -169,6 +170,27 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
       partiId: partiId,
       tipo: tipo,
       filePath: filePath,
+    );
+  }
+
+  @override
+  Future<dynamic> authorizeKit({
+    String? dni,
+    int? insId,
+    String? idEvento,
+    String? idOrg,
+    required String autorizadoDni,
+    required String autorizadoNombre,
+  }) async {
+    return _remoteDataSource.authorizeKit(
+      KitAuthorizationRequestDto(
+        dni: dni,
+        insId: insId,
+        idEvento: idEvento,
+        idOrg: idOrg,
+        autorizadoDni: autorizadoDni,
+        autorizadoNombre: autorizadoNombre,
+      ),
     );
   }
 }
