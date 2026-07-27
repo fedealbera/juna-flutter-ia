@@ -53,7 +53,11 @@ mixin _$ParticipantEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)
         updateParticipant,
   }) =>
       throw _privateConstructorUsedError;
@@ -93,7 +97,11 @@ mixin _$ParticipantEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
   }) =>
       throw _privateConstructorUsedError;
@@ -133,7 +141,11 @@ mixin _$ParticipantEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
     required TResult orElse(),
   }) =>
@@ -324,7 +336,11 @@ class _$AuthenticateImpl implements Authenticate {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)
         updateParticipant,
   }) {
     return authenticate(dni, idEvento, idOrg, token);
@@ -367,7 +383,11 @@ class _$AuthenticateImpl implements Authenticate {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
   }) {
     return authenticate?.call(dni, idEvento, idOrg, token);
@@ -410,7 +430,11 @@ class _$AuthenticateImpl implements Authenticate {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
     required TResult orElse(),
   }) {
@@ -615,7 +639,11 @@ class _$GetDetailImpl implements GetDetail {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)
         updateParticipant,
   }) {
     return getDetail(dni, idOrg, eventoId, roundId);
@@ -658,7 +686,11 @@ class _$GetDetailImpl implements GetDetail {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
   }) {
     return getDetail?.call(dni, idOrg, eventoId, roundId);
@@ -701,7 +733,11 @@ class _$GetDetailImpl implements GetDetail {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
     required TResult orElse(),
   }) {
@@ -897,7 +933,11 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)
         updateParticipant,
   }) {
     return updateEmergency(partiId, contNombre, contTel);
@@ -940,7 +980,11 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
   }) {
     return updateEmergency?.call(partiId, contNombre, contTel);
@@ -983,7 +1027,11 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
     required TResult orElse(),
   }) {
@@ -1245,7 +1293,11 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)
         updateParticipant,
   }) {
     return updateContact(partiId, domCiudad, domCiudadNombre, domProvincia,
@@ -1289,7 +1341,11 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
   }) {
     return updateContact?.call(partiId, domCiudad, domCiudadNombre,
@@ -1333,7 +1389,11 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
     required TResult orElse(),
   }) {
@@ -1564,7 +1624,11 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)
         updateParticipant,
   }) {
     return updateCircuito(partiId, insId, circuitoId, categoriaId, talleId);
@@ -1607,7 +1671,11 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
   }) {
     return updateCircuito?.call(
@@ -1651,7 +1719,11 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
     required TResult orElse(),
   }) {
@@ -1747,7 +1819,11 @@ abstract class _$$UpdateParticipantEventImplCopyWith<$Res> {
       String? insId,
       String? circuitoId,
       String? categoriaId,
-      String? talleId});
+      String? talleId,
+      String? cacreId,
+      String? marcbId,
+      String? marcbLabel,
+      String? grupoEntrenamiento});
 }
 
 /// @nodoc
@@ -1778,6 +1854,10 @@ class __$$UpdateParticipantEventImplCopyWithImpl<$Res>
     Object? circuitoId = freezed,
     Object? categoriaId = freezed,
     Object? talleId = freezed,
+    Object? cacreId = freezed,
+    Object? marcbId = freezed,
+    Object? marcbLabel = freezed,
+    Object? grupoEntrenamiento = freezed,
   }) {
     return _then(_$UpdateParticipantEventImpl(
       partiId: null == partiId
@@ -1836,6 +1916,22 @@ class __$$UpdateParticipantEventImplCopyWithImpl<$Res>
           ? _value.talleId
           : talleId // ignore: cast_nullable_to_non_nullable
               as String?,
+      cacreId: freezed == cacreId
+          ? _value.cacreId
+          : cacreId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      marcbId: freezed == marcbId
+          ? _value.marcbId
+          : marcbId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      marcbLabel: freezed == marcbLabel
+          ? _value.marcbLabel
+          : marcbLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      grupoEntrenamiento: freezed == grupoEntrenamiento
+          ? _value.grupoEntrenamiento
+          : grupoEntrenamiento // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -1857,7 +1953,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
       this.insId,
       this.circuitoId,
       this.categoriaId,
-      this.talleId});
+      this.talleId,
+      this.cacreId,
+      this.marcbId,
+      this.marcbLabel,
+      this.grupoEntrenamiento});
 
   @override
   final String partiId;
@@ -1887,10 +1987,18 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
   final String? categoriaId;
   @override
   final String? talleId;
+  @override
+  final String? cacreId;
+  @override
+  final String? marcbId;
+  @override
+  final String? marcbLabel;
+  @override
+  final String? grupoEntrenamiento;
 
   @override
   String toString() {
-    return 'ParticipantEvent.updateParticipant(partiId: $partiId, contNombre: $contNombre, contTel: $contTel, domCiudad: $domCiudad, domCiudadNombre: $domCiudadNombre, domProvincia: $domProvincia, domPais: $domPais, contInstagram: $contInstagram, contCelular: $contCelular, contEmail: $contEmail, insId: $insId, circuitoId: $circuitoId, categoriaId: $categoriaId, talleId: $talleId)';
+    return 'ParticipantEvent.updateParticipant(partiId: $partiId, contNombre: $contNombre, contTel: $contTel, domCiudad: $domCiudad, domCiudadNombre: $domCiudadNombre, domProvincia: $domProvincia, domPais: $domPais, contInstagram: $contInstagram, contCelular: $contCelular, contEmail: $contEmail, insId: $insId, circuitoId: $circuitoId, categoriaId: $categoriaId, talleId: $talleId, cacreId: $cacreId, marcbId: $marcbId, marcbLabel: $marcbLabel, grupoEntrenamiento: $grupoEntrenamiento)';
   }
 
   @override
@@ -1920,7 +2028,13 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
                 other.circuitoId == circuitoId) &&
             (identical(other.categoriaId, categoriaId) ||
                 other.categoriaId == categoriaId) &&
-            (identical(other.talleId, talleId) || other.talleId == talleId));
+            (identical(other.talleId, talleId) || other.talleId == talleId) &&
+            (identical(other.cacreId, cacreId) || other.cacreId == cacreId) &&
+            (identical(other.marcbId, marcbId) || other.marcbId == marcbId) &&
+            (identical(other.marcbLabel, marcbLabel) ||
+                other.marcbLabel == marcbLabel) &&
+            (identical(other.grupoEntrenamiento, grupoEntrenamiento) ||
+                other.grupoEntrenamiento == grupoEntrenamiento));
   }
 
   @override
@@ -1939,7 +2053,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
       insId,
       circuitoId,
       categoriaId,
-      talleId);
+      talleId,
+      cacreId,
+      marcbId,
+      marcbLabel,
+      grupoEntrenamiento);
 
   /// Create a copy of ParticipantEvent
   /// with the given fields replaced by the non-null parameter values.
@@ -1988,7 +2106,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)
         updateParticipant,
   }) {
     return updateParticipant(
@@ -2005,7 +2127,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
         insId,
         circuitoId,
         categoriaId,
-        talleId);
+        talleId,
+        cacreId,
+        marcbId,
+        marcbLabel,
+        grupoEntrenamiento);
   }
 
   @override
@@ -2045,7 +2171,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
   }) {
     return updateParticipant?.call(
@@ -2062,7 +2192,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
         insId,
         circuitoId,
         categoriaId,
-        talleId);
+        talleId,
+        cacreId,
+        marcbId,
+        marcbLabel,
+        grupoEntrenamiento);
   }
 
   @override
@@ -2102,7 +2236,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
             String? insId,
             String? circuitoId,
             String? categoriaId,
-            String? talleId)?
+            String? talleId,
+            String? cacreId,
+            String? marcbId,
+            String? marcbLabel,
+            String? grupoEntrenamiento)?
         updateParticipant,
     required TResult orElse(),
   }) {
@@ -2121,7 +2259,11 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
           insId,
           circuitoId,
           categoriaId,
-          talleId);
+          talleId,
+          cacreId,
+          marcbId,
+          marcbLabel,
+          grupoEntrenamiento);
     }
     return orElse();
   }
@@ -2185,7 +2327,11 @@ abstract class UpdateParticipantEvent implements ParticipantEvent {
       final String? insId,
       final String? circuitoId,
       final String? categoriaId,
-      final String? talleId}) = _$UpdateParticipantEventImpl;
+      final String? talleId,
+      final String? cacreId,
+      final String? marcbId,
+      final String? marcbLabel,
+      final String? grupoEntrenamiento}) = _$UpdateParticipantEventImpl;
 
   String get partiId;
   String? get contNombre;
@@ -2201,6 +2347,10 @@ abstract class UpdateParticipantEvent implements ParticipantEvent {
   String? get circuitoId;
   String? get categoriaId;
   String? get talleId;
+  String? get cacreId;
+  String? get marcbId;
+  String? get marcbLabel;
+  String? get grupoEntrenamiento;
 
   /// Create a copy of ParticipantEvent
   /// with the given fields replaced by the non-null parameter values.

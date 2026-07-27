@@ -23,6 +23,10 @@ class UpdateParticipant {
     String? circuitoId,
     String? categoriaId,
     String? talleId,
+    String? cacreId,
+    String? marcbId,
+    String? marcbLabel,
+    String? grupoEntrenamiento,
   }) {
     return _repository.updateParticipant(
       partiId: partiId,
@@ -39,6 +43,10 @@ class UpdateParticipant {
       circuitoId: circuitoId,
       categoriaId: categoriaId,
       talleId: talleId,
+      cacreId: cacreId,
+      marcbId: marcbId,
+      marcbLabel: marcbLabel,
+      grupoEntrenamiento: grupoEntrenamiento,
     );
   }
 }

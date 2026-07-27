@@ -47,6 +47,14 @@ mixin _$UpdateParticipantRequestDto {
   String? get categoriaId => throw _privateConstructorUsedError;
   @JsonKey(name: 'talleId')
   String? get talleId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'cacreId')
+  String? get cacreId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'marcbId')
+  String? get marcbId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'marcbLabel')
+  String? get marcbLabel => throw _privateConstructorUsedError;
+  @JsonKey(name: 'grupoEntrenamiento')
+  String? get grupoEntrenamiento => throw _privateConstructorUsedError;
 
   /// Serializes this UpdateParticipantRequestDto to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -79,7 +87,11 @@ abstract class $UpdateParticipantRequestDtoCopyWith<$Res> {
       @JsonKey(name: 'insId') String? insId,
       @JsonKey(name: 'circuitoId') String? circuitoId,
       @JsonKey(name: 'categoriaId') String? categoriaId,
-      @JsonKey(name: 'talleId') String? talleId});
+      @JsonKey(name: 'talleId') String? talleId,
+      @JsonKey(name: 'cacreId') String? cacreId,
+      @JsonKey(name: 'marcbId') String? marcbId,
+      @JsonKey(name: 'marcbLabel') String? marcbLabel,
+      @JsonKey(name: 'grupoEntrenamiento') String? grupoEntrenamiento});
 }
 
 /// @nodoc
@@ -111,6 +123,10 @@ class _$UpdateParticipantRequestDtoCopyWithImpl<$Res,
     Object? circuitoId = freezed,
     Object? categoriaId = freezed,
     Object? talleId = freezed,
+    Object? cacreId = freezed,
+    Object? marcbId = freezed,
+    Object? marcbLabel = freezed,
+    Object? grupoEntrenamiento = freezed,
   }) {
     return _then(_value.copyWith(
       contNombre: freezed == contNombre
@@ -165,6 +181,22 @@ class _$UpdateParticipantRequestDtoCopyWithImpl<$Res,
           ? _value.talleId
           : talleId // ignore: cast_nullable_to_non_nullable
               as String?,
+      cacreId: freezed == cacreId
+          ? _value.cacreId
+          : cacreId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      marcbId: freezed == marcbId
+          ? _value.marcbId
+          : marcbId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      marcbLabel: freezed == marcbLabel
+          ? _value.marcbLabel
+          : marcbLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      grupoEntrenamiento: freezed == grupoEntrenamiento
+          ? _value.grupoEntrenamiento
+          : grupoEntrenamiento // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -191,7 +223,11 @@ abstract class _$$UpdateParticipantRequestDtoImplCopyWith<$Res>
       @JsonKey(name: 'insId') String? insId,
       @JsonKey(name: 'circuitoId') String? circuitoId,
       @JsonKey(name: 'categoriaId') String? categoriaId,
-      @JsonKey(name: 'talleId') String? talleId});
+      @JsonKey(name: 'talleId') String? talleId,
+      @JsonKey(name: 'cacreId') String? cacreId,
+      @JsonKey(name: 'marcbId') String? marcbId,
+      @JsonKey(name: 'marcbLabel') String? marcbLabel,
+      @JsonKey(name: 'grupoEntrenamiento') String? grupoEntrenamiento});
 }
 
 /// @nodoc
@@ -222,6 +258,10 @@ class __$$UpdateParticipantRequestDtoImplCopyWithImpl<$Res>
     Object? circuitoId = freezed,
     Object? categoriaId = freezed,
     Object? talleId = freezed,
+    Object? cacreId = freezed,
+    Object? marcbId = freezed,
+    Object? marcbLabel = freezed,
+    Object? grupoEntrenamiento = freezed,
   }) {
     return _then(_$UpdateParticipantRequestDtoImpl(
       contNombre: freezed == contNombre
@@ -276,6 +316,22 @@ class __$$UpdateParticipantRequestDtoImplCopyWithImpl<$Res>
           ? _value.talleId
           : talleId // ignore: cast_nullable_to_non_nullable
               as String?,
+      cacreId: freezed == cacreId
+          ? _value.cacreId
+          : cacreId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      marcbId: freezed == marcbId
+          ? _value.marcbId
+          : marcbId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      marcbLabel: freezed == marcbLabel
+          ? _value.marcbLabel
+          : marcbLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      grupoEntrenamiento: freezed == grupoEntrenamiento
+          ? _value.grupoEntrenamiento
+          : grupoEntrenamiento // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -297,7 +353,11 @@ class _$UpdateParticipantRequestDtoImpl
       @JsonKey(name: 'insId') this.insId,
       @JsonKey(name: 'circuitoId') this.circuitoId,
       @JsonKey(name: 'categoriaId') this.categoriaId,
-      @JsonKey(name: 'talleId') this.talleId});
+      @JsonKey(name: 'talleId') this.talleId,
+      @JsonKey(name: 'cacreId') this.cacreId,
+      @JsonKey(name: 'marcbId') this.marcbId,
+      @JsonKey(name: 'marcbLabel') this.marcbLabel,
+      @JsonKey(name: 'grupoEntrenamiento') this.grupoEntrenamiento});
 
   factory _$UpdateParticipantRequestDtoImpl.fromJson(
           Map<String, dynamic> json) =>
@@ -342,10 +402,22 @@ class _$UpdateParticipantRequestDtoImpl
   @override
   @JsonKey(name: 'talleId')
   final String? talleId;
+  @override
+  @JsonKey(name: 'cacreId')
+  final String? cacreId;
+  @override
+  @JsonKey(name: 'marcbId')
+  final String? marcbId;
+  @override
+  @JsonKey(name: 'marcbLabel')
+  final String? marcbLabel;
+  @override
+  @JsonKey(name: 'grupoEntrenamiento')
+  final String? grupoEntrenamiento;
 
   @override
   String toString() {
-    return 'UpdateParticipantRequestDto(contNombre: $contNombre, contTel: $contTel, domCiudad: $domCiudad, domCiudadNombre: $domCiudadNombre, domProvincia: $domProvincia, domPais: $domPais, contInstagram: $contInstagram, contCelular: $contCelular, contEmail: $contEmail, insId: $insId, circuitoId: $circuitoId, categoriaId: $categoriaId, talleId: $talleId)';
+    return 'UpdateParticipantRequestDto(contNombre: $contNombre, contTel: $contTel, domCiudad: $domCiudad, domCiudadNombre: $domCiudadNombre, domProvincia: $domProvincia, domPais: $domPais, contInstagram: $contInstagram, contCelular: $contCelular, contEmail: $contEmail, insId: $insId, circuitoId: $circuitoId, categoriaId: $categoriaId, talleId: $talleId, cacreId: $cacreId, marcbId: $marcbId, marcbLabel: $marcbLabel, grupoEntrenamiento: $grupoEntrenamiento)';
   }
 
   @override
@@ -374,7 +446,13 @@ class _$UpdateParticipantRequestDtoImpl
                 other.circuitoId == circuitoId) &&
             (identical(other.categoriaId, categoriaId) ||
                 other.categoriaId == categoriaId) &&
-            (identical(other.talleId, talleId) || other.talleId == talleId));
+            (identical(other.talleId, talleId) || other.talleId == talleId) &&
+            (identical(other.cacreId, cacreId) || other.cacreId == cacreId) &&
+            (identical(other.marcbId, marcbId) || other.marcbId == marcbId) &&
+            (identical(other.marcbLabel, marcbLabel) ||
+                other.marcbLabel == marcbLabel) &&
+            (identical(other.grupoEntrenamiento, grupoEntrenamiento) ||
+                other.grupoEntrenamiento == grupoEntrenamiento));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -393,7 +471,11 @@ class _$UpdateParticipantRequestDtoImpl
       insId,
       circuitoId,
       categoriaId,
-      talleId);
+      talleId,
+      cacreId,
+      marcbId,
+      marcbLabel,
+      grupoEntrenamiento);
 
   /// Create a copy of UpdateParticipantRequestDto
   /// with the given fields replaced by the non-null parameter values.
@@ -415,20 +497,24 @@ class _$UpdateParticipantRequestDtoImpl
 abstract class _UpdateParticipantRequestDto
     implements UpdateParticipantRequestDto {
   const factory _UpdateParticipantRequestDto(
-          {@JsonKey(name: 'contNombre') final String? contNombre,
-          @JsonKey(name: 'contTel') final String? contTel,
-          @JsonKey(name: 'domCiudad') final String? domCiudad,
-          @JsonKey(name: 'domCiudadNombre') final String? domCiudadNombre,
-          @JsonKey(name: 'domProvincia') final String? domProvincia,
-          @JsonKey(name: 'domPais') final String? domPais,
-          @JsonKey(name: 'contInstagram') final String? contInstagram,
-          @JsonKey(name: 'contCelular') final String? contCelular,
-          @JsonKey(name: 'contEmail') final String? contEmail,
-          @JsonKey(name: 'insId') final String? insId,
-          @JsonKey(name: 'circuitoId') final String? circuitoId,
-          @JsonKey(name: 'categoriaId') final String? categoriaId,
-          @JsonKey(name: 'talleId') final String? talleId}) =
-      _$UpdateParticipantRequestDtoImpl;
+      {@JsonKey(name: 'contNombre') final String? contNombre,
+      @JsonKey(name: 'contTel') final String? contTel,
+      @JsonKey(name: 'domCiudad') final String? domCiudad,
+      @JsonKey(name: 'domCiudadNombre') final String? domCiudadNombre,
+      @JsonKey(name: 'domProvincia') final String? domProvincia,
+      @JsonKey(name: 'domPais') final String? domPais,
+      @JsonKey(name: 'contInstagram') final String? contInstagram,
+      @JsonKey(name: 'contCelular') final String? contCelular,
+      @JsonKey(name: 'contEmail') final String? contEmail,
+      @JsonKey(name: 'insId') final String? insId,
+      @JsonKey(name: 'circuitoId') final String? circuitoId,
+      @JsonKey(name: 'categoriaId') final String? categoriaId,
+      @JsonKey(name: 'talleId') final String? talleId,
+      @JsonKey(name: 'cacreId') final String? cacreId,
+      @JsonKey(name: 'marcbId') final String? marcbId,
+      @JsonKey(name: 'marcbLabel') final String? marcbLabel,
+      @JsonKey(name: 'grupoEntrenamiento')
+      final String? grupoEntrenamiento}) = _$UpdateParticipantRequestDtoImpl;
 
   factory _UpdateParticipantRequestDto.fromJson(Map<String, dynamic> json) =
       _$UpdateParticipantRequestDtoImpl.fromJson;
@@ -472,6 +558,18 @@ abstract class _UpdateParticipantRequestDto
   @override
   @JsonKey(name: 'talleId')
   String? get talleId;
+  @override
+  @JsonKey(name: 'cacreId')
+  String? get cacreId;
+  @override
+  @JsonKey(name: 'marcbId')
+  String? get marcbId;
+  @override
+  @JsonKey(name: 'marcbLabel')
+  String? get marcbLabel;
+  @override
+  @JsonKey(name: 'grupoEntrenamiento')
+  String? get grupoEntrenamiento;
 
   /// Create a copy of UpdateParticipantRequestDto
   /// with the given fields replaced by the non-null parameter values.

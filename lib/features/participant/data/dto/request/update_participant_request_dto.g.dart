@@ -22,6 +22,10 @@ _$UpdateParticipantRequestDtoImpl _$$UpdateParticipantRequestDtoImplFromJson(
       circuitoId: json['circuitoId'] as String?,
       categoriaId: json['categoriaId'] as String?,
       talleId: json['talleId'] as String?,
+      cacreId: json['cacreId'] as String?,
+      marcbId: json['marcbId'] as String?,
+      marcbLabel: json['marcbLabel'] as String?,
+      grupoEntrenamiento: json['grupoEntrenamiento'] as String?,
     );
 
 Map<String, dynamic> _$$UpdateParticipantRequestDtoImplToJson(
@@ -40,4 +44,8 @@ Map<String, dynamic> _$$UpdateParticipantRequestDtoImplToJson(
       'circuitoId': instance.circuitoId,
       'categoriaId': instance.categoriaId,
       'talleId': instance.talleId,
+      'cacreId': instance.cacreId,
+      'marcbId': instance.marcbId,
+      'marcbLabel': instance.marcbLabel,
+      'grupoEntrenamiento': instance.grupoEntrenamiento,
     };

@@ -60,6 +60,10 @@ abstract class ParticipantRepository {
     String? circuitoId,
     String? categoriaId,
     String? talleId,
+    String? cacreId,
+    String? marcbId,
+    String? marcbLabel,
+    String? grupoEntrenamiento,
   });
 
   Future<Map<String, dynamic>> getParticipantDocuments(String partiId);

@@ -121,7 +121,20 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       // Adjust selected category if not present in the loaded categories
       final hasSelected = _categories.any((c) => c.id == _selectedCategoryId);
       if (!hasSelected) {
-        _selectedCategoryId = _categories.isNotEmpty ? _categories.first.id : null;
+        if (_categories.isNotEmpty) {
+          if (_categories.length > 1) {
+            // Default to the first non-special category if multiple exist
+            final defaultCat = _categories.firstWhere(
+              (c) => c.categEspecial != 1,
+              orElse: () => _categories.first,
+            );
+            _selectedCategoryId = defaultCat.id;
+          } else {
+            _selectedCategoryId = _categories.first.id;
+          }
+        } else {
+          _selectedCategoryId = null;
+        }
       }
     } catch (e) {
       debugPrint('Error loading categories: $e');
@@ -166,7 +179,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
   }
 
   void _onSave() {
-    print('EditParticipantScreen: _onSave button clicked!');
+    debugPrint('EditParticipantScreen: _onSave button clicked!');
     setState(() {
       _isLoading = true;
     });
@@ -174,7 +187,8 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
     final p = widget.participant;
     final showRegistrationModifications = p.nroPlaca == '0' || p.nroPlaca.isEmpty;
 
-    print('EditParticipantScreen: Dispatching ParticipantEvent.updateParticipant for partiId: ${p.id}');
+    debugPrint('EditParticipantScreen: Dispatching ParticipantEvent.updateParticipant for partiId: ${p.id}');
+    final is21klg = _tenantManager.value.tenantId == 2;
     _participantBloc.add(ParticipantEvent.updateParticipant(
       partiId: p.id,
       domCiudad: p.domCiudad,
@@ -190,6 +204,10 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       circuitoId: showRegistrationModifications ? _selectedCircuitId : p.idCircuito,
       categoriaId: showRegistrationModifications ? _selectedCategoryId : p.idCategoria,
       talleId: showRegistrationModifications ? _selectedSizeId : p.partTalleId,
+      cacreId: is21klg ? p.cacreId : null,
+      marcbId: is21klg ? p.marcbId : null,
+      marcbLabel: is21klg ? p.marcbLabel : null,
+      grupoEntrenamiento: is21klg ? p.grupoEntrenamiento : null,
     ));
   }
 
@@ -356,6 +374,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                   ],
                                 ),
                               ),
+
                               // Section: Datos de la Carrera (only if pre-inscripto / no dorsal)
                               if (widget.participant.nroPlaca == '0' || widget.participant.nroPlaca.isEmpty) ...[
                                 const SizedBox(height: 28),

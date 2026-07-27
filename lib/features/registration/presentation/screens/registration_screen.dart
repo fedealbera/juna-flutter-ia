@@ -863,6 +863,26 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             'Largada:',
             detail.largada.isNotEmpty ? detail.largada : 'No especificado',
           ),
+          if (activeTenant.tenantId == 2) ...[
+            _buildInfoColumn(
+              'Grupo de Entrenamiento:',
+              detail.grupoEntrenamiento.isNotEmpty
+                  ? detail.grupoEntrenamiento
+                  : 'No especificado',
+            ),
+            _buildInfoColumn(
+              'Centro de Acreditación:',
+              detail.centroAcreditacion.isNotEmpty
+                  ? detail.centroAcreditacion
+                  : 'No especificado',
+            ),
+            _buildInfoRow(
+              'Marca de Zapatillas:',
+              detail.marcaZapatillas.isNotEmpty
+                  ? detail.marcaZapatillas
+                  : 'No especificado',
+            ),
+          ],
           if (detail.articulos.isNotEmpty) ...[
             const SizedBox(height: 16),
             Divider(color: Colors.white.withValues(alpha: 0.1)),
@@ -924,6 +944,31 @@ class _RegistrationScreenState extends State<RegistrationScreen>
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoColumn(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(color: Colors.grey, fontSize: 13),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+            softWrap: true,
           ),
         ],
       ),

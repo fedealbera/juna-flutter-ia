@@ -58,5 +58,9 @@ class ParticipantEvent with _$ParticipantEvent {
     String? circuitoId,
     String? categoriaId,
     String? talleId,
+    String? cacreId,
+    String? marcbId,
+    String? marcbLabel,
+    String? grupoEntrenamiento,
   }) = UpdateParticipantEvent;
 }

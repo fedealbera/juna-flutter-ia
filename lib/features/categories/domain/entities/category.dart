@@ -7,6 +7,7 @@ class Category extends Equatable {
 
   String get id => rawJson['id']?.toString() ?? rawJson['categId']?.toString() ?? '';
   String get name => rawJson['nombre']?.toString() ?? rawJson['categNombre']?.toString() ?? '';
+  int get categEspecial => int.tryParse(rawJson['categEspecial']?.toString() ?? '') ?? 0;
 
   @override
   List<Object?> get props => [rawJson];

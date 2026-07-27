@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import '../../domain/usecases/authenticate_participant.dart';
@@ -106,10 +107,10 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
     });
 
     on<UpdateParticipantEvent>((event, emit) async {
-      print('ParticipantBloc: UpdateParticipantEvent received for partiId: ${event.partiId}');
+      debugPrint('ParticipantBloc: UpdateParticipantEvent received for partiId: ${event.partiId}');
       emit(const ParticipantState.loading());
       try {
-        print('ParticipantBloc: Calling _updateParticipant use case...');
+        debugPrint('ParticipantBloc: Calling _updateParticipant use case...');
         final result = await _updateParticipant(
           partiId: event.partiId,
           contNombre: event.contNombre,
@@ -125,12 +126,16 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
           circuitoId: event.circuitoId,
           categoriaId: event.categoriaId,
           talleId: event.talleId,
+          cacreId: event.cacreId,
+          marcbId: event.marcbId,
+          marcbLabel: event.marcbLabel,
+          grupoEntrenamiento: event.grupoEntrenamiento,
         );
-        print('ParticipantBloc: UpdateParticipant success. Result rawJson: ${result.rawJson}');
+        debugPrint('ParticipantBloc: UpdateParticipant success. Result rawJson: ${result.rawJson}');
         emit(ParticipantState.participantUpdated(result));
       } catch (e, stacktrace) {
-        print('ParticipantBloc: Error during updateParticipant: $e');
-        print(stacktrace);
+        debugPrint('ParticipantBloc: Error during updateParticipant: $e');
+        debugPrint(stacktrace.toString());
         emit(ParticipantState.error(e.toString()));
       }
     });

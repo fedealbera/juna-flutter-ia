@@ -19,6 +19,10 @@ class UpdateParticipantRequestDto with _$UpdateParticipantRequestDto {
     @JsonKey(name: 'circuitoId') String? circuitoId,
     @JsonKey(name: 'categoriaId') String? categoriaId,
     @JsonKey(name: 'talleId') String? talleId,
+    @JsonKey(name: 'cacreId') String? cacreId,
+    @JsonKey(name: 'marcbId') String? marcbId,
+    @JsonKey(name: 'marcbLabel') String? marcbLabel,
+    @JsonKey(name: 'grupoEntrenamiento') String? grupoEntrenamiento,
   }) = _UpdateParticipantRequestDto;
 
   factory UpdateParticipantRequestDto.fromJson(Map<String, dynamic> json) =>

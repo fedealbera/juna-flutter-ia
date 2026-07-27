@@ -133,6 +133,10 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
     String? circuitoId,
     String? categoriaId,
     String? talleId,
+    String? cacreId,
+    String? marcbId,
+    String? marcbLabel,
+    String? grupoEntrenamiento,
   }) async {
     final response = await _remoteDataSource.updateParticipant(
       partiId,
@@ -150,6 +154,10 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
         circuitoId: circuitoId,
         categoriaId: categoriaId,
         talleId: talleId,
+        cacreId: cacreId,
+        marcbId: marcbId,
+        marcbLabel: marcbLabel,
+        grupoEntrenamiento: grupoEntrenamiento,
       ),
     );
     return ParticipantMapper.toParticipantEntity(response);
