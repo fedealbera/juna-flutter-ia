@@ -30,7 +30,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final TenantManager _tenantManager = getIt<TenantManager>();
 
   late final ContentBloc _contentBloc;
@@ -56,6 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Scroll parameters for visual indicator
   final ScrollController _scrollController = ScrollController();
   bool _showScrollIndicator = true;
+
+  // Animation for the scroll-down indicator
+  late final AnimationController _bounceController;
+  late final Animation<double> _bounceAnimation;
 
   // Participant parameters
   ParticipantDetail? _linkedParticipant;
@@ -142,6 +146,18 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
+
+    _bounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+
+    _bounceAnimation = Tween<double>(begin: 0.0, end: 6.0).animate(
+      CurvedAnimation(
+        parent: _bounceController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   void _loadEventContent() {
@@ -182,6 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _countdownTimer.cancel();
     _scrollController.dispose();
     _settingsBloc.close();
+    _bounceController.dispose();
     super.dispose();
   }
 
@@ -530,7 +547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 if (_linkedParticipant == null) ...[
                                   const SizedBox(height: 24),
                                   AppButton(
-                                    text: 'Ver Inscripción',
+                                    text: 'Inscribirme',
                                     onPressed: () => context.go('/inscripciones'),
                                     type: AppButtonType.outlined,
                                     borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
@@ -662,7 +679,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'MÁS INFORMACIÓN',
+                              'DESLIZA PARA VER MÁS',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -671,10 +688,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            Icon(
-                              Icons.keyboard_double_arrow_down_rounded,
-                              color: activeTenant.accentColorRef,
-                              size: 14,
+                            AnimatedBuilder(
+                              animation: _bounceAnimation,
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset: Offset(0.0, _bounceAnimation.value),
+                                  child: child,
+                                );
+                              },
+                              child: Icon(
+                                Icons.keyboard_double_arrow_down_rounded,
+                                color: activeTenant.accentColorRef,
+                                size: 14,
+                              ),
                             ),
                           ],
                         ),
@@ -1224,10 +1250,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildQuickActionsGrid(TenantConfig activeTenant) {
     final items = [
       _QuickActionItem(
-        icon: Icons.badge_outlined,
-        label: 'Mi Ficha',
-        description: 'Tus datos de carrera',
-        onTap: () => context.go('/inscripciones'),
+        icon: _linkedParticipant != null ? Icons.person_outline : Icons.badge_outlined,
+        label: _linkedParticipant != null ? 'Mi Perfil' : 'Iniciar Sesión',
+        description: _linkedParticipant != null ? 'Tus datos de carrera' : 'Ingresa con tu DNI',
+        onTap: () => context.go('/inscripciones?tab=1'),
       ),
       _QuickActionItem(
         icon: Icons.map_outlined,

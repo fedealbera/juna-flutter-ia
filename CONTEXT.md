@@ -86,12 +86,12 @@ Based on the value of `nroPlaca` returned by the runner details endpoint:
 * **`nroPlaca != "0"` (Pago Confirmado):**
   * Displays a green `PAGO CONFIRMADO` tag.
   * Renders a highly highlighted plate code container showing the plate number.
-  * Displays a `DOCUMENTACIÓN` button that routes to the document upload screen.
+  * Displays an `ENVIAR CERTIFICADO` button that routes to the document upload screen.
 
 ### Tab Selector Synchronization & Automatic Switching
 To ensure a fluid, integrated UX, the `RegistrationScreen` manages its active tab controller dynamically based on the participant's state:
-* **On Screen Boot:** If a participant is already cached locally in Hive, it automatically sets the active tab index to **VER PARTICIPANTE** (`_tabController.index = 1`) to immediately display their registration card instead of a blank form.
-* **On Successful Search:** When a user successfully looks up their DNI and links their runner profile, the screen transitions automatically to the **VER PARTICIPANTE** tab (`index = 1`).
+* **On Screen Boot:** If a participant is already cached locally in Hive, it automatically sets the active tab index to **VER MI PERFIL** (`_tabController.index = 1`) to immediately display their registration card instead of a blank form.
+* **On Successful Search:** When a user successfully looks up their DNI and links their runner profile, the screen transitions automatically to the **VER MI PERFIL** tab (`index = 1`).
 * **On Unlinking:** Clicking "DESVINCULAR" clears the local Hive cache, resets state variables, and automatically returns the active tab to **NUEVA INSCRIPCIÓN** (`index = 0`).
 
 ### Discount Code Validation Mapping
@@ -159,17 +159,17 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
     * **Information:** Displays the participant's full name, selected circuit/distance, category, and start details (largada).
     * **Dorsal/Plate Visibility:** If the participant has a valid plate (`nroPlaca != "0"` and not empty), it shows their bib number in a highly contrasted box and marks the status as `INSCRIPCIÓN ACTIVA` (green). The box header dynamically displays **DORSAL** for the `21kLG` tenant (when tenant name contains `'21k'`) and **PLACA** for other tenants like `DDLN`. If they don't have a plate (`nroPlaca == "0"` or empty), it hides the box and shows `PAGO PENDIENTE` (amber).
     * **Direct Payment Redirect:** If they are pending payment and have a `linkPago` link, it shows an interactive warning bar that launches their payment link in the external browser using a robust try-catch wrapper (avoiding query permission checks).
-    * **Pass Card Tap Target:** Tapping the main body of the card routes to `/inscripciones` and automatically focuses the **VER PARTICIPANTE** tab (index 1).
+    * **Pass Card Tap Target:** Tapping the main body of the card routes to `/inscripciones` and automatically focuses the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1).
   * **Next Event & Countdown Card:** Employs dynamic gradients and luminance-aware button text. On race day (`isRaceDay`), it hides the countdown block and button, displaying a compact glassmorphic live status badge ("¡EL EVENTO ESTÁ EN MARCHA!") with a pulsing red status indicator.
-  * **Quick Actions Grid:** A 2x2 interactive grid using tenant color accents to route directly using GoRouter to: "Mi Ficha" (`/inscripciones`), "Circuitos" (`/mapas`), "En Vivo" (`/vivo`), and "Ayuda" (`/mas`).
+  * **Quick Actions Grid:** A 2x2 interactive grid using tenant color accents to route directly using GoRouter to: "Iniciar Sesión" or "Mi Perfil" (`/inscripciones`) depending on whether a runner is linked, "Circuitos" (`/mapas`), "En Vivo" (`/vivo`), and "Ayuda" (`/mas`).
   * **SOS Emergency Button:** Integrates the `geolocator` package to fetch precise GPS coordinates on race day, showing a loading spinner.
   * **Weather & Gear Advisory Card:** Fetches current weather from Open-Meteo and displays a 3-column altitude-based layout for mountain races (Base, Summit, Arrival) or a 2-column layout for flat races, alongside custom gear and hydration warnings.
-  * **Floating Scroll-down Indicator:** A centered pill ("MÁS INFORMACIÓN") that automatically fades out past `30` pixels of scroll, utilizing `IgnorePointer` so it doesn't block background clicks.
-* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". In the "VER PARTICIPANTE" tab:
+  * **Floating Scroll-down Indicator:** A centered pill ("DESLIZA PARA VER MÁS") with a bouncing down-arrow animation that automatically fades out past `30` pixels of scroll, utilizing `IgnorePointer` so it doesn't block background clicks.
+* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". In the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1):
   * The participant card dynamically displays **DORSAL** instead of **PLACA** inside the bib box for the `21kLG` tenant (when tenant name contains `'21k'`), while continuing to show **PLACA** for other tenants like `DDLN`.
   * The info details are organized in a specific order: *Nombre*, *DNI*, *Circuito*, *Categoría*, *Fecha de la Carrera*, *Hora de Agrupamiento*, and *Largada* (with *Fecha de Acreditación* removed entirely).
   * Displays dynamic fields `Grupo de Entrenamiento`, `Centro de Acreditación`, and `Marca de Zapatillas` only for the `21kLG` tenant. To prevent visual clipping on narrow screens, these long text values are dynamically laid out on two stacked vertical lines using `_buildInfoColumn` instead of a single row.
-  * The "PAGAR" and "DOCUMENTACIÓN" buttons are styled with explicit white font and icon colors. When payment verification is active, the payment button text updates to `VERIFICANDO PAGO...` showing a sync loader icon, and is disabled.
+  * The "PAGAR" and "ENVIAR CERTIFICADO" buttons are styled with explicit white font and icon colors. When payment verification is active, the payment button text updates to `VERIFICANDO PAGO...` showing a sync loader icon, and is disabled.
   * If the participant details response contains a discount code (`insCodDesc`), a glassmorphic **Código de Descuento** card section is conditionally displayed below the participant details card. This card contains an input field (`AppTextField` without a label) to edit the discount code and a validate button (`Validar`) that triggers the real validation.
   * The "DESVINCULAR" button is styled with a solid red background and white text, and the "EDITAR DATOS" button uses the primary color, both using the unified design system `AppButton` component (height `52dp`).
   * The `RegistrationWebView` uses vertical and horizontal drag gesture recognizers on the `WebViewWidget` constructor to prevent scroll blocking.

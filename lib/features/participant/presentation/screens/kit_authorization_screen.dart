@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
-import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/text_fields/app_text_field.dart';
 import '../../domain/entities/participant_detail.dart';
@@ -20,7 +19,6 @@ class KitAuthorizationScreen extends StatefulWidget {
 }
 
 class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
-  final TenantManager _tenantManager = getIt<TenantManager>();
   final TextEditingController _dniController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -82,9 +80,6 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final activeTenant = _tenantManager.value;
-    final primaryColor = activeTenant.primaryColorRef;
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -130,29 +125,7 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 4,
-                              height: 18,
-                              decoration: BoxDecoration(
-                                color: primaryColor,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'DATOS DEL TERCERO AUTORIZADO',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
+
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.03),

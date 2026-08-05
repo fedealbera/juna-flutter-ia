@@ -78,7 +78,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       const BottomNavigationBarItem(
         icon: Icon(Icons.home_outlined),
         activeIcon: Icon(Icons.home_rounded),
-        label: 'Home',
+        label: 'Inicio',
       ),
       const BottomNavigationBarItem(
         icon: Icon(Icons.app_registration_rounded),

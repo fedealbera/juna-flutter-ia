@@ -40,7 +40,11 @@ class AppRouter {
           GoRoute(
             path: '/inscripciones',
             name: 'inscripciones',
-            builder: (BuildContext context, GoRouterState state) => const RegistrationScreen(),
+            builder: (BuildContext context, GoRouterState state) {
+              final tabStr = state.uri.queryParameters['tab'];
+              final tabIndex = tabStr != null ? int.tryParse(tabStr) : null;
+              return RegistrationScreen(initialTab: tabIndex);
+            },
             routes: [
               GoRoute(
                 path: 'documentacion',

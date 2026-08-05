@@ -27,14 +27,15 @@ import '../bloc/registration_event.dart';
 import '../bloc/registration_state.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+  final int? initialTab;
+  const RegistrationScreen({super.key, this.initialTab});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final TenantManager _tenantManager = getIt<TenantManager>();
 
   late TabController _tabController;
@@ -46,6 +47,14 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   final TextEditingController _dniController = TextEditingController();
   final TextEditingController _discountCodeController = TextEditingController();
   final FocusNode _dniFocusNode = FocusNode();
+
+  // Scroll parameters for visual indicator in Profile tab
+  final ScrollController _profileScrollController = ScrollController();
+  bool _showProfileScrollIndicator = true;
+
+  // Animation for the scroll-down indicator
+  late final AnimationController _bounceController;
+  late final Animation<double> _bounceAnimation;
 
   ParticipantDetail? _linkedParticipant;
   bool _checkingCache = true;
@@ -61,7 +70,11 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTab ?? 0,
+    );
     _tabController.addListener(_handleTabSelection);
     _participantBloc = getIt<ParticipantBloc>();
     _registrationBloc = getIt<RegistrationBloc>();
@@ -69,6 +82,32 @@ class _RegistrationScreenState extends State<RegistrationScreen>
 
     _tenantManager.addListener(_onTenantChanged);
     _loadLinkedParticipant();
+
+    _profileScrollController.addListener(() {
+      if (_profileScrollController.hasClients) {
+        if (_profileScrollController.offset > 30 && _showProfileScrollIndicator) {
+          setState(() {
+            _showProfileScrollIndicator = false;
+          });
+        } else if (_profileScrollController.offset <= 30 && !_showProfileScrollIndicator) {
+          setState(() {
+            _showProfileScrollIndicator = true;
+          });
+        }
+      }
+    });
+
+    _bounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+
+    _bounceAnimation = Tween<double>(begin: 0.0, end: 6.0).animate(
+      CurvedAnimation(
+        parent: _bounceController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   Future<void> _loadLinkedParticipant() async {
@@ -126,6 +165,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     _tenantManager.removeListener(_onTenantChanged);
     _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
+    _profileScrollController.dispose();
+    _bounceController.dispose();
     _dniController.dispose();
     _discountCodeController.dispose();
     _dniFocusNode.dispose();
@@ -210,12 +251,17 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             indicatorColor: activeTenant.primaryColorRef,
             labelColor: activeTenant.primaryColorRef,
             unselectedLabelColor: Colors.grey.shade400,
-            tabs: const [
-              Tab(
+            tabs: [
+              const Tab(
                 text: 'NUEVA INSCRIPCIÓN',
                 icon: Icon(Icons.add_task_rounded),
               ),
-              Tab(text: 'VER PARTICIPANTE', icon: Icon(Icons.badge_outlined)),
+              Tab(
+                text: _linkedParticipant != null ? 'VER MI PERFIL' : 'INICIAR SESIÓN',
+                icon: Icon(
+                  _linkedParticipant != null ? Icons.person_outline : Icons.badge_outlined,
+                ),
+              ),
             ],
           ),
         ),
@@ -431,143 +477,248 @@ class _RegistrationScreenState extends State<RegistrationScreen>
           cachedSettings?.getSetting('FECHA_ACREDITACION') ?? '5 y 6 de Junio';
       final detail = _linkedParticipant!;
 
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Corredor Vinculado',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildParticipantCard(
-              detail,
-              fechaAcreditacion,
-              activeTenant,
-            ),
-            if (detail.nroPlaca == '0') ...[
-              const SizedBox(height: 16),
-              _buildDiscountCodeSection(detail, activeTenant),
-            ],
-            const SizedBox(height: 24),
-            if (detail.nroPlaca == '0') ...[
-              AppButton(
-                text: _verificandoPago ? 'VERIFICANDO PAGO...' : 'PAGAR',
-                textColor: Colors.white,
-                icon: _verificandoPago ? Icons.sync : Icons.payment_rounded,
-                onPressed: _verificandoPago
-                    ? null
-                    : () {
-                        if (detail.linkPago.isNotEmpty) {
-                          _launchURL(detail.linkPago);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'No hay link de pago disponible para este participante.',
+      return Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _profileScrollController,
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Corredor Vinculado',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildParticipantCard(
+                  detail,
+                  fechaAcreditacion,
+                  activeTenant,
+                ),
+                if (detail.nroPlaca == '0') ...[
+                  const SizedBox(height: 16),
+                  _buildDiscountCodeSection(detail, activeTenant),
+                ],
+                const SizedBox(height: 24),
+                if (detail.nroPlaca == '0') ...[
+                  AppButton(
+                    text: _verificandoPago ? 'VERIFICANDO PAGO...' : 'PAGAR',
+                    textColor: Colors.white,
+                    icon: _verificandoPago ? Icons.sync : Icons.payment_rounded,
+                    onPressed: _verificandoPago
+                        ? null
+                        : () {
+                            if (detail.linkPago.isNotEmpty) {
+                              _launchURL(detail.linkPago);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'No hay link de pago disponible para este participante.',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                  ),
+                  if (!_verificandoPago) ...[
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      icon: Icon(Icons.refresh, size: 16, color: activeTenant.primaryColorRef),
+                      label: Text(
+                        '¿Ya pagaste? Verificar estado',
+                        style: TextStyle(
+                          color: activeTenant.primaryColorRef,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: _verificarPagoServidor,
+                    ),
+                  ],
+                ] else ...[
+                  AppButton(
+                    text: 'ENVIAR CERTIFICADO',
+                    textColor: Colors.white,
+                    icon: Icons.description_rounded,
+                    onPressed: () {
+                      context.push('/inscripciones/documentacion', extra: detail);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  AppButton(
+                    text: 'AUTORIZAR RETIRO DE KIT',
+                    textColor: Colors.white,
+                    icon: Icons.assignment_turned_in_rounded,
+                    isLoading: _isCheckingKitAuth,
+                    onPressed: _isCheckingKitAuth
+                        ? null
+                        : () => _handleKitAuthorization(detail),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppButton(
+                        text: 'DESVINCULAR',
+                        color: Colors.red,
+                        textColor: Colors.white,
+                        onPressed: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: activeTenant.backgroundColorRef,
+                              title: const Text(
+                                '¿Desvincular corredor?',
+                                style: TextStyle(color: Colors.white),
                               ),
+                              content: const Text(
+                                '¿Estás seguro de que deseas desvincular este corredor de la aplicación?',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: Text(
+                                    'CANCELAR',
+                                    style: TextStyle(color: Colors.grey.shade400),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: Text(
+                                    'DESVINCULAR',
+                                    style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           );
-                        }
-                      },
-              ),
-              if (!_verificandoPago) ...[
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  icon: Icon(Icons.refresh, size: 16, color: activeTenant.primaryColorRef),
-                  label: Text(
-                    '¿Ya pagaste? Verificar estado',
-                    style: TextStyle(
-                      color: activeTenant.primaryColorRef,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                          if (confirm != true) return;
+
+                          await getIt<HiveService>().delete<Map>(
+                            'participant_box',
+                            'cached_participant',
+                          );
+                          _dniController.clear();
+                          if (mounted) {
+                            setState(() {
+                              _linkedParticipant = null;
+                              _discountCodeController.clear();
+                              _isDiscountCodeValid = null;
+                              _discountCodeErrorMessage = null;
+                            });
+                            _dniFocusNode.requestFocus();
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  onPressed: _verificarPagoServidor,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppButton(
+                        text: 'EDITAR DATOS',
+                        color: activeTenant.primaryColorRef,
+                        textColor: Colors.white,
+                        onPressed: () async {
+                          final result = await context.push<bool>(
+                            '/inscripciones/editar-datos',
+                            extra: detail,
+                          );
+                          if (result == true) {
+                            _participantBloc.add(
+                              ParticipantEvent.getDetail(
+                                dni:
+                                    detail.dni.isNotEmpty
+                                        ? detail.dni
+                                        : _dniController.text,
+                                idOrg: '1',
+                                eventoId: '1',
+                                roundId: '1',
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ] else ...[
-              AppButton(
-                text: 'DOCUMENTACIÓN',
-                textColor: Colors.white,
-                icon: Icons.description_rounded,
-                onPressed: () {
-                  context.push('/inscripciones/documentacion', extra: detail);
-                },
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                text: 'AUTORIZAR RETIRO DE KIT',
-                textColor: Colors.white,
-                icon: Icons.assignment_turned_in_rounded,
-                isLoading: _isCheckingKitAuth,
-                onPressed: _isCheckingKitAuth
-                    ? null
-                    : () => _handleKitAuthorization(detail),
-              ),
-            ],
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: AppButton(
-                    text: 'DESVINCULAR',
-                    color: Colors.red,
-                    textColor: Colors.white,
-                    onPressed: () async {
-                      await getIt<HiveService>().delete<Map>(
-                        'participant_box',
-                        'cached_participant',
-                      );
-                      _dniController.clear();
-                      if (mounted) {
-                        setState(() {
-                          _linkedParticipant = null;
-                          _discountCodeController.clear();
-                          _isDiscountCodeValid = null;
-                          _discountCodeErrorMessage = null;
-                        });
-                        _dniFocusNode.requestFocus();
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AppButton(
-                    text: 'EDITAR DATOS',
-                    color: activeTenant.primaryColorRef,
-                    textColor: Colors.white,
-                    onPressed: () async {
-                      final result = await context.push<bool>(
-                        '/inscripciones/editar-datos',
-                        extra: detail,
-                      );
-                      if (result == true) {
-                        _participantBloc.add(
-                          ParticipantEvent.getDetail(
-                            dni:
-                                detail.dni.isNotEmpty
-                                    ? detail.dni
-                                    : _dniController.text,
-                            idOrg: '1',
-                            eventoId: '1',
-                            roundId: '1',
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ),
+                const SizedBox(height: 40),
               ],
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: true,
+              child: AnimatedOpacity(
+                opacity: _showProfileScrollIndicator ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: activeTenant.accentColorRef.withValues(alpha: 0.5),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: activeTenant.accentColorRef.withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'DESLIZA PARA VER MÁS',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        AnimatedBuilder(
+                          animation: _bounceAnimation,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0.0, _bounceAnimation.value),
+                              child: child,
+                            );
+                          },
+                          child: Icon(
+                            Icons.keyboard_double_arrow_down_rounded,
+                            color: activeTenant.accentColorRef,
+                            size: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
