@@ -659,59 +659,72 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             left: 0,
             right: 0,
             child: IgnorePointer(
-              ignoring: true,
+              ignoring: !_showProfileScrollIndicator,
               child: AnimatedOpacity(
                 opacity: _showProfileScrollIndicator ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 300),
                 child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: activeTenant.accentColorRef.withValues(alpha: 0.5),
-                        width: 1.2,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_profileScrollController.hasClients) {
+                        final maxScroll = _profileScrollController.position.maxScrollExtent;
+                        final target = (_profileScrollController.offset + 250.0).clamp(0.0, maxScroll);
+                        _profileScrollController.animateTo(
+                          target,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: activeTenant.accentColorRef.withValues(alpha: 0.25),
-                          blurRadius: 10,
-                          spreadRadius: 1,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: activeTenant.accentColorRef.withValues(alpha: 0.5),
+                          width: 1.2,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'DESLIZA PARA VER MÁS',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
+                        boxShadow: [
+                          BoxShadow(
+                            color: activeTenant.accentColorRef.withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            spreadRadius: 1,
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        AnimatedBuilder(
-                          animation: _bounceAnimation,
-                          builder: (context, child) {
-                            return Transform.translate(
-                              offset: Offset(0.0, _bounceAnimation.value),
-                              child: child,
-                            );
-                          },
-                          child: Icon(
-                            Icons.keyboard_double_arrow_down_rounded,
-                            color: activeTenant.accentColorRef,
-                            size: 14,
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'DESLIZA PARA VER MÁS',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          AnimatedBuilder(
+                            animation: _bounceAnimation,
+                            builder: (context, child) {
+                              return Transform.translate(
+                                offset: Offset(0.0, _bounceAnimation.value),
+                                child: child,
+                              );
+                            },
+                            child: Icon(
+                              Icons.keyboard_double_arrow_down_rounded,
+                              color: activeTenant.accentColorRef,
+                              size: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
