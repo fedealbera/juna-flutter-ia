@@ -98,7 +98,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       const BottomNavigationBarItem(
         icon: Icon(Icons.more_horiz_rounded),
         activeIcon: Icon(Icons.more_horiz_rounded),
-        label: 'Más',
+        label: 'Ayuda',
       ),
     ];
 
@@ -179,7 +179,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   ),
                   _buildDrawerItem(
                     icon: Icons.settings_accessibility_rounded,
-                    title: 'Más opciones',
+                    title: 'Ayuda',
                     selected: selectedIndex == 4,
                     onTap: () {
                       Navigator.pop(context);

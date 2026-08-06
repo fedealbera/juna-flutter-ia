@@ -152,24 +152,6 @@ class _LiveScreenState extends State<LiveScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 12),
-                _buildMenuItem(
-                  title: 'Info Importante',
-                  subtitle: 'Cronogramas, Reglamentos y más',
-                  icon: Icons.info_outline_rounded,
-                  badgeColor: const Color(0xFF9C27B0), // Purple
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ContentListScreen(
-                          title: 'Info Importante',
-                          tipoContenido: 3,
-                        ),
-                      ),
-                    );
-                  },
-                ),
                 const SizedBox(height: 32),
 
                 // 3. Social & Web Section Header

@@ -65,6 +65,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   bool _isCheckingKitAuth = false;
   int _previousTabIndex = 0;
   bool _shouldSkipRefresh = false;
+  bool _yoRetiroKitLocal = false;
 
   @override
   void initState() {
@@ -124,6 +125,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
           _discountCodeController.text = detail.insCodDesc;
           _checkingCache = false;
           _tabController.index = 1;
+          _checkLocalKitStatus(detail.id);
         });
       }
     } else {
@@ -132,6 +134,24 @@ class _RegistrationScreenState extends State<RegistrationScreen>
           _checkingCache = false;
         });
       }
+    }
+  }
+
+  Future<void> _checkLocalKitStatus(String participantId) async {
+    if (participantId.isEmpty) return;
+    try {
+      final hiveService = getIt<HiveService>();
+      final status = await hiveService.get<bool>(
+        'kit_box',
+        'yo_retiro_kit_$participantId',
+      );
+      if (mounted) {
+        setState(() {
+          _yoRetiroKitLocal = status ?? false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error al obtener estado local del kit: $e');
     }
   }
 
@@ -304,6 +324,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         _shouldSkipRefresh = true;
                         _tabController.index = 1;
                       });
+                      _checkLocalKitStatus(detail.id);
                     }
 
                     try {
@@ -366,38 +387,68 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          backgroundColor: activeTenant.backgroundColorRef,
+                          backgroundColor: const Color(0xFF161616),
+                          elevation: 12,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(24),
+                            side: BorderSide(
+                              color: Colors.green.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
                           ),
-                          title: Row(
-                            children: const [
-                              Icon(Icons.check_circle_outline_rounded, color: Colors.green),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Código Confirmado',
-                                  style: TextStyle(color: Colors.white),
+                          contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.08),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.green.withValues(alpha: 0.25),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.check_circle_outline_rounded,
+                                  color: Colors.green,
+                                  size: 48,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Código Confirmado',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'El código fue confirmado y tiene fecha vigente desde $inicio hasta $fin.',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: AppButton(
+                                  text: 'ACEPTAR',
+                                  textColor: Colors.white,
+                                  color: activeTenant.primaryColorRef,
+                                  onPressed: () => Navigator.of(context).pop(),
                                 ),
                               ),
                             ],
                           ),
-                          content: Text(
-                            'El código fue confirmado y tiene fecha vigente desde $inicio hasta $fin.',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 16,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text(
-                                'Aceptar',
-                                style: TextStyle(color: activeTenant.primaryColorRef),
-                              ),
-                            ),
-                          ],
                         ),
                       );
                     } else {
@@ -405,35 +456,68 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          backgroundColor: activeTenant.backgroundColorRef,
+                          backgroundColor: const Color(0xFF161616),
+                          elevation: 12,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(24),
+                            side: BorderSide(
+                              color: Colors.redAccent.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
                           ),
-                          title: Row(
-                            children: const [
-                              Icon(Icons.error_outline_rounded, color: Colors.redAccent),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Código No Validado',
-                                  style: TextStyle(color: Colors.white),
+                          contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent.withValues(alpha: 0.08),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.redAccent.withValues(alpha: 0.25),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.error_outline_rounded,
+                                  color: Colors.redAccent,
+                                  size: 48,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Código No Validado',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                errorMsg,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                  height: 1.4,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: AppButton(
+                                  text: 'ACEPTAR',
+                                  textColor: Colors.white,
+                                  color: activeTenant.primaryColorRef,
+                                  onPressed: () => Navigator.of(context).pop(),
                                 ),
                               ),
                             ],
                           ),
-                          content: Text(
-                            errorMsg,
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: Text(
-                                'Aceptar',
-                                style: TextStyle(color: activeTenant.primaryColorRef),
-                              ),
-                            ),
-                          ],
                         ),
                       );
                     }
@@ -550,15 +634,75 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     },
                   ),
                   const SizedBox(height: 12),
-                  AppButton(
-                    text: 'AUTORIZAR RETIRO DE KIT',
-                    textColor: Colors.white,
-                    icon: Icons.assignment_turned_in_rounded,
-                    isLoading: _isCheckingKitAuth,
-                    onPressed: _isCheckingKitAuth
-                        ? null
-                        : () => _handleKitAuthorization(detail),
-                  ),
+                  if (_yoRetiroKitLocal) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.green.withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Retiro personal confirmado',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Confirmaste que retirarás el kit personalmente.',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: _isCheckingKitAuth
+                                ? null
+                                : () => _handleKitAuthorization(detail),
+                            child: Text(
+                              'CAMBIAR',
+                              style: TextStyle(
+                                color: activeTenant.primaryColorRef,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else ...[
+                    AppButton(
+                      text: 'RETIRAR KIT',
+                      textColor: Colors.white,
+                      icon: Icons.assignment_turned_in_rounded,
+                      isLoading: _isCheckingKitAuth,
+                      onPressed: _isCheckingKitAuth
+                          ? null
+                          : () => _handleKitAuthorization(detail),
+                    ),
+                  ],
                 ],
                 const SizedBox(height: 12),
                 Row(
@@ -1349,7 +1493,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
               ),
             );
           } else {
-            context.push('/inscripciones/autorizar-kit', extra: detail);
+            context.push('/inscripciones/autorizar-kit', extra: detail).then((_) {
+              _checkLocalKitStatus(detail.id);
+            });
           }
         }
       } else {

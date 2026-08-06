@@ -12,6 +12,7 @@ import '../../../about/presentation/bloc/about_event.dart';
 import '../../../about/presentation/bloc/about_state.dart';
 import '../../../settings/domain/entities/event_settings.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
+import '../../../content/presentation/screens/content_list_screen.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
@@ -212,6 +213,34 @@ class _MoreScreenState extends State<MoreScreen> {
                 onTap: () {
                   final email = _settings?.emailConsulta ?? '';
                   _launchURL('mailto:$email');
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Info Importante Card
+              _buildContactCard(
+                title: 'Info Importante',
+                subtitle: Text(
+                  'Cronogramas, Reglamentos y más',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                icon: Icons.info_outline_rounded,
+                badgeColor: const Color(0xFF9C27B0), // Purple
+                isEnabled: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ContentListScreen(
+                        title: 'Info Importante',
+                        tipoContenido: 3,
+                      ),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 24),
