@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/text_fields/app_text_field.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../../categories/domain/entities/size_entity.dart';
 import '../../../categories/domain/repositories/categories_repository.dart';
@@ -242,22 +243,13 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
               setState(() {
                 _isLoading = false;
               });
-              showDialog(
+              AppAlertDialog.show(
                 context: context,
-                builder: (context) => AlertDialog(
-                  backgroundColor: Colors.grey[900],
-                  title: const Text('Error', style: TextStyle(color: Colors.white)),
-                  content: Text(
-                    message.contains('Exception:') ? message.replaceFirst('Exception: ', '') : message,
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: Text('Aceptar', style: TextStyle(color: primaryColor)),
-                    ),
-                  ],
-                ),
+                type: AppDialogType.error,
+                title: 'Error',
+                message: message.contains('Exception:') ? message.replaceFirst('Exception: ', '') : message,
+                primaryButtonText: 'ACEPTAR',
+                onPrimaryPressed: () => context.pop(),
               );
             },
             orElse: () {},

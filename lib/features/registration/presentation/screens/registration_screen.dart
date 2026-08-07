@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_config.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -19,7 +20,6 @@ import '../../../participant/presentation/bloc/participant_bloc.dart';
 import '../../../participant/presentation/bloc/participant_event.dart';
 import '../../../participant/domain/entities/participant_detail.dart';
 import '../../../participant/presentation/bloc/participant_state.dart';
-import '../../../participant/domain/repositories/participant_repository.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../bloc/registration_bloc.dart';
@@ -61,8 +61,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   bool _isValidatingDiscountCode = false;
   bool? _isDiscountCodeValid;
   String? _discountCodeErrorMessage;
+  String? _discountCodeSuccessMessage;
   bool _verificandoPago = false;
-  bool _isCheckingKitAuth = false;
+  final bool _isCheckingKitAuth = false;
   int _previousTabIndex = 0;
   bool _shouldSkipRefresh = false;
   bool _yoRetiroKitLocal = false;
@@ -277,7 +278,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                 icon: Icon(Icons.add_task_rounded),
               ),
               Tab(
-                text: _linkedParticipant != null ? 'VER MI PERFIL' : 'INICIAR SESIÓN',
+                text: _linkedParticipant != null ? 'MI PERFIL' : 'INICIAR SESIÓN',
                 icon: Icon(
                   _linkedParticipant != null ? Icons.person_outline : Icons.badge_outlined,
                 ),
@@ -363,6 +364,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     if (mounted) {
                       setState(() {
                         _isValidatingDiscountCode = true;
+                        _isDiscountCodeValid = null;
+                        _discountCodeSuccessMessage = null;
                       });
                     }
                   },
@@ -377,6 +380,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         _isDiscountCodeValid = isVigente;
                         if (!isVigente) {
                           _discountCodeErrorMessage = json['dispo_msg'] as String? ?? 'Código no validado';
+                        } else {
+                          _discountCodeSuccessMessage = 'Código de descuento válido';
                         }
                       });
                     }
@@ -384,141 +389,27 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     if (isVigente) {
                       final inicio = json['locd_fecha_inicio'] as String? ?? '';
                       final fin = json['locd_fecha_fin'] as String? ?? '';
-                      showDialog(
+                      AppAlertDialog.show(
                         context: context,
-                        builder: (context) => AlertDialog(
-                          backgroundColor: const Color(0xFF161616),
-                          elevation: 12,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            side: BorderSide(
-                              color: Colors.green.withValues(alpha: 0.3),
-                              width: 1.5,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.08),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.green.withValues(alpha: 0.25),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.check_circle_outline_rounded,
-                                  color: Colors.green,
-                                  size: 48,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Código Confirmado',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'El código fue confirmado y tiene fecha vigente desde $inicio hasta $fin.',
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                  height: 1.4,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              SizedBox(
-                                width: double.infinity,
-                                child: AppButton(
-                                  text: 'ACEPTAR',
-                                  textColor: Colors.white,
-                                  color: activeTenant.primaryColorRef,
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                        type: AppDialogType.success,
+                        title: 'Código Confirmado',
+                        message: 'El código fue confirmado y tiene fecha vigente desde $inicio hasta $fin.',
+                        primaryButtonText: 'ACEPTAR',
+                      ).then((_) {
+                        if (mounted) {
+                          setState(() {
+                            _discountCodeSuccessMessage = 'Disponible hasta $fin';
+                          });
+                        }
+                      });
                     } else {
                       final errorMsg = json['dispo_msg'] as String? ?? 'Código no validado';
-                      showDialog(
+                      AppAlertDialog.show(
                         context: context,
-                        builder: (context) => AlertDialog(
-                          backgroundColor: const Color(0xFF161616),
-                          elevation: 12,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            side: BorderSide(
-                              color: Colors.redAccent.withValues(alpha: 0.3),
-                              width: 1.5,
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.redAccent.withValues(alpha: 0.08),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.redAccent.withValues(alpha: 0.25),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.error_outline_rounded,
-                                  color: Colors.redAccent,
-                                  size: 48,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Código No Validado',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                errorMsg,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                  height: 1.4,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 24),
-                              SizedBox(
-                                width: double.infinity,
-                                child: AppButton(
-                                  text: 'ACEPTAR',
-                                  textColor: Colors.white,
-                                  color: activeTenant.primaryColorRef,
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        type: AppDialogType.error,
+                        title: 'Código No Validado',
+                        message: errorMsg,
+                        primaryButtonText: 'ACEPTAR',
                       );
                     }
                   },
@@ -713,38 +604,14 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         color: Colors.red,
                         textColor: Colors.white,
                         onPressed: () async {
-                          final confirm = await showDialog<bool>(
+                          final confirm = await AppAlertDialog.show<bool>(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              backgroundColor: activeTenant.backgroundColorRef,
-                              title: const Text(
-                                '¿Desvincular corredor?',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              content: const Text(
-                                '¿Estás seguro de que deseas desvincular este corredor de la aplicación?',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: Text(
-                                    'CANCELAR',
-                                    style: TextStyle(color: Colors.grey.shade400),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: Text(
-                                    'DESVINCULAR',
-                                    style: TextStyle(
-                                      color: Colors.redAccent,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            type: AppDialogType.danger,
+                            title: '¿Desvincular corredor?',
+                            message: '¿Estás seguro de que deseas desvincular este corredor de la aplicación?',
+                            secondaryButtonText: 'CANCELAR',
+                            primaryButtonText: 'DESVINCULAR',
+                            primaryButtonColor: Colors.red,
                           );
                           if (confirm != true) return;
 
@@ -903,13 +770,26 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             children: [
               Expanded(
                 child: AppTextField(
-                  label: 'DNI',
+                  label: '',
                   hint: 'Ingresa DNI del corredor',
                   prefixIcon: Icons.search_rounded,
                   controller: _dniController,
                   focusNode: _dniFocusNode,
                   keyboardType: TextInputType.number,
                   maxLength: 8,
+                  textInputAction: TextInputAction.search,
+                  onFieldSubmitted: (_) {
+                    if (_dniController.text.isNotEmpty) {
+                      _participantBloc.add(
+                        ParticipantEvent.getDetail(
+                          dni: _dniController.text,
+                          idOrg: '1',
+                          eventoId: '1',
+                          roundId: '1',
+                        ),
+                      );
+                    }
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -969,17 +849,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     ),
                   );
                 },
-                orElse:
-                    () => Container(
-                      padding: const EdgeInsets.all(32),
-                      child: const Center(
-                        child: Text(
-                          'Ingresa un DNI para buscar registros de participación.',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
+                orElse: () => const SizedBox.shrink(),
               );
             },
           ),
@@ -1399,7 +1269,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   Expanded(
                     child: Text(
                       _isDiscountCodeValid!
-                          ? 'Código de descuento válido'
+                          ? (_discountCodeSuccessMessage ?? 'Código de descuento válido')
                           : (_discountCodeErrorMessage ?? 'Código inválido'),
                       style: TextStyle(
                         color:
@@ -1438,92 +1308,10 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     );
   }
 
-  Future<void> _handleKitAuthorization(ParticipantDetail detail) async {
-    setState(() {
-      _isCheckingKitAuth = true;
+  void _handleKitAuthorization(ParticipantDetail detail) {
+    context.push('/inscripciones/autorizar-kit', extra: detail).then((_) {
+      _checkLocalKitStatus(detail.id);
     });
-
-    try {
-      final participantRepository = getIt<ParticipantRepository>();
-      final response = await participantRepository.getParticipantDocuments(detail.id);
-
-      if (response['success'] == true && response['archivos'] is Map) {
-        final archivos = Map<String, dynamic>.from(response['archivos'] as Map);
-        bool hasPending = false;
-
-        for (final key in archivos.keys) {
-          final doc = archivos[key] as Map? ?? {};
-          final String estado = doc['estado']?.toString() ?? 'SD';
-          if (estado != 'AP') {
-            hasPending = true;
-            break;
-          }
-        }
-
-        if (mounted) {
-          setState(() {
-            _isCheckingKitAuth = false;
-          });
-
-          if (hasPending) {
-            showDialog(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                backgroundColor: Colors.grey[900],
-                title: const Text(
-                  'Autorización no Habilitada',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-                content: const Text(
-                  'Estimado participante, no se encuentra habilitado para autorizar el retiro de su kit por parte de un tercero. Para proceder con esta solicitud, es requisito indispensable que toda la documentación requerida esté previamente verificada y aprobada por la organización.',
-                  style: TextStyle(color: Colors.white70),
-                ),
-                actions: [
-                  AppButton(
-                    text: 'Aceptar',
-                    textColor: Colors.white,
-                    width: 120,
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            context.push('/inscripciones/autorizar-kit', extra: detail).then((_) {
-              _checkLocalKitStatus(detail.id);
-            });
-          }
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isCheckingKitAuth = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No se pudo cargar la información de los documentos.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isCheckingKitAuth = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al conectar con el servidor: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 }
 

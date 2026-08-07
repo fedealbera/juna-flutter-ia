@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/firebase/notification_service.dart';
 import '../../../../core/theme/tenant_manager.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -313,29 +314,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     if (notifications.isNotEmpty)
                       TextButton.icon(
                         onPressed: () {
-                          showDialog(
+                          AppAlertDialog.show(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              backgroundColor: Colors.grey.shade900,
-                              title: const Text('¿Eliminar todas?', style: TextStyle(color: Colors.white)),
-                              content: const Text(
-                                'Esta acción borrará todo el historial de notificaciones locales.',
-                                style: TextStyle(color: Colors.white70),
-                              ),
-                              actions: [
-                                TextButton(
-                                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                                TextButton(
-                                  child: Text('Eliminar', style: TextStyle(color: primaryColor)),
-                                  onPressed: () {
-                                    _notificationService.clearAll();
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              ],
-                            ),
+                            type: AppDialogType.danger,
+                            title: '¿Eliminar todas?',
+                            message: 'Esta acción borrará todo el historial de notificaciones locales.',
+                            secondaryButtonText: 'Cancelar',
+                            primaryButtonText: 'Eliminar',
+                            onPrimaryPressed: () {
+                              _notificationService.clearAll();
+                              Navigator.pop(context);
+                            },
                           );
                         },
                         icon: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 20),

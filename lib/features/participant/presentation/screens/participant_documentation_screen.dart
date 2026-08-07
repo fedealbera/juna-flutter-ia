@@ -5,6 +5,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../domain/entities/participant_detail.dart';
 import '../../domain/repositories/participant_repository.dart';
 
@@ -106,18 +107,12 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
       });
 
       if (isSuccess) {
-        showDialog(
+        AppAlertDialog.show(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('¡Éxito!'),
-            content: const Text('Se subió correctamente el archivo.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Aceptar'),
-              ),
-            ],
-          ),
+          type: AppDialogType.success,
+          title: '¡Éxito!',
+          message: 'Se subió correctamente el archivo.',
+          primaryButtonText: 'ACEPTAR',
         );
 
         setState(() {
@@ -126,18 +121,12 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
           _documents[docKey] = doc;
         });
       } else {
-        showDialog(
+        AppAlertDialog.show(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Error'),
-            content: const Text('Ocurrió un error al subir el archivo. Por favor intente nuevamente más tarde.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Aceptar'),
-              ),
-            ],
-          ),
+          type: AppDialogType.error,
+          title: 'Error',
+          message: 'Ocurrió un error al subir el archivo. Por favor intente nuevamente más tarde.',
+          primaryButtonText: 'ACEPTAR',
         );
       }
     } catch (e) {
@@ -145,18 +134,12 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
         setState(() {
           _isUploading = false;
         });
-        showDialog(
+        AppAlertDialog.show(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Error'),
-            content: Text('Error al acceder a la cámara o cargar la imagen: $e'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Aceptar'),
-              ),
-            ],
-          ),
+          type: AppDialogType.error,
+          title: 'Error',
+          message: 'Error al acceder a la cámara o cargar la imagen: $e',
+          primaryButtonText: 'ACEPTAR',
         );
       }
     }
@@ -308,43 +291,7 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                           padding: const EdgeInsets.all(20.0),
                           physics: const AlwaysScrollableScrollPhysics(),
                           children: [
-                            AppCard(
-                              style: AppCardStyle.glassmorphic,
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 24,
-                                    backgroundColor: activeTenant.primaryColorRef.withValues(alpha: 0.2),
-                                    child: Icon(Icons.person_rounded, color: activeTenant.primaryColorRef),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          widget.participant.fullName,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'DNI: ${widget.participant.dni}',
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(alpha: 0.6),
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
+
                             const Text(
                               'LISTA DE REQUISITOS',
                               style: TextStyle(
@@ -478,6 +425,8 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                                   ),
                                 );
                               }),
+                            const SizedBox(height: 8),
+                            _buildDisclaimerCard(activeTenant),
                           ],
                         ),
                       ),
@@ -506,6 +455,50 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDisclaimerCard(dynamic activeTenant) {
+    return AppCard(
+      style: AppCardStyle.glassmorphic,
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: activeTenant.primaryColorRef,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'IMPORTANTE',
+                  style: TextStyle(
+                    color: activeTenant.primaryColorRef,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Necesita llevar impreso en papel y firmado el Deslinde del Corredor, si es menor, la autorización de menores.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

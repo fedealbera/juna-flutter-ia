@@ -420,7 +420,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     color: Colors.black.withValues(alpha: 0.4),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: activeTenant.accentColorRef.withValues(alpha: 0.3),
+                                      color: activeTenant.tenantName == '21kLG'
+                                          ? activeTenant.secondaryColorRef
+                                          : activeTenant.accentColorRef,
                                       width: 1.5,
                                     ),
                                   ),
@@ -446,7 +448,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       Text(
                                         '¡EL EVENTO ESTÁ EN MARCHA!',
                                         style: TextStyle(
-                                          color: activeTenant.accentColorRef,
+                                          color: activeTenant.tenantName == '21kLG'
+                                              ? activeTenant.secondaryColorRef
+                                              : activeTenant.accentColorRef,
                                           fontSize: 11,
                                           fontWeight: FontWeight.w900,
                                           letterSpacing: 1.2,
@@ -481,7 +485,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           Text(
                                             'Cronómetro Oficial',
                                             style: TextStyle(
-                                              color: activeTenant.accentColorRef,
+                                              color: activeTenant.tenantName == '21kLG'
+                                                  ? Colors.white
+                                                  : activeTenant.accentColorRef,
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -492,7 +498,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     const SizedBox(width: 8),
                                     Icon(
                                       sportIcon,
-                                      color: activeTenant.accentColorRef,
+                                      color: activeTenant.tenantName == '21kLG'
+                                          ? activeTenant.secondaryColorRef
+                                          : activeTenant.accentColorRef,
                                       size: 28,
                                     ),
                                   ],
@@ -503,7 +511,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   children: [
                                     Icon(
                                       Icons.calendar_today_rounded,
-                                      color: activeTenant.accentColorRef,
+                                      color: activeTenant.tenantName == '21kLG'
+                                          ? activeTenant.secondaryColorRef
+                                          : activeTenant.accentColorRef,
                                       size: 16,
                                     ),
                                     const SizedBox(width: 8),
@@ -546,17 +556,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 ),
                                 if (_linkedParticipant == null) ...[
                                   const SizedBox(height: 24),
-                                  AppButton(
-                                    text: 'Inscribirme',
-                                    onPressed: () => context.go('/inscripciones'),
-                                    type: AppButtonType.outlined,
-                                    borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
-                                        ? activeTenant.accentColorRef
-                                        : activeTenant.primaryColorRef,
-                                    textColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
-                                        ? activeTenant.accentColorRef
-                                        : activeTenant.primaryColorRef,
-                                  ),
+                                  if (activeTenant.tenantName == '21kLG')
+                                    AppButton(
+                                      text: 'Inscribirme',
+                                      onPressed: () => context.go('/inscripciones'),
+                                      type: AppButtonType.primary,
+                                      color: activeTenant.secondaryColorRef,
+                                      textColor: Colors.white,
+                                    )
+                                  else
+                                    AppButton(
+                                      text: 'Inscribirme',
+                                      onPressed: () => context.go('/inscripciones'),
+                                      type: AppButtonType.outlined,
+                                      borderColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                          ? activeTenant.accentColorRef
+                                          : activeTenant.primaryColorRef,
+                                      textColor: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                          ? activeTenant.accentColorRef
+                                          : activeTenant.primaryColorRef,
+                                    ),
                                 ],
                               ],
                             ),
@@ -659,9 +678,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         onTap: () {
                           if (_scrollController.hasClients) {
                             final maxScroll = _scrollController.position.maxScrollExtent;
-                            final target = (_scrollController.offset + 250.0).clamp(0.0, maxScroll);
                             _scrollController.animateTo(
-                              target,
+                              maxScroll,
                               duration: const Duration(milliseconds: 500),
                               curve: Curves.easeInOut,
                             );
@@ -866,7 +884,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   void _showSosConfirmDialog(BuildContext context) {
-    final activeTenant = _tenantManager.value;
     bool isFetchingLocation = false;
 
     showDialog(
@@ -878,97 +895,132 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             return BlocProvider<EmergencyBloc>.value(
               value: _emergencyBloc,
               child: AlertDialog(
-                backgroundColor: activeTenant.backgroundColorRef,
+                backgroundColor: const Color(0xFF161616),
+                elevation: 16,
+                shadowColor: Colors.redAccent.withValues(alpha: 0.15),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(24),
+                  side: BorderSide(
+                    color: Colors.redAccent.withValues(alpha: 0.25),
+                    width: 1.5,
+                  ),
                 ),
-                title: Row(
-                  children: const [
-                    Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Confirmar Emergencia',
-                        style: TextStyle(color: Colors.white),
+                contentPadding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.redAccent.withValues(alpha: 0.1),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ],
                       ),
+                      child: const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.redAccent,
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Confirmar Emergencia',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      '¿Estás seguro de que deseas enviar una alerta de rescate SOS? Esto compartirá tu ubicación GPS actual con el equipo médico de la organización.',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            text: 'CANCELAR',
+                            type: AppButtonType.outlined,
+                            borderColor: Colors.white24,
+                            textColor: Colors.grey.shade400,
+                            onPressed: isFetchingLocation ? null : () => Navigator.pop(dialogContext),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AppButton(
+                            text: 'ENVIAR SOS',
+                            color: Colors.redAccent,
+                            textColor: Colors.white,
+                            isLoading: isFetchingLocation,
+                            onPressed: isFetchingLocation
+                                ? null
+                                : () async {
+                                    setDialogState(() {
+                                      isFetchingLocation = true;
+                                    });
+
+                                    final position = await _getCurrentLocation();
+                                    
+                                    // Default fallback coordinates if fetching fails
+                                    String lat = '-34.6037';
+                                    String lng = '-58.3816';
+
+                                    if (position != null) {
+                                      lat = position.latitude.toString();
+                                      lng = position.longitude.toString();
+                                    } else {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'No se pudo obtener la ubicación GPS precisa. Se enviaron coordenadas predeterminadas de emergencia.',
+                                            ),
+                                            backgroundColor: Colors.orange,
+                                          ),
+                                        );
+                                      }
+                                    }
+
+                                    _emergencyBloc.add(
+                                      EmergencyEvent.sendSos(
+                                        partiId: 'parti_demo_1',
+                                        eventoId: '1',
+                                        orgId: '1',
+                                        latitud: lat,
+                                        longitud: lng,
+                                      ),
+                                    );
+
+                                    if (dialogContext.mounted) {
+                                      Navigator.pop(dialogContext);
+                                    }
+                                  },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                content: const Text(
-                  '¿Estás seguro de que deseas enviar una alerta de rescate SOS? Esto compartirá tu ubicación GPS actual con el equipo médico de la organización.',
-                  style: TextStyle(color: Colors.white70),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: isFetchingLocation ? null : () => Navigator.pop(dialogContext),
-                    child: const Text(
-                      'CANCELAR',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                    ),
-                    onPressed: isFetchingLocation
-                        ? null
-                        : () async {
-                            setDialogState(() {
-                              isFetchingLocation = true;
-                            });
-
-                            final position = await _getCurrentLocation();
-                            
-                            // Default fallback coordinates if fetching fails
-                            String lat = '-34.6037';
-                            String lng = '-58.3816';
-
-                            if (position != null) {
-                              lat = position.latitude.toString();
-                              lng = position.longitude.toString();
-                            } else {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'No se pudo obtener la ubicación GPS precisa. Se enviaron coordenadas predeterminadas de emergencia.',
-                                    ),
-                                    backgroundColor: Colors.orange,
-                                  ),
-                                );
-                              }
-                            }
-
-                            _emergencyBloc.add(
-                              EmergencyEvent.sendSos(
-                                partiId: 'parti_demo_1',
-                                eventoId: '1',
-                                orgId: '1',
-                                latitud: lat,
-                                longitud: lng,
-                              ),
-                            );
-
-                            if (dialogContext.mounted) {
-                              Navigator.pop(dialogContext);
-                            }
-                          },
-                    child: isFetchingLocation
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text(
-                            'ENVIAR SOS',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                  ),
-                ],
               ),
             );
           },
@@ -1296,9 +1348,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: items.map((item) {
+        final bool isHighlighted = item.label == 'Iniciar Sesión';
+
         return AppCard(
-          style: AppCardStyle.glassmorphic,
+          style: isHighlighted ? AppCardStyle.gradient : AppCardStyle.glassmorphic,
           padding: EdgeInsets.zero,
+          customGradient: isHighlighted
+              ? LinearGradient(
+                  colors: [
+                    activeTenant.primaryColorRef.withValues(alpha: 0.85),
+                    (activeTenant.secondaryColorRef.computeLuminance() > 0.15)
+                        ? const Color(0xFF1E1E1E)
+                        : activeTenant.secondaryColorRef.withValues(alpha: 0.95),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: item.onTap,
@@ -1311,12 +1377,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: activeTenant.primaryColorRef.withValues(alpha: 0.12),
+                      color: isHighlighted
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : activeTenant.primaryColorRef.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       item.icon,
-                      color: activeTenant.accentColorRef,
+                      color: isHighlighted ? Colors.white : activeTenant.accentColorRef,
                       size: 20,
                     ),
                   ),
@@ -1326,17 +1394,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     children: [
                       Text(
                         item.label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
+                          shadows: isHighlighted
+                              ? [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  )
+                                ]
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         item.description,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
+                          color: isHighlighted
+                              ? Colors.white.withValues(alpha: 0.7)
+                              : Colors.white.withValues(alpha: 0.5),
                           fontSize: 10,
                         ),
                         maxLines: 1,
@@ -1378,7 +1457,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           Text(
             value,
             style: TextStyle(
-              color: tenant.accentColorRef,
+              color: tenant.tenantName == '21kLG'
+                  ? tenant.secondaryColorRef
+                  : tenant.accentColorRef,
               fontSize: 26,
               fontWeight: FontWeight.w900,
               letterSpacing: 0.5,

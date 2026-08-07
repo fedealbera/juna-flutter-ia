@@ -4,6 +4,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../../../shared/design_system/text_fields/app_text_field.dart';
 import '../../domain/entities/participant_detail.dart';
 import '../../domain/repositories/participant_repository.dart';
@@ -108,6 +109,54 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
 
       try {
         final repository = getIt<ParticipantRepository>();
+
+        // 1. Fetch participant documents and verify all are approved
+        final response = await repository.getParticipantDocuments(widget.participant.id);
+
+        if (response['success'] == true && response['archivos'] is Map) {
+          final archivos = Map<String, dynamic>.from(response['archivos'] as Map);
+          bool hasPending = false;
+
+          for (final key in archivos.keys) {
+            final doc = archivos[key] as Map? ?? {};
+            final String estado = doc['estado']?.toString() ?? 'SD';
+            if (estado != 'AP') {
+              hasPending = true;
+              break;
+            }
+          }
+
+          if (hasPending) {
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+              AppAlertDialog.show(
+                context: context,
+                type: AppDialogType.warning,
+                title: 'Autorización no Habilitada',
+                message: 'Estimado participante, no se encuentra habilitado para autorizar el retiro de su kit por parte de un tercero. Para proceder con esta solicitud, es requisito indispensable que toda la documentación requerida esté previamente verificada y aprobada por la organización.',
+                primaryButtonText: 'ACEPTAR',
+              );
+            }
+            return;
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No se pudo verificar la documentación. Inténtelo nuevamente.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        // 2. Proceed with kit authorization
         final insId = int.tryParse(widget.participant.insId);
 
         await repository.authorizeKit(

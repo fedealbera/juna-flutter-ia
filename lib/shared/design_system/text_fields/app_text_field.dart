@@ -16,6 +16,8 @@ class AppTextField extends StatefulWidget {
   final int? maxLength;
   final List<TextInputFormatter>? inputFormatters;
   final FocusNode? focusNode;
+  final void Function(String)? onFieldSubmitted;
+  final TextInputAction? textInputAction;
 
   const AppTextField({
     super.key,
@@ -33,6 +35,8 @@ class AppTextField extends StatefulWidget {
     this.maxLength,
     this.inputFormatters,
     this.focusNode,
+    this.onFieldSubmitted,
+    this.textInputAction,
   });
 
   @override
@@ -66,8 +70,10 @@ class _AppTextFieldState extends State<AppTextField> {
           focusNode: widget.focusNode,
           obscureText: widget.isPassword && _obscureText,
           keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
           validator: widget.validator,
           onChanged: widget.onChanged,
+          onFieldSubmitted: widget.onFieldSubmitted,
           enabled: widget.enabled,
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           maxLength: widget.maxLength,
