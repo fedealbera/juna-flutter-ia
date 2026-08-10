@@ -267,6 +267,19 @@ Each tenant's `tenants/<tenant>/config.json` now supports a `branding` section:
 ```
 The `branding` values are injected into the generated `active_tenant_config.dart` at configuration time.
 
+### Active Tenant Environments Reference
+
+The following table summarizes the environment configurations (Base URLs and API Keys) for each configured tenant:
+
+| Tenant | Environment | Base URL | API Key | Package Name / Bundle ID |
+|---|---|---|---|---|
+| **DDLN** | Development | `https://juna.net.ar/desafio2026_testtt/api` | `juna_api_f7b9c3x2_secure_key_2026` | `com.churo.desafiomobile` |
+| | QA | `https://juna.net.ar/desafio2026_testtt/api` | `juna_api_f7b9c3x2_secure_key_2026` | |
+| | Production | `https://juna.net.ar/desafio2026/api` | `juna_api_f7b9c3x2_secure_key_2026` | |
+| **21kLG** | Development | `https://juna.net.ar/lagaceta2026_test/api` | `juna_api_f7b9c3x2_secure_key_2026` | `com.churomobile.lagaceta21k` |
+| | QA | `https://juna.net.ar/lagaceta2026_test/api` | `juna_api_f7b9c3x2_secure_key_2026` | |
+| | Production | `https://juna.net.ar/lagaceta2026/api` | `juna_api_7a1e4c9b_secure_key_2026` | |
+
 ### Available Makefile Targets
 The `Makefile` exposes simple targets to easily configure, run, and compile the application:
 
