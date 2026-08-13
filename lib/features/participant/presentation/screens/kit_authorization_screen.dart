@@ -176,13 +176,25 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
         );
 
         if (mounted) {
-          context.pop(true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Autorización registrada exitosamente'),
-              backgroundColor: Colors.green,
-            ),
+          await AppAlertDialog.show(
+            context: context,
+            type: AppDialogType.info,
+            title: 'Recordatorio',
+            message: 'Recordá que, para poder entregar el kit, es indispensable que presente toda la documentación obligatoria.',
+            primaryButtonText: 'Aceptar',
+            customIcon: Icons.assignment_late_rounded,
+            customAccentColor: Colors.amber,
+            primaryButtonColor: Colors.amber,
           );
+          if (mounted) {
+            context.pop(true);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Autorización registrada exitosamente'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
         }
       } catch (e) {
         if (mounted) {
@@ -252,16 +264,6 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Selecciona una opción para el retiro de tu kit:',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
                         // Card 1: Yo retiro el kit
                         GestureDetector(
                           onTap: () {
@@ -305,7 +307,7 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Yo retiro el kit',
+                                        'Te presentarás personalmente a retirar tu kit',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
@@ -375,7 +377,7 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            '¿Envías a otra persona?',
+                                            'Autoriza a un tercero a retirar tu kit',
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 16,

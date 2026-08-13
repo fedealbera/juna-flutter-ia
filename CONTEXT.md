@@ -96,23 +96,23 @@ To ensure a fluid, integrated UX, the `RegistrationScreen` manages its active ta
 
 ### Discount Code Validation Mapping
 Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{insId}/descuento` sending a body containing `codigo`. The response is mapped as follows:
-* **`dispo_cod == "VIGENTE"`:** Displays an `AlertDialog` confirming the code validation and detailing its validity range (`locd_fecha_inicio` to `locd_fecha_fin`) with a font size of 16.
+* **`dispo_cod == "VIGENTE"`:** Displays an `AlertDialog` confirming the code validation showing `"Disponible hasta el $fin"`.
 * **Otherwise:** Displays an `AlertDialog` with the error `dispo_msg` returned from the API, and sets the local validation state to false.
 
 ---
 
-## 4. Participant Documentation & Camera Upload Workflow
+## 4. Participant Documentation & Multi-Source Upload Workflow
 
 The document sub-route `/inscripciones/documentacion` manages all required runner certifications:
 
 1. **Document Requirements (GET):** The screen queries `GET /api/participantes/{id}/archivos` using the participant's ID. It retrieves document files and checks their status:
-   * `SD` (Sin Entregar) or `OB` (Observado/Rechazado): Shows a **"Subir"** button (styled with explicit white text and icon color) to capture files.
+   * `SD` (Sin Entregar) or `OB` (Observado/Rechazado): Shows two buttons, **"TOMAR FOTO"** (to capture files via native camera) and **"SUBIR ARCHIVO"** (to pick digital files from the device file system), both styled with explicit white text.
    * `PE` (En Revisión): Shows a text indicating validation is pending.
-   * `AP` (Aprobado): Shows a **"VER"** button (styled with explicit white text and icon color) opening the public image URL.
-2. **Camera Access & Multipart Upload (POST):** Clicking **"Subir"** triggers the native camera via `image_picker`. The photo is sent via a Multipart request to `POST /api/participantes/archivos` containing parameters:
+   * `AP` (Aprobado): Shows a **"VER"** button opening the public image URL (the document title for `'CERTIFICADO_MEDICO'` is customized as `"Certificado Médico"` instead of `"Apto médico"`).
+2. **Camera Access or File Selection & Multipart Upload (POST):** Tapping **"TOMAR FOTO"** opens the camera via `image_picker`. Tapping **"SUBIR ARCHIVO"** opens `file_picker` to select a PDF or image file from the device file system. The selected file path is sent via a Multipart request to `POST /api/participantes/archivos` containing parameters:
    * `parti_id` (runner ID)
    * `tipo` (e.g. `CERTIFICADO_MEDICO`, `DESLINDE_RESPONSABILIDAD`, `AUTORIZACION_MENORES`)
-   * `file` (the image file)
+   * `file` (the file payload)
 3. **State & Modal Loading Handling:**
    * During upload, a local stack-based `_isUploading` loading overlay is displayed on top of the screen to block interaction.
    * On API completion, the overlay is hidden and an `AlertDialog` (Success / Error) is displayed.
@@ -165,17 +165,20 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
   * **SOS Emergency Button:** Integrates the `geolocator` package to fetch precise GPS coordinates on race day, showing a loading spinner.
   * **Weather & Gear Advisory Card:** Fetches current weather from Open-Meteo and displays a 3-column altitude-based layout for mountain races (Base, Summit, Arrival) or a 2-column layout for flat races, alongside custom gear and hydration warnings.
   * **Floating Scroll-down Indicator:** A centered pill ("DESLIZA PARA VER MÁS") with a bouncing down-arrow animation that automatically fades out past `30` pixels of scroll. Tapping the indicator triggers a smooth auto-scroll down by `250` pixels. It uses a dynamic `IgnorePointer` state (`ignoring: !_showScrollIndicator`) so it only intercepts touch events when visible, avoiding blocking background clicks when faded out.
-* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". In the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1):
+* **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". The subtitle text `'Verifica tu estado de inscripción o vincula tu cuenta.'` is removed to streamline the UI. In the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1):
   * The participant card dynamically displays **DORSAL** instead of **PLACA** inside the bib box for the `21kLG` tenant (when tenant name contains `'21k'`), while continuing to show **PLACA** for other tenants like `DDLN`.
   * The info details are organized in a specific order: *Nombre*, *DNI*, *Circuito*, *Categoría*, *Fecha de la Carrera*, *Hora de Agrupamiento*, and *Largada* (with *Fecha de Acreditación* removed entirely).
   * Displays dynamic fields `Grupo de Entrenamiento`, `Centro de Acreditación`, and `Marca de Zapatillas` only for the `21kLG` tenant. To prevent visual clipping on narrow screens, these long text values are dynamically laid out on two stacked vertical lines using `_buildInfoColumn` instead of a single row.
   * The "PAGAR" and "ENVIAR CERTIFICADO" buttons are styled with explicit white font and icon colors. When payment verification is active, the payment button text updates to `VERIFICANDO PAGO...` showing a sync loader icon, and is disabled.
   * If the participant details response contains a discount code (`insCodDesc`), a glassmorphic **Código de Descuento** card section is conditionally displayed below the participant details card. This card contains an input field (`AppTextField` without a label) to edit the discount code and a validate button (`Validar`) that triggers the real validation.
-  * The "DESVINCULAR" button is styled with a solid red background and white text, and the "EDITAR DATOS" button uses the primary color, both using the unified design system `AppButton` component (height `52dp`).
+  * The **"EDITAR DATOS"** and **"CERRAR SESIÓN"** (previously "DESVINCULAR") buttons are stacked vertically and take the full width of the screen. "EDITAR DATOS" (using primary brand color) is on top, and "CERRAR SESIÓN" (using a solid red background and white text) is at the bottom. Tapping "CERRAR SESIÓN" prompts a confirmation popup with the title `"¿Desea cerrar sesión?"`, an empty message body, and buttons `"Cancelar"` / `"Aceptar"`.
   * **Floating Scroll-down Indicator:** Implements the same bouncing scroll-down indicator from the `HomeScreen` in the **VER MI PERFIL** section, attached to the profile details scroll controller and supporting the same auto-scroll on tap interaction.
   * The `RegistrationWebView` uses vertical and horizontal drag gesture recognizers on the `WebViewWidget` constructor to prevent scroll blocking.
 * **`EditParticipantScreen`:** Provides input fields to modify contact (`contCelular`, `contEmail`, `contInstagram`) and emergency contact details (`contNombre`, `contTel`). The emergency contact section is displayed always. Additionally, if the participant does not have a plate/dorsal assigned (`nroPlaca == '0'` or empty), a new **"DATOS DE LA CARRERA"** section is displayed. This section lets runners modify their selected **Circuito**, **Categoría**, and **Talle de Remera** using custom dynamic dropdown form fields populated from catalog endpoints. If there are multiple options and the preselected category is not present (or when changing circuit), it defaults to the first category where `categEspecial != 1` to prevent auto-selecting special categories. Saving data on this screen triggers a single unified `PUT /api/participantes/{partiId}` request to save contact, emergency, and registration details in one action, where the `insId` field takes the value of the `ins` field returned by the runner details GET endpoint. Additional tenant-specific fields (`grupoEntrenamiento`, `centroAcreditacion`, `marcaZapatillas`) are omitted from the edit view but preserved on save.
-* **`KitAuthorizationScreen`:** Displays a simple form with DNI and Nombre/Apellido fields allowing runners to authorize a third party to collect their race kit. Submitting the form pops back to the previous screen. Accessing this screen requires that the runner has an assigned plate/dorsal and that all required documents fetched from the `/api/participantes/{id}/archivos` endpoint are approved (status `AP`). If any documents are pending or rejected, a professional alert dialog is shown instead.
+* **`KitAuthorizationScreen`:** Displays kit collection options for the runner.
+  * **Option Selection:** The choices are card-based selections: *"Te presentarás personalmente a retirar tu kit"* and *"Autoriza a un tercero a retirar tu kit"*.
+  * **Submission Flow:** Submitting the third-party authorization form prompts a custom yellow/amber warning popup (`customAccentColor` and `primaryButtonColor` set to `Colors.amber` with custom icon `Icons.assignment_late_rounded`) reading: *"Recordá que, para poder entregar el kit, es indispensable que presente toda la documentación obligatoria."* Tapping "Aceptar" then pops/navigates back to the previous screen.
+  * **Requirements:** Accessing this screen requires that the runner has an assigned plate/dorsal and that all required documents fetched from the `/api/participantes/{id}/archivos` endpoint are approved (status `AP`). If any documents are pending or rejected, a professional alert dialog is shown instead.
 * **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, etc.). Selecting a circuit from the list launches `CircuitWebViewScreen` to show web-based track details (e.g., Garmin web or raw images). To ensure raw image tracks (like in 21kLG) display correctly without clipping or incorrect zooming, the web view automatically executes a JavaScript script on page load completion that checks if the loaded document is a raw image or contains exactly one `<img>` tag. If true, it scales the image down (`max-width: 100%`, `max-height: 100%`, `object-fit: contain`) to fit the screen viewport, centers it within a Flexbox layout, sets a dark background (`#121212`) to align with the application's aesthetic, and keeps pinch-to-zoom enabled for close-up inspections. This ensures a consistent, high-fidelity experience across Garmin maps and simple image-based maps.
 * **`LiveScreen`:** Displays real-time event coverage and quick social links. It organizes choices under "COBERTURA" and "SOCIAL & WEB" headers. The "Tiempos" card is dynamically highlighted as the primary live feature, styled with a brand-aligned gradient background and a pulsing red status indicator ("VIVO"). Navigation elements are differentiated, showing the `open_in_new` trailing icon for external web/social links (Facebook, Instagram, Web) and chevrons for internal views.
 * **`ContentListScreen`:** Displays vertical feeds of news articles or information documents categorized by event content types. It features a background gradient dynamically blended using the active tenant's branding colors. When no content is available, it displays a premium centered empty state featuring a glowing icon container, contextual title, description matching the section type (Novedades or Info Importante), and a white-colored "ACTUALIZAR" action button supporting standard Pull-to-Refresh gestures.
@@ -188,6 +191,12 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 * `textColor` — overrides the label/icon text color.
 * `borderColor` — overrides the border color (also activates a border if type is not `outlined`).
 These allow per-usage custom styling without subclassing, enabling tenant-aware coloring directly at the call site. The inner `Icon` dynamically inherits the button's text color (`_getTextColor(theme)`) to ensure complete visual consistency.
+
+### Design System — `AppAlertDialog`
+`AppAlertDialog` (`lib/shared/design_system/dialogs/app_dialog.dart`) supports optional override parameters:
+* `customAccentColor` — overrides the background tint of the icon container, borders, and shadows of the dialog (e.g. enabling yellow warnings or custom brand colors).
+* `primaryButtonColor` — overrides the primary action button's background color.
+* `customIcon` — overrides the default dialog type icon.
 
 ### Design System — `AppTextField`
 `AppTextField` (`lib/shared/design_system/text_fields/app_text_field.dart`) supports an optional `label` parameter (defaulting to `""`). When no label is provided or is empty, the label widget and its accompanying vertical spacing are omitted from the layout, facilitating cleaner UI designs.

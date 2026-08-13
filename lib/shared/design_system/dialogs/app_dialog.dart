@@ -16,6 +16,7 @@ class AppAlertDialog extends StatelessWidget {
   final VoidCallback? onSecondaryPressed;
   final IconData? customIcon;
   final Color? primaryButtonColor;
+  final Color? customAccentColor;
 
   const AppAlertDialog({
     super.key,
@@ -29,6 +30,7 @@ class AppAlertDialog extends StatelessWidget {
     this.onSecondaryPressed,
     this.customIcon,
     this.primaryButtonColor,
+    this.customAccentColor,
   });
 
   static Future<T?> show<T>({
@@ -43,6 +45,7 @@ class AppAlertDialog extends StatelessWidget {
     VoidCallback? onSecondaryPressed,
     IconData? customIcon,
     Color? primaryButtonColor,
+    Color? customAccentColor,
     bool barrierDismissible = true,
   }) {
     return showDialog<T>(
@@ -59,6 +62,7 @@ class AppAlertDialog extends StatelessWidget {
         onSecondaryPressed: onSecondaryPressed,
         customIcon: customIcon,
         primaryButtonColor: primaryButtonColor,
+        customAccentColor: customAccentColor,
       ),
     );
   }
@@ -68,35 +72,37 @@ class AppAlertDialog extends StatelessWidget {
     final tenantManager = getIt<TenantManager>();
     final activeTenant = tenantManager.value;
 
-    final Color accentColor;
+    final Color resolvedAccentColor;
     final IconData iconData;
 
     switch (type) {
       case AppDialogType.success:
-        accentColor = Colors.green;
+        resolvedAccentColor = Colors.green;
         iconData = customIcon ?? Icons.check_circle_outline_rounded;
         break;
       case AppDialogType.error:
-        accentColor = Colors.redAccent;
+        resolvedAccentColor = Colors.redAccent;
         iconData = customIcon ?? Icons.error_outline_rounded;
         break;
       case AppDialogType.warning:
-        accentColor = Colors.orange;
+        resolvedAccentColor = Colors.orange;
         iconData = customIcon ?? Icons.warning_amber_rounded;
         break;
       case AppDialogType.info:
-        accentColor = activeTenant.accentColorRef;
+        resolvedAccentColor = activeTenant.accentColorRef;
         iconData = customIcon ?? Icons.info_outline_rounded;
         break;
       case AppDialogType.confirm:
-        accentColor = activeTenant.accentColorRef;
+        resolvedAccentColor = activeTenant.accentColorRef;
         iconData = customIcon ?? Icons.help_outline_rounded;
         break;
       case AppDialogType.danger:
-        accentColor = Colors.redAccent;
+        resolvedAccentColor = Colors.redAccent;
         iconData = customIcon ?? Icons.warning_amber_rounded;
         break;
     }
+
+    final Color accentColor = customAccentColor ?? resolvedAccentColor;
 
     const dialogBg = Color(0xFF161616);
 

@@ -387,13 +387,12 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     }
 
                     if (isVigente) {
-                      final inicio = json['locd_fecha_inicio'] as String? ?? '';
                       final fin = json['locd_fecha_fin'] as String? ?? '';
                       AppAlertDialog.show(
                         context: context,
                         type: AppDialogType.success,
                         title: 'Código Confirmado',
-                        message: 'El código fue confirmado y tiene fecha vigente desde $inicio hasta $fin.',
+                        message: 'Disponible hasta el $fin',
                         primaryButtonText: 'ACEPTAR',
                       ).then((_) {
                         if (mounted) {
@@ -596,70 +595,62 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   ],
                 ],
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AppButton(
-                        text: 'DESVINCULAR',
-                        color: Colors.red,
-                        textColor: Colors.white,
-                        onPressed: () async {
-                          final confirm = await AppAlertDialog.show<bool>(
-                            context: context,
-                            type: AppDialogType.danger,
-                            title: '¿Desvincular corredor?',
-                            message: '¿Estás seguro de que deseas desvincular este corredor de la aplicación?',
-                            secondaryButtonText: 'CANCELAR',
-                            primaryButtonText: 'DESVINCULAR',
-                            primaryButtonColor: Colors.red,
-                          );
-                          if (confirm != true) return;
+                AppButton(
+                  text: 'EDITAR DATOS',
+                  color: activeTenant.primaryColorRef,
+                  textColor: Colors.white,
+                  onPressed: () async {
+                    final result = await context.push<bool>(
+                      '/inscripciones/editar-datos',
+                      extra: detail,
+                    );
+                    if (result == true) {
+                      _participantBloc.add(
+                        ParticipantEvent.getDetail(
+                          dni:
+                              detail.dni.isNotEmpty
+                                  ? detail.dni
+                                  : _dniController.text,
+                          idOrg: '1',
+                          eventoId: '1',
+                          roundId: '1',
+                        ),
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                AppButton(
+                  text: 'CERRAR SESIÓN',
+                  color: Colors.red,
+                  textColor: Colors.white,
+                  onPressed: () async {
+                    final confirm = await AppAlertDialog.show<bool>(
+                      context: context,
+                      type: AppDialogType.danger,
+                      title: '¿Desea cerrar sesión?',
+                      message: '',
+                      secondaryButtonText: 'Cancelar',
+                      primaryButtonText: 'Aceptar',
+                      primaryButtonColor: Colors.red,
+                    );
+                    if (confirm != true) return;
 
-                          await getIt<HiveService>().delete<Map>(
-                            'participant_box',
-                            'cached_participant',
-                          );
-                          _dniController.clear();
-                          if (mounted) {
-                            setState(() {
-                              _linkedParticipant = null;
-                              _discountCodeController.clear();
-                              _isDiscountCodeValid = null;
-                              _discountCodeErrorMessage = null;
-                            });
-                            _dniFocusNode.requestFocus();
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppButton(
-                        text: 'EDITAR DATOS',
-                        color: activeTenant.primaryColorRef,
-                        textColor: Colors.white,
-                        onPressed: () async {
-                          final result = await context.push<bool>(
-                            '/inscripciones/editar-datos',
-                            extra: detail,
-                          );
-                          if (result == true) {
-                            _participantBloc.add(
-                              ParticipantEvent.getDetail(
-                                dni:
-                                    detail.dni.isNotEmpty
-                                        ? detail.dni
-                                        : _dniController.text,
-                                idOrg: '1',
-                                eventoId: '1',
-                                roundId: '1',
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
+                    await getIt<HiveService>().delete<Map>(
+                      'participant_box',
+                      'cached_participant',
+                    );
+                    _dniController.clear();
+                    if (mounted) {
+                      setState(() {
+                        _linkedParticipant = null;
+                        _discountCodeController.clear();
+                        _isDiscountCodeValid = null;
+                        _discountCodeErrorMessage = null;
+                      });
+                      _dniFocusNode.requestFocus();
+                    }
+                  },
                 ),
                 const SizedBox(height: 40),
               ],
@@ -759,11 +750,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Verifica tu estado de inscripción o vincula tu cuenta.',
-            style: TextStyle(color: Colors.grey, fontSize: 13),
-          ),
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -843,7 +829,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     ),
                     child: const Center(
                       child: Text(
-                        'No se encontraron registros para ese DNI en este evento.',
+                        'No se encontró ese DNI en el evento',
                         style: TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -67,7 +68,7 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
   String _getDocumentTitle(String key) {
     switch (key) {
       case 'CERTIFICADO_MEDICO':
-        return 'Apto médico';
+        return 'Certificado Médico';
       case 'DESLINDE_RESPONSABILIDAD':
         return 'Deslinde firmado';
       case 'AUTORIZACION_MENORES':
@@ -80,14 +81,26 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
     }
   }
 
-  Future<void> _handleUpload(String docKey) async {
+  Future<void> _handleUpload(String docKey, {required bool useCamera}) async {
     try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 85,
-      );
+      String? filePath;
 
-      if (image == null) return;
+      if (useCamera) {
+        final XFile? image = await _picker.pickImage(
+          source: ImageSource.camera,
+          imageQuality: 85,
+        );
+        if (image == null) return;
+        filePath = image.path;
+      } else {
+        final FilePickerResult? result = await FilePicker.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        );
+        if (result == null || result.files.isEmpty) return;
+        filePath = result.files.first.path;
+        if (filePath == null) return;
+      }
 
       if (!mounted) return;
 
@@ -98,7 +111,7 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
       final bool isSuccess = await _repository.uploadParticipantDocument(
         partiId: widget.participant.id,
         tipo: docKey,
-        filePath: image.path,
+        filePath: filePath,
       );
 
       if (!mounted) return;
@@ -138,7 +151,9 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
           context: context,
           type: AppDialogType.error,
           title: 'Error',
-          message: 'Error al acceder a la cámara o cargar la imagen: $e',
+          message: useCamera
+              ? 'Error al acceder a la cámara o cargar la imagen: $e'
+              : 'Error al seleccionar o cargar el archivo: $e',
           primaryButtonText: 'ACEPTAR',
         );
       }
@@ -389,14 +404,25 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
-                                            if (estado == 'SD' || estado == 'OB')
-                                              AppButton(
-                                                text: 'Subir',
-                                                textColor: Colors.white,
-                                                icon: Icons.photo_camera_rounded,
-                                                onPressed: () => _handleUpload(key),
-                                                width: 140,
+                                            if (estado == 'SD' || estado == 'OB') ...[
+                                              Expanded(
+                                                child: AppButton(
+                                                  text: 'TOMAR FOTO',
+                                                  textColor: Colors.white,
+                                                  icon: Icons.photo_camera_rounded,
+                                                  onPressed: () => _handleUpload(key, useCamera: true),
+                                                ),
                                               ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: AppButton(
+                                                  text: 'SUBIR ARCHIVO',
+                                                  textColor: Colors.white,
+                                                  icon: Icons.upload_file_rounded,
+                                                  onPressed: () => _handleUpload(key, useCamera: false),
+                                                ),
+                                              ),
+                                            ],
                                             if (estado == 'AP')
                                               AppButton(
                                                 text: 'VER',
@@ -464,12 +490,16 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
     return AppCard(
       style: AppCardStyle.glassmorphic,
       padding: const EdgeInsets.all(16.0),
+      customBorder: Border.all(
+        color: Colors.amber.withValues(alpha: 0.3),
+        width: 1.5,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            color: activeTenant.primaryColorRef,
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.amber,
             size: 24,
           ),
           const SizedBox(width: 12),
@@ -477,10 +507,10 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'IMPORTANTE',
                   style: TextStyle(
-                    color: activeTenant.primaryColorRef,
+                    color: Colors.amber,
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.0,
@@ -490,7 +520,7 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                 const Text(
                   'Necesita llevar impreso en papel y firmado el Deslinde del Corredor, si es menor, la autorización de menores.',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: Colors.white,
                     fontSize: 13,
                     height: 1.4,
                     fontWeight: FontWeight.w500,
