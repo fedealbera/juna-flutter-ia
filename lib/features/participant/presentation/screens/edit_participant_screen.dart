@@ -5,6 +5,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/text_fields/app_text_field.dart';
 import '../../../../shared/design_system/dialogs/app_dialog.dart';
+import '../../../catalog/data/datasource/catalog_remote_datasource.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../../categories/domain/entities/size_entity.dart';
 import '../../../categories/domain/repositories/categories_repository.dart';
@@ -36,6 +37,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
   late final TextEditingController _instagramController;
   late final TextEditingController _emergencyNameController;
   late final TextEditingController _emergencyPhoneController;
+  late final TextEditingController _trainingGroupController;
 
   bool _isLoading = false;
 
@@ -43,13 +45,18 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
   List<Circuit> _circuits = [];
   List<Category> _categories = [];
   List<SizeEntity> _sizes = [];
+  List<Map<String, dynamic>> _accreditationCenters = [];
+  List<Map<String, dynamic>> _brands = [];
 
   String? _selectedCircuitId;
   String? _selectedCategoryId;
   String? _selectedSizeId;
+  String? _selectedCacreId;
+  String? _selectedMarcbId;
 
   bool _loadingCatalogs = false;
   bool _loadingCategories = false;
+  bool _loadingAdditionalCatalogs = false;
 
   @override
   void initState() {
@@ -60,6 +67,10 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
     _instagramController = TextEditingController(text: p.contInstagram);
     _emergencyNameController = TextEditingController(text: p.contNombre);
     _emergencyPhoneController = TextEditingController(text: p.contTel);
+    _trainingGroupController = TextEditingController(text: p.grupoEntrenamiento);
+
+    _selectedCacreId = p.cacreId.isNotEmpty ? p.cacreId : null;
+    _selectedMarcbId = p.marcbId.isNotEmpty ? p.marcbId : null;
 
     final showRegistrationModifications = p.nroPlaca == '0' || p.nroPlaca.isEmpty;
     if (showRegistrationModifications) {
@@ -68,6 +79,8 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       _selectedSizeId = p.partTalleId.isNotEmpty ? p.partTalleId : null;
       _loadCatalogs();
     }
+
+    _loadAdditionalCatalogs();
   }
 
   Future<void> _loadCatalogs() async {
@@ -101,6 +114,35 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       if (mounted) {
         setState(() {
           _loadingCatalogs = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadAdditionalCatalogs() async {
+    if (mounted) {
+      setState(() {
+        _loadingAdditionalCatalogs = true;
+      });
+    }
+    try {
+      final remoteDataSource = getIt<CatalogRemoteDataSource>();
+      final centersFuture = remoteDataSource.getCentrosAcreditacion();
+      
+      final tipoCarrera = widget.participant.tipoCarrera;
+      final brandsFuture = remoteDataSource.getMarcas(tipoCarrera.isNotEmpty ? tipoCarrera : null);
+
+      final results = await Future.wait([centersFuture, brandsFuture]);
+      _accreditationCenters = results[0];
+      _brands = results[1];
+
+      debugPrint('Loaded ${_accreditationCenters.length} centers and ${_brands.length} brands.');
+    } catch (e) {
+      debugPrint('Error loading additional catalogs: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingAdditionalCatalogs = false;
         });
       }
     }
@@ -175,6 +217,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
     _instagramController.dispose();
     _emergencyNameController.dispose();
     _emergencyPhoneController.dispose();
+    _trainingGroupController.dispose();
     _participantBloc.close();
     super.dispose();
   }
@@ -189,7 +232,12 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
     final showRegistrationModifications = p.nroPlaca == '0' || p.nroPlaca.isEmpty;
 
     debugPrint('EditParticipantScreen: Dispatching ParticipantEvent.updateParticipant for partiId: ${p.id}');
-    final is21klg = _tenantManager.value.tenantId == 2;
+    final selectedBrand = _brands.firstWhere(
+      (b) => b['marca_id']?.toString() == _selectedMarcbId,
+      orElse: () => <String, dynamic>{},
+    );
+    final marcbLabel = selectedBrand['marca_nombre']?.toString();
+
     _participantBloc.add(ParticipantEvent.updateParticipant(
       partiId: p.id,
       domCiudad: p.domCiudad,
@@ -205,10 +253,14 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       circuitoId: showRegistrationModifications ? _selectedCircuitId : p.idCircuito,
       categoriaId: showRegistrationModifications ? _selectedCategoryId : p.idCategoria,
       talleId: showRegistrationModifications ? _selectedSizeId : p.partTalleId,
-      cacreId: is21klg ? p.cacreId : null,
-      marcbId: is21klg ? p.marcbId : null,
-      marcbLabel: is21klg ? p.marcbLabel : null,
-      grupoEntrenamiento: is21klg ? p.grupoEntrenamiento : null,
+      cacreId: widget.participant.tipoCarrera == 'BICICLETA' ? null : _selectedCacreId,
+      marcbId: _selectedMarcbId,
+      marcbLabel: marcbLabel,
+      grupoEntrenamiento: widget.participant.tipoCarrera == 'BICICLETA' 
+          ? null 
+          : (_trainingGroupController.text.trim().isNotEmpty
+              ? _trainingGroupController.text.trim()
+              : null),
     ));
   }
 
@@ -419,6 +471,21 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                                 setState(() {
                                                   _selectedCategoryId = val;
                                                 });
+                                                if (val != null) {
+                                                  final selectedCat = _categories.firstWhere(
+                                                    (c) => c.id == val,
+                                                    orElse: () => _categories.first,
+                                                  );
+                                                  if (selectedCat.categEspecial == 1) {
+                                                    AppAlertDialog.show(
+                                                      context: context,
+                                                      title: 'Categoría Especial',
+                                                      message: 'Categoría para corredores con capacidades diferentes',
+                                                      type: AppDialogType.info,
+                                                      primaryButtonText: 'ACEPTAR',
+                                                    );
+                                                  }
+                                                }
                                               },
                                               isLoading: _loadingCategories,
                                             ),
@@ -444,6 +511,81 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                         ),
                                 ),
                               ],
+
+                              // Section: Información Adicional
+                              const SizedBox(height: 28),
+                              _buildSectionTitle('INFORMACIÓN ADICIONAL', primaryColor),
+                              const SizedBox(height: 16),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.03),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.white10, width: 1),
+                                ),
+                                padding: const EdgeInsets.all(16.0),
+                                child: _loadingAdditionalCatalogs
+                                    ? const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 20),
+                                          child: CircularProgressIndicator.adaptive(),
+                                        ),
+                                      )
+                                    : Column(
+                                        children: [
+                                          if (widget.participant.tipoCarrera != 'BICICLETA') ...[
+                                            _buildDropdownField(
+                                              label: 'Centro de Acreditación',
+                                              hint: 'Selecciona centro de acreditación',
+                                              value: _accreditationCenters.any((c) => c['id_ca']?.toString() == _selectedCacreId) 
+                                                  ? _selectedCacreId 
+                                                  : null,
+                                              prefixIcon: Icons.location_on_outlined,
+                                              items: _accreditationCenters.map((c) {
+                                                return DropdownMenuItem<String>(
+                                                  value: c['id_ca']?.toString(),
+                                                  child: Text(c['nombre_ca']?.toString() ?? ''),
+                                                );
+                                              }).toList(),
+                                              onChanged: (val) {
+                                                setState(() {
+                                                  _selectedCacreId = val;
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: 16),
+                                            AppTextField(
+                                              label: 'Grupo de Entrenamiento',
+                                              hint: 'Ingresa grupo de entrenamiento',
+                                              prefixIcon: Icons.groups_outlined,
+                                              controller: _trainingGroupController,
+                                            ),
+                                            const SizedBox(height: 16),
+                                          ],
+                                          _buildDropdownField(
+                                            label: widget.participant.tipoCarrera == 'BICICLETA' ? 'Bicicleta' : 'Zapatillas / Calzado',
+                                            hint: widget.participant.tipoCarrera == 'BICICLETA' 
+                                                ? 'Selecciona marca de bicicleta' 
+                                                : 'Selecciona marca de zapatillas',
+                                            value: _brands.any((b) => b['marca_id']?.toString() == _selectedMarcbId) 
+                                                ? _selectedMarcbId 
+                                                : null,
+                                            prefixIcon: widget.participant.tipoCarrera == 'BICICLETA' ? Icons.directions_bike_rounded : Icons.directions_run_outlined,
+                                            items: _brands.map((b) {
+                                              return DropdownMenuItem<String>(
+                                                value: b['marca_id']?.toString(),
+                                                child: Text(b['marca_nombre']?.toString() ?? ''),
+                                              );
+                                            }).toList(),
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _selectedMarcbId = val;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                              ),
+
                               const SizedBox(height: 40),
                               // General Button
                               SizedBox(

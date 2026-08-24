@@ -20,6 +20,17 @@ abstract class CatalogApiService {
 
   @GET('/api/talles')
   Future<dynamic> getTalles();
+
+  @GET('/api/centros-acreditacion')
+  Future<dynamic> getCentrosAcreditacion();
+
+  @GET('/api/marcas')
+  Future<dynamic> getMarcas(
+    @Query('tipo_carrera') String? tipoCarrera,
+  );
+
+  @GET('/api/test')
+  Future<dynamic> checkServerStatus();
 }
 
 @module
