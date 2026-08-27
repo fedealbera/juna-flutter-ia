@@ -700,6 +700,8 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
           isExpanded: true,
           hint: Text(
             isLoading ? 'Cargando...' : hint,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.4),
               fontSize: 14,
