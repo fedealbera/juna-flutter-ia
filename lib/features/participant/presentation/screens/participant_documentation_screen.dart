@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
@@ -239,6 +240,187 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
     );
   }
 
+  void _showUploadOptions(String docKey) {
+    final activeTenant = _tenantManager.value;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.7),
+      isScrollControlled: true,
+      builder: (context) {
+        return ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF161616).withValues(alpha: 0.95),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Subir ${_getDocumentTitle(docKey)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Selecciona cómo deseas adjuntar el documento:',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildOptionItem(
+                    icon: Icons.photo_camera_rounded,
+                    title: 'Tomar Foto',
+                    subtitle: 'Usa la cámara del teléfono',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleUpload(docKey, useCamera: true);
+                    },
+                    accentColor: activeTenant.primaryColorRef,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildOptionItem(
+                    icon: Icons.upload_file_rounded,
+                    title: 'Subir Archivo',
+                    subtitle: 'PDF, JPG, JPEG o PNG desde tu dispositivo',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _handleUpload(docKey, useCamera: false);
+                    },
+                    accentColor: activeTenant.primaryColorRef,
+                  ),
+                  const SizedBox(height: 24),
+                  AppButton(
+                    text: 'CANCELAR',
+                    type: AppButtonType.outlined,
+                    borderColor: Colors.white24,
+                    textColor: Colors.grey.shade400,
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOptionItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required Color accentColor,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.35),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.12),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: accentColor.withValues(alpha: 0.4),
+                  width: 1.5,
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: accentColor,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final activeTenant = _tenantManager.value;
@@ -404,25 +586,15 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
-                                            if (estado == 'SD' || estado == 'OB') ...[
+                                            if (estado == 'SD' || estado == 'OB')
                                               Expanded(
                                                 child: AppButton(
-                                                  text: 'TOMAR FOTO',
+                                                  text: 'SUBIR DOCUMENTO',
                                                   textColor: Colors.white,
-                                                  icon: Icons.photo_camera_rounded,
-                                                  onPressed: () => _handleUpload(key, useCamera: true),
+                                                  icon: Icons.cloud_upload_rounded,
+                                                  onPressed: () => _showUploadOptions(key),
                                                 ),
                                               ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: AppButton(
-                                                  text: 'SUBIR ARCHIVO',
-                                                  textColor: Colors.white,
-                                                  icon: Icons.upload_file_rounded,
-                                                  onPressed: () => _handleUpload(key, useCamera: false),
-                                                ),
-                                              ),
-                                            ],
                                             if (estado == 'AP')
                                               AppButton(
                                                 text: 'VER',

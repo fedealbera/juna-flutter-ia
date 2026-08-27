@@ -448,7 +448,11 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                               items: _circuits.map((c) {
                                                 return DropdownMenuItem<String>(
                                                   value: c.id,
-                                                  child: Text(c.name),
+                                                  child: Text(
+                                                    c.name,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
                                                 );
                                               }).toList(),
                                               onChanged: _onCircuitChanged,
@@ -464,7 +468,11 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                               items: _categories.map((c) {
                                                 return DropdownMenuItem<String>(
                                                   value: c.id,
-                                                  child: Text(c.name),
+                                                  child: Text(
+                                                    c.name,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
                                                 );
                                               }).toList(),
                                               onChanged: (val) {
@@ -498,7 +506,11 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                               items: _sizes.map((s) {
                                                 return DropdownMenuItem<String>(
                                                   value: s.id,
-                                                  child: Text(s.name),
+                                                  child: Text(
+                                                    s.name,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
                                                 );
                                               }).toList(),
                                               onChanged: (val) {
@@ -543,7 +555,11 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                               items: _accreditationCenters.map((c) {
                                                 return DropdownMenuItem<String>(
                                                   value: c['id_ca']?.toString(),
-                                                  child: Text(c['nombre_ca']?.toString() ?? ''),
+                                                  child: Text(
+                                                    c['nombre_ca']?.toString() ?? '',
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
                                                 );
                                               }).toList(),
                                               onChanged: (val) {
@@ -573,7 +589,11 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                             items: _brands.map((b) {
                                               return DropdownMenuItem<String>(
                                                 value: b['marca_id']?.toString(),
-                                                child: Text(b['marca_nombre']?.toString() ?? ''),
+                                                child: Text(
+                                                  b['marca_nombre']?.toString() ?? '',
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
                                               );
                                             }).toList(),
                                             onChanged: (val) {
@@ -677,6 +697,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: value,
+          isExpanded: true,
           hint: Text(
             isLoading ? 'Cargando...' : hint,
             style: TextStyle(

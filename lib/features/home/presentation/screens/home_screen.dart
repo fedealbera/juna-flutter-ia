@@ -1351,7 +1351,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         final bool isHighlighted = item.label == 'Iniciar Sesión';
 
         return AppCard(
-          style: isHighlighted ? AppCardStyle.gradient : AppCardStyle.glassmorphic,
+          style: AppCardStyle.gradient,
           padding: EdgeInsets.zero,
           customGradient: isHighlighted
               ? LinearGradient(
@@ -1364,7 +1364,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
-              : null,
+              : LinearGradient(
+                  colors: [
+                    activeTenant.primaryColorRef.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.6),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+          customBorder: isHighlighted
+              ? null
+              : Border.all(
+                  color: activeTenant.primaryColorRef.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: item.onTap,

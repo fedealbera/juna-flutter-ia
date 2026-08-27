@@ -388,16 +388,39 @@ class _RegistrationScreenState extends State<RegistrationScreen>
 
                     if (isVigente) {
                       final fin = json['locd_fecha_fin'] as String? ?? '';
+                      String formattedFin = fin;
+                      final parts = fin.split('-');
+                      if (parts.length == 3) {
+                        formattedFin = '${parts[2]}/${parts[1]}';
+                      }
+
+                      final percentVal = json['locd_descuento_porc'];
+                      String percentStr = '';
+                      if (percentVal != null) {
+                        final double? val = double.tryParse(percentVal.toString());
+                        if (val != null && val > 0) {
+                          final intVal = val.toInt();
+                          final cleanVal = (val == intVal) ? intVal.toString() : val.toString();
+                          percentStr = '$cleanVal% OFF';
+                        }
+                      }
+
+                      final titleText = percentStr.isNotEmpty
+                          ? 'Código Confirmado\n$percentStr'
+                          : 'Código Confirmado';
+
                       AppAlertDialog.show(
                         context: context,
                         type: AppDialogType.success,
-                        title: 'Código Confirmado',
-                        message: 'Disponible hasta el $fin',
+                        title: titleText,
+                        message: 'Disponible hasta el $formattedFin',
                         primaryButtonText: 'ACEPTAR',
                       ).then((_) {
                         if (mounted) {
                           setState(() {
-                            _discountCodeSuccessMessage = 'Disponible hasta $fin';
+                            _discountCodeSuccessMessage = percentStr.isNotEmpty
+                                ? '$percentStr - Disponible hasta $formattedFin'
+                                : 'Disponible hasta $formattedFin';
                           });
                         }
                       });
@@ -459,15 +482,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Corredor Vinculado',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
                 _buildParticipantCard(
                   detail,
                   fechaAcreditacion,
@@ -622,7 +636,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                 const SizedBox(height: 12),
                 AppButton(
                   text: 'CERRAR SESIÓN',
-                  color: Colors.red,
+                  color: const Color(0xFFC21807),
                   textColor: Colors.white,
                   onPressed: () async {
                     final confirm = await AppAlertDialog.show<bool>(
@@ -632,7 +646,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       message: '',
                       secondaryButtonText: 'Cancelar',
                       primaryButtonText: 'Aceptar',
-                      primaryButtonColor: Colors.red,
+                      primaryButtonColor: const Color(0xFFC21807),
                     );
                     if (confirm != true) return;
 
@@ -670,9 +684,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     onTap: () {
                       if (_profileScrollController.hasClients) {
                         final maxScroll = _profileScrollController.position.maxScrollExtent;
-                        final target = (_profileScrollController.offset + 250.0).clamp(0.0, maxScroll);
                         _profileScrollController.animateTo(
-                          target,
+                          maxScroll,
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
                         );
