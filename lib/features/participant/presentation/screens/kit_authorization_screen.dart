@@ -4,6 +4,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
+import '../../../../shared/design_system/cards/app_card.dart';
 import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../../../shared/design_system/text_fields/app_text_field.dart';
 import '../../domain/entities/participant_detail.dart';
@@ -110,53 +111,7 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
       try {
         final repository = getIt<ParticipantRepository>();
 
-        // 1. Fetch participant documents and verify all are approved
-        final response = await repository.getParticipantDocuments(widget.participant.id);
-
-        if (response['success'] == true && response['archivos'] is Map) {
-          final archivos = Map<String, dynamic>.from(response['archivos'] as Map);
-          bool hasPending = false;
-
-          for (final key in archivos.keys) {
-            final doc = archivos[key] as Map? ?? {};
-            final String estado = doc['estado']?.toString() ?? 'SD';
-            if (estado != 'AP') {
-              hasPending = true;
-              break;
-            }
-          }
-
-          if (hasPending) {
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-              AppAlertDialog.show(
-                context: context,
-                type: AppDialogType.warning,
-                title: 'Autorización no Habilitada',
-                message: 'Estimado participante, no se encuentra habilitado para autorizar el retiro de su kit por parte de un tercero. Para proceder con esta solicitud, es requisito indispensable que toda la documentación requerida esté previamente verificada y aprobada por la organización.',
-                primaryButtonText: 'ACEPTAR',
-              );
-            }
-            return;
-          }
-        } else {
-          if (mounted) {
-            setState(() {
-              _isLoading = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No se pudo verificar la documentación. Inténtelo nuevamente.'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-          return;
-        }
-
-        // 2. Proceed with kit authorization
+        // Proceed with kit authorization
         final insId = int.tryParse(widget.participant.insId);
 
         await repository.authorizeKit(
@@ -220,246 +175,250 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
     final activeTenant = getIt<TenantManager>().value;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.black, Color(0xFF121212)],
+      backgroundColor: activeTenant.backgroundColorRef,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(
+          'Retirar Kit',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Custom AppBar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                      onPressed: () => context.pop(),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'RETIRAR KIT',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
+        centerTitle: true,
+      ),
+      body: Stack(
+        children: [
+          // Gradient Background
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  activeTenant.primaryColorRef.withValues(alpha: 0.15),
+                  activeTenant.secondaryColorRef.withValues(alpha: 0.05),
+                  Colors.black,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const Divider(color: Colors.white10, height: 1),
+            ),
+          ),
+          // Content
+          SafeArea(
+            child: Column(
+              children: [
+                const Divider(color: Colors.white10, height: 1),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'OPCIONES DE RETIRO',
+                            style: TextStyle(
+                              color: Colors.white60,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-              // Content
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Card 1: Yo retiro el kit
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _yoRetiro = !_yoRetiro;
-                              if (_yoRetiro) _envioAOtro = false;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              color: _yoRetiro
-                                  ? activeTenant.primaryColorRef.withValues(alpha: 0.05)
-                                  : Colors.white.withValues(alpha: 0.03),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
+                          // Card 1: Yo retiro el kit
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _yoRetiro = !_yoRetiro;
+                                if (_yoRetiro) _envioAOtro = false;
+                              });
+                            },
+                            child: AppCard(
+                              style: AppCardStyle.glassmorphic,
+                              padding: const EdgeInsets.all(16.0),
+                              customBorder: Border.all(
                                 color: _yoRetiro
                                     ? activeTenant.primaryColorRef
-                                    : Colors.white10,
+                                    : Colors.white.withValues(alpha: 0.12),
                                 width: _yoRetiro ? 1.5 : 1.0,
                               ),
-                            ),
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              children: [
-                                Checkbox(
-                                  value: _yoRetiro,
-                                  activeColor: activeTenant.primaryColorRef,
-                                  checkColor: Colors.white,
-                                  side: const BorderSide(color: Colors.white30, width: 1.5),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _yoRetiro = val ?? false;
-                                      if (_yoRetiro) _envioAOtro = false;
-                                    });
-                                  },
-                                ),
-                                const SizedBox(width: 12),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Te presentarás personalmente a retirar tu kit',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                              child: Row(
+                                children: [
+                                  Checkbox(
+                                    value: _yoRetiro,
+                                    activeColor: activeTenant.primaryColorRef,
+                                    checkColor: Colors.white,
+                                    side: const BorderSide(color: Colors.white30, width: 1.5),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _yoRetiro = val ?? false;
+                                        if (_yoRetiro) _envioAOtro = false;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Te presentás a retirar tu kit',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'Indica que te presentás personalmente a retirar tu kit en los centros habilitados.',
+                                          style: TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Card 2: ¿Envías a otra persona?
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _envioAOtro = !_envioAOtro;
+                                if (_envioAOtro) _yoRetiro = false;
+                              });
+                            },
+                            child: AppCard(
+                              style: AppCardStyle.glassmorphic,
+                              padding: const EdgeInsets.all(16.0),
+                              customBorder: Border.all(
+                                color: _envioAOtro
+                                    ? activeTenant.primaryColorRef
+                                    : Colors.white.withValues(alpha: 0.12),
+                                width: _envioAOtro ? 1.5 : 1.0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: _envioAOtro,
+                                        activeColor: activeTenant.primaryColorRef,
+                                        checkColor: Colors.white,
+                                        side: const BorderSide(color: Colors.white30, width: 1.5),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _envioAOtro = val ?? false;
+                                            if (_envioAOtro) _yoRetiro = false;
+                                          });
+                                        },
                                       ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Indica que te presentarás personalmente a retirar tu kit en los centros habilitados.',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 12,
+                                      const SizedBox(width: 12),
+                                      const Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Autorizá a un tercero a retirar tu kit',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              'Autorizá a un tercero a retirar el kit en tu nombre completando sus datos.',
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Card 2: ¿Envías a otra persona?
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _envioAOtro = !_envioAOtro;
-                              if (_envioAOtro) _yoRetiro = false;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            decoration: BoxDecoration(
-                              color: _envioAOtro
-                                  ? activeTenant.primaryColorRef.withValues(alpha: 0.05)
-                                  : Colors.white.withValues(alpha: 0.03),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: _envioAOtro
-                                    ? activeTenant.primaryColorRef
-                                    : Colors.white10,
-                                width: _envioAOtro ? 1.5 : 1.0,
-                              ),
-                            ),
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: _envioAOtro,
-                                      activeColor: activeTenant.primaryColorRef,
-                                      checkColor: Colors.white,
-                                      side: const BorderSide(color: Colors.white30, width: 1.5),
-                                      onChanged: (val) {
-                                        setState(() {
-                                          _envioAOtro = val ?? false;
-                                          if (_envioAOtro) _yoRetiro = false;
-                                        });
+                                  if (_envioAOtro) ...[
+                                    const SizedBox(height: 16),
+                                    const Divider(color: Colors.white10, height: 1),
+                                    const SizedBox(height: 16),
+                                    AppTextField(
+                                      label: 'DNI',
+                                      hint: 'Ingresa DNI del autorizado',
+                                      prefixIcon: Icons.badge_rounded,
+                                      controller: _dniController,
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'El DNI es obligatorio';
+                                        }
+                                        return null;
                                       },
                                     ),
-                                    const SizedBox(width: 12),
-                                    const Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Autoriza a un tercero a retirar tu kit',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            'Autoriza a un tercero a retirar el kit en tu nombre completando sus datos.',
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    const SizedBox(height: 16),
+                                    AppTextField(
+                                      label: 'Nombre y Apellido',
+                                      hint: 'Ingresa nombre y apellido del autorizado',
+                                      prefixIcon: Icons.person_rounded,
+                                      controller: _nameController,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) {
+                                          return 'El nombre y apellido son obligatorios';
+                                        }
+                                        return null;
+                                      },
                                     ),
                                   ],
-                                ),
-                                if (_envioAOtro) ...[
-                                  const SizedBox(height: 16),
-                                  const Divider(color: Colors.white10, height: 1),
-                                  const SizedBox(height: 16),
-                                  AppTextField(
-                                    label: 'DNI',
-                                    hint: 'Ingresa DNI del autorizado',
-                                    prefixIcon: Icons.badge_rounded,
-                                    controller: _dniController,
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) {
-                                      if (value == null || value.trim().isEmpty) {
-                                        return 'El DNI es obligatorio';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
-                                  AppTextField(
-                                    label: 'Nombre y Apellido',
-                                    hint: 'Ingresa nombre y apellido del autorizado',
-                                    prefixIcon: Icons.person_rounded,
-                                    controller: _nameController,
-                                    validator: (value) {
-                                      if (value == null || value.trim().isEmpty) {
-                                        return 'El nombre y apellido son obligatorios';
-                                      }
-                                      return null;
-                                    },
-                                  ),
                                 ],
-                              ],
+                              ),
                             ),
                           ),
-                        ),
 
-                        const SizedBox(height: 40),
+                          const SizedBox(height: 40),
 
-                        // Action Buttons based on selection
-                        if (_yoRetiro)
-                          AppButton(
-                            text: 'ACEPTAR',
-                            icon: Icons.check_circle_outline_rounded,
-                            textColor: Colors.white,
-                            isLoading: _isLoading,
-                            onPressed: _isLoading ? null : _onSaveYoRetiro,
-                          )
-                        else if (_envioAOtro)
-                          AppButton(
-                            text: 'AUTORIZAR',
-                            icon: Icons.check_circle_outline_rounded,
-                            textColor: Colors.white,
-                            isLoading: _isLoading,
-                            onPressed: _isLoading ? null : _onAuthorize,
-                          ),
-                      ],
+                          // Action Buttons based on selection
+                          if (_yoRetiro)
+                            AppButton(
+                              text: 'ACEPTAR',
+                              icon: Icons.check_circle_outline_rounded,
+                              textColor: Colors.white,
+                              isLoading: _isLoading,
+                              onPressed: _isLoading ? null : _onSaveYoRetiro,
+                            )
+                          else if (_envioAOtro)
+                            AppButton(
+                              text: 'AUTORIZAR',
+                              icon: Icons.check_circle_outline_rounded,
+                              textColor: Colors.white,
+                              isLoading: _isLoading,
+                              onPressed: _isLoading ? null : _onAuthorize,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

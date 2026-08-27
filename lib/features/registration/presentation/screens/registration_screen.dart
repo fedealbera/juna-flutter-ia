@@ -134,6 +134,13 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         setState(() {
           _checkingCache = false;
         });
+        if (_tabController.index == 1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _dniFocusNode.requestFocus();
+            }
+          });
+        }
       }
     }
   }
@@ -232,6 +239,13 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         } else {
           _refreshParticipantIfLinked();
         }
+      }
+      if (_linkedParticipant == null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _dniFocusNode.requestFocus();
+          }
+        });
       }
     }
     _previousTabIndex = _tabController.index;
