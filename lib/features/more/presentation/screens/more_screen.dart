@@ -21,16 +21,47 @@ class MoreScreen extends StatefulWidget {
   State<MoreScreen> createState() => _MoreScreenState();
 }
 
-class _MoreScreenState extends State<MoreScreen> {
+class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
   final TenantManager _tenantManager = getIt<TenantManager>();
   late final AboutBloc _aboutBloc;
   EventSettings? _settings;
+
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollIndicator = true;
+  late final AnimationController _bounceController;
+  late final Animation<double> _bounceAnimation;
 
   @override
   void initState() {
     super.initState();
     _aboutBloc = getIt<AboutBloc>();
     _settings = getIt<SettingsRepository>().getCachedSettings();
+
+    _scrollController.addListener(() {
+      if (_scrollController.hasClients) {
+        if (_scrollController.offset > 30 && _showScrollIndicator) {
+          setState(() {
+            _showScrollIndicator = false;
+          });
+        } else if (_scrollController.offset <= 30 && !_showScrollIndicator) {
+          setState(() {
+            _showScrollIndicator = true;
+          });
+        }
+      }
+    });
+
+    _bounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+
+    _bounceAnimation = Tween<double>(begin: 0.0, end: 6.0).animate(
+      CurvedAnimation(
+        parent: _bounceController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _loadData();
     _tenantManager.addListener(_onTenantChanged);
@@ -50,6 +81,8 @@ class _MoreScreenState extends State<MoreScreen> {
   @override
   void dispose() {
     _tenantManager.removeListener(_onTenantChanged);
+    _scrollController.dispose();
+    _bounceController.dispose();
     super.dispose();
   }
 
@@ -81,396 +114,477 @@ class _MoreScreenState extends State<MoreScreen> {
       value: _aboutBloc,
       child: Scaffold(
         backgroundColor: activeTenant.backgroundColorRef,
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 2. Contact form section redesigned matching screenshot
-              const Text(
-                'Estamos para ayudarte',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Escribinos por el canal que prefieras y te respondemos lo antes posible.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              const SizedBox(height: 16),
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              controller: _scrollController,
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 80.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 2. Contact form section redesigned matching screenshot
+                  const Text(
+                    'Estamos para ayudarte',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Escribinos por el canal que prefieras y te respondemos lo antes posible.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
-              // WhatsApp Support Card
-              _buildContactCard(
-                title: 'Escribinos por WhatsApp',
-                subtitle:
-                    _settings?.isEnabledWhatsapp == true
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
+                  // WhatsApp Support Card
+                  _buildContactCard(
+                    title: 'Escribinos por WhatsApp',
+                    subtitle:
+                        _settings?.isEnabledWhatsapp == true
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    'WhatsApp: ',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.4),
-                                      fontSize: 13,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'WhatsApp: ',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.4),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          _formatWhatsappPhone(_settings?.whatsappPhone ?? ""),
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.8),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Expanded(
-                                    child: Text(
-                                      _formatWhatsappPhone(_settings?.whatsappPhone ?? ""),
+                                  if (_settings?.contactoMensajeWhatsapp.isNotEmpty == true) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _settings!.contactoMensajeWhatsapp,
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.8),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white.withValues(alpha: 0.4),
+                                        fontSize: 11,
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ],
-                              ),
-                              if (_settings?.contactoMensajeWhatsapp.isNotEmpty == true) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  _settings!.contactoMensajeWhatsapp,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.4),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          )
-                        : const Text(
-                          'Canal no Habilitado',
-                          style: TextStyle(color: Colors.white24, fontSize: 13),
-                        ),
-                icon: Icons.chat_bubble_outline_rounded,
-                badgeColor: const Color(0xFF25D366),
-                isEnabled: _settings?.isEnabledWhatsapp == true,
-                onTap:
-                    _settings?.isEnabledWhatsapp == true
-                        ? () {
-                          final phone = _settings?.whatsappPhone ?? '';
-                          final msg = _settings?.contactoMensajeWhatsapp ?? '';
-                          final url =
-                              'https://wa.me/$phone?text=${Uri.encodeComponent(msg)}';
-                          _launchURL(url);
-                        }
-                        : null,
-              ),
-              const SizedBox(height: 12),
+                              )
+                            : const Text(
+                              'Canal no Habilitado',
+                              style: TextStyle(color: Colors.white24, fontSize: 13),
+                            ),
+                    icon: Icons.chat_bubble_outline_rounded,
+                    badgeColor: const Color(0xFF25D366),
+                    isEnabled: _settings?.isEnabledWhatsapp == true,
+                    onTap:
+                        _settings?.isEnabledWhatsapp == true
+                            ? () {
+                              final phone = _settings?.whatsappPhone ?? '';
+                              final msg = _settings?.contactoMensajeWhatsapp ?? '';
+                              final url =
+                                  'https://wa.me/$phone?text=${Uri.encodeComponent(msg)}';
+                              _launchURL(url);
+                            }
+                            : null,
+                  ),
+                  const SizedBox(height: 12),
 
-              // Email Support Card
-              _buildContactCard(
-                title: 'Escribir por mail',
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
+                  // Email Support Card
+                  _buildContactCard(
+                    title: 'Escribir por mail',
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Correo: ',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: 13,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                _settings?.emailConsulta ?? '',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
                         Text(
-                          'Correo: ',
+                          'Te responderemos en un plazo máximo de 48 hs.',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.4),
-                            fontSize: 13,
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            _settings?.emailConsulta ?? '',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                            fontSize: 11,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Te responderemos en un plazo máximo de 48 hs.',
+                    icon: Icons.mail_outline_rounded,
+                    badgeColor: const Color(0xFF2196F3),
+                    isEnabled: true,
+                    onTap: () {
+                      final email = _settings?.emailConsulta ?? '';
+                      _launchURL('mailto:$email');
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Info Importante Card
+                  _buildContactCard(
+                    title: 'Info Importante',
+                    subtitle: Text(
+                      'Cronogramas, Reglamentos y más',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
-                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
-                  ],
-                ),
-                icon: Icons.mail_outline_rounded,
-                badgeColor: const Color(0xFF2196F3),
-                isEnabled: true,
-                onTap: () {
-                  final email = _settings?.emailConsulta ?? '';
-                  _launchURL('mailto:$email');
-                },
-              ),
-              const SizedBox(height: 12),
-
-              // Info Importante Card
-              _buildContactCard(
-                title: 'Info Importante',
-                subtitle: Text(
-                  'Cronogramas, Reglamentos y más',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
+                    icon: Icons.info_outline_rounded,
+                    badgeColor: const Color(0xFF9C27B0), // Purple
+                    isEnabled: true,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ContentListScreen(
+                            title: 'Info Importante',
+                            tipoContenido: 3,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ),
-                icon: Icons.info_outline_rounded,
-                badgeColor: const Color(0xFF9C27B0), // Purple
-                isEnabled: true,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ContentListScreen(
-                        title: 'Info Importante',
-                        tipoContenido: 3,
-                      ),
+                  const SizedBox(height: 24),
+
+                  // 3. Social actions (Share) redesigned matching screenshot
+                  Text(
+                    'GENERAL',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // 3. Social actions (Share) redesigned matching screenshot
-              Text(
-                'GENERAL',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildContactCard(
-                title: 'Compartir la App',
-                subtitle: Text(
-                  _settings?.appTitle.isNotEmpty == true
-                      ? _settings!.appTitle
-                      : activeTenant.name,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
                   ),
-                ),
-                icon: Icons.share_rounded,
-                badgeColor: const Color(0xFF9C27B0), // Purple share badge color
-                isEnabled: true,
-                onTap: () {
-                  final appTitle =
+                  const SizedBox(height: 12),
+                  _buildContactCard(
+                    title: 'Compartir la App',
+                    subtitle: Text(
                       _settings?.appTitle.isNotEmpty == true
                           ? _settings!.appTitle
-                          : activeTenant.name;
+                          : activeTenant.name,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    icon: Icons.share_rounded,
+                    badgeColor: const Color(0xFF9C27B0), // Purple share badge color
+                    isEnabled: true,
+                    onTap: () {
+                      final appTitle =
+                          _settings?.appTitle.isNotEmpty == true
+                              ? _settings!.appTitle
+                              : activeTenant.name;
 
-                  final String shareText;
-                  final stores = _settings?.urlStoresMap ?? const {};
-                  if (stores.isNotEmpty) {
-                    final iosLink = stores['IOS']?.toString() ?? '';
-                    final androidLink = stores['ANDROID']?.toString() ?? '';
-                    final buffer = StringBuffer();
-                    buffer.writeln('Descargar la APP de $appTitle');
-                    buffer.writeln(); // Enter
-                    buffer.writeln('iOS: $iosLink');
-                    buffer.write('Android: $androidLink');
-                    shareText = buffer.toString();
-                  } else {
-                    final rawStores = _settings?.urlStores ?? '';
-                    shareText = 'Descargar la APP de $appTitle\n\n$rawStores';
-                  }
+                      final String shareText;
+                      final stores = _settings?.urlStoresMap ?? const {};
+                      if (stores.isNotEmpty) {
+                        final iosLink = stores['IOS']?.toString() ?? '';
+                        final androidLink = stores['ANDROID']?.toString() ?? '';
+                        final buffer = StringBuffer();
+                        buffer.writeln('Descargar la APP de $appTitle');
+                        buffer.writeln(); // Enter
+                        buffer.writeln('iOS: $iosLink');
+                        buffer.write('Android: $androidLink');
+                        shareText = buffer.toString();
+                      } else {
+                        final rawStores = _settings?.urlStores ?? '';
+                        shareText = 'Descargar la APP de $appTitle\n\n$rawStores';
+                      }
 
-                  final box = context.findRenderObject() as RenderBox?;
-                  final rect =
-                      box != null
-                          ? box.localToGlobal(Offset.zero) & box.size
-                          : null;
-                  SharePlus.instance.share(
-                    ShareParams(text: shareText, sharePositionOrigin: rect),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
+                      final box = context.findRenderObject() as RenderBox?;
+                      final rect =
+                          box != null
+                              ? box.localToGlobal(Offset.zero) & box.size
+                              : null;
+                      SharePlus.instance.share(
+                        ShareParams(text: shareText, sharePositionOrigin: rect),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
 
-              // 4. Platform Specifications (using AboutBloc)
-              Text(
-                'ACERCA DE',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 12),
-              BlocBuilder<AboutBloc, AboutState>(
-                builder: (context, state) {
-                  return state.maybeWhen(
-                    loading:
-                        () => const Center(
-                          child: CircularProgressIndicator.adaptive(),
-                        ),
-                    loaded: (info) {
-                      final fullVersion = info.buildNumber.isNotEmpty
-                          ? '${info.appVersion}+${info.buildNumber}'
-                          : info.appVersion;
-                      final typeVersion = _settings?.typeVersion ?? '';
-                      final versionDisplay =
-                          typeVersion.isNotEmpty
-                              ? '$fullVersion ($typeVersion)'
-                              : fullVersion;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          AppCard(
-                            style: AppCardStyle.glassmorphic,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 24,
-                              horizontal: 20,
+                  // 4. Platform Specifications (using AboutBloc)
+                  Text(
+                    'ACERCA DE',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  BlocBuilder<AboutBloc, AboutState>(
+                    builder: (context, state) {
+                      return state.maybeWhen(
+                        loading:
+                            () => const Center(
+                              child: CircularProgressIndicator.adaptive(),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const SizedBox(height: 5),
+                        loaded: (info) {
+                          final fullVersion = info.buildNumber.isNotEmpty
+                              ? '${info.appVersion}+${info.buildNumber}'
+                              : info.appVersion;
+                          final typeVersion = _settings?.typeVersion ?? '';
+                          final versionDisplay =
+                              typeVersion.isNotEmpty
+                                  ? '$fullVersion ($typeVersion)'
+                                  : fullVersion;
 
-                                // 1) PNG image adapted so it doesn't expand too much
-                                Image.asset(
-                                  'assets/images/juna_app_logo.png',
-                                  height: 80,
-                                  fit: BoxFit.contain,
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              AppCard(
+                                style: AppCardStyle.glassmorphic,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 24,
+                                  horizontal: 20,
                                 ),
-                                const SizedBox(height: 16),
-
-                                // 2) App description text
-                                Text(
-                                  'App de alto rendimiento Android & iOS',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-
-                                // 3) Email address
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
+                                    const SizedBox(height: 5),
+
+                                    // 1) PNG image adapted so it doesn't expand too much
+                                    Image.asset(
+                                      'assets/images/juna_app_logo.png',
+                                      height: 80,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    // 2) App description text
                                     Text(
-                                      'Email: ',
+                                      'App de alto rendimiento Android & iOS',
                                       style: TextStyle(
                                         color: Colors.white.withValues(alpha: 0.6),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w400,
                                       ),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    GestureDetector(
-                                      onTap:
-                                          () => _launchURL(
-                                            'mailto:churomobile@gmail.com',
+                                    const SizedBox(height: 8),
+
+                                    // 3) Email address
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Email: ',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.6),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
                                           ),
-                                      child: Text(
-                                        'churomobile@gmail.com',
-                                        style: TextStyle(
-                                          color: activeTenant.primaryColorRef,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                          decoration: TextDecoration.underline,
                                         ),
-                                      ),
+                                        GestureDetector(
+                                          onTap:
+                                              () => _launchURL(
+                                                'mailto:churomobile@gmail.com',
+                                              ),
+                                          child: Text(
+                                            'churomobile@gmail.com',
+                                            style: TextStyle(
+                                              color: activeTenant.primaryColorRef,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              decoration: TextDecoration.underline,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // 4) Actualizar la App Button using AppButton design system style
+                                    AppButton(
+                                      text: 'Actualizar la App',
+                                      icon: Icons.file_download_rounded,
+                                      textColor: Colors.white,
+                                      type: AppButtonType.primary,
+                                      onPressed: () {
+                                        final stores =
+                                            _settings?.urlStoresMap ?? const {};
+                                        final iosLink = stores['IOS']?.toString() ?? '';
+                                        final androidLink =
+                                            stores['ANDROID']?.toString() ?? '';
+
+                                        final platform = Theme.of(context).platform;
+                                        if (platform == TargetPlatform.iOS) {
+                                          if (iosLink.isNotEmpty) {
+                                            _launchURL(iosLink);
+                                          }
+                                        } else if (platform == TargetPlatform.android) {
+                                          if (androidLink.isNotEmpty) {
+                                            _launchURL(androidLink);
+                                          }
+                                        } else {
+                                          // Fallback for other environments
+                                          if (androidLink.isNotEmpty) {
+                                            _launchURL(androidLink);
+                                          } else if (iosLink.isNotEmpty) {
+                                            _launchURL(iosLink);
+                                          }
+                                        }
+                                      },
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 20),
-
-                                // 4) Actualizar la App Button using AppButton design system style
-                                AppButton(
-                                  text: 'Actualizar la App',
-                                  icon: Icons.file_download_rounded,
-                                  textColor: Colors.white,
-                                  type: AppButtonType.primary,
-                                  onPressed: () {
-                                    final stores =
-                                        _settings?.urlStoresMap ?? const {};
-                                    final iosLink = stores['IOS']?.toString() ?? '';
-                                    final androidLink =
-                                        stores['ANDROID']?.toString() ?? '';
-
-                                    final platform = Theme.of(context).platform;
-                                    if (platform == TargetPlatform.iOS) {
-                                      if (iosLink.isNotEmpty) {
-                                        _launchURL(iosLink);
-                                      }
-                                    } else if (platform == TargetPlatform.android) {
-                                      if (androidLink.isNotEmpty) {
-                                        _launchURL(androidLink);
-                                      }
-                                    } else {
-                                      // Fallback for other environments
-                                      if (androidLink.isNotEmpty) {
-                                        _launchURL(androidLink);
-                                      } else if (iosLink.isNotEmpty) {
-                                        _launchURL(iosLink);
-                                      }
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Conditional "Cerrar App" Button for Android only (Compliance with iOS)
-                          if (Theme.of(context).platform == TargetPlatform.android) ...[
-                            AppButton(
-                              text: 'Cerrar App',
-                              icon: Icons.logout_rounded,
-                              onPressed: () {
-                                SystemNavigator.pop();
-                              },
-                              type: AppButtonType.outlined,
-                            ),
-                            const SizedBox(height: 24),
-                          ],
-
-                          // Footer Version Text
-                          Center(
-                            child: Text(
-                              'Versión $versionDisplay',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.35),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
+                              const SizedBox(height: 24),
+
+                              // Conditional "Cerrar App" Button for Android only (Compliance with iOS)
+                              if (Theme.of(context).platform == TargetPlatform.android) ...[
+                                AppButton(
+                                  text: 'Cerrar App',
+                                  icon: Icons.logout_rounded,
+                                  onPressed: () {
+                                    SystemNavigator.pop();
+                                  },
+                                  type: AppButtonType.outlined,
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+
+                              // Footer Version Text
+                              Center(
+                                child: Text(
+                                  'Versión $versionDisplay',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.35),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          );
+                        },
+                        orElse: () => const SizedBox.shrink(),
                       );
                     },
-                    orElse: () => const SizedBox.shrink(),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ),
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                ignoring: !_showScrollIndicator,
+                child: AnimatedOpacity(
+                  opacity: _showScrollIndicator ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (_scrollController.hasClients) {
+                          final maxScroll = _scrollController.position.maxScrollExtent;
+                          _scrollController.animateTo(
+                            maxScroll,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: activeTenant.accentColorRef.withValues(alpha: 0.5),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: activeTenant.accentColorRef.withValues(alpha: 0.25),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'DESLIZA PARA VER MÁS',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            AnimatedBuilder(
+                              animation: _bounceAnimation,
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset: Offset(0.0, _bounceAnimation.value),
+                                  child: child,
+                                );
+                              },
+                              child: Icon(
+                                Icons.keyboard_double_arrow_down_rounded,
+                                color: activeTenant.accentColorRef,
+                                size: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
