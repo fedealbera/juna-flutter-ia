@@ -29,6 +29,16 @@ abstract class CatalogApiService {
     @Query('tipo_carrera') String? tipoCarrera,
   );
 
+  @GET('/api/grupos-entrenamiento/{tipoCarrera}')
+  Future<dynamic> getGruposEntrenamiento(
+    @Path('tipoCarrera') String tipoCarrera,
+  );
+
+  @POST('/api/grupos-entrenamiento')
+  Future<dynamic> createGrupoEntrenamiento(
+    @Body() Map<String, dynamic> body,
+  );
+
   @GET('/api/test')
   Future<dynamic> checkServerStatus();
 }

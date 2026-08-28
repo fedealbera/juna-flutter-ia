@@ -47,12 +47,14 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
   List<SizeEntity> _sizes = [];
   List<Map<String, dynamic>> _accreditationCenters = [];
   List<Map<String, dynamic>> _brands = [];
+  List<Map<String, dynamic>> _trainingGroups = [];
 
   String? _selectedCircuitId;
   String? _selectedCategoryId;
   String? _selectedSizeId;
   String? _selectedCacreId;
   String? _selectedMarcbId;
+  String? _selectedTrainingGroup;
 
   bool _loadingCatalogs = false;
   bool _loadingCategories = false;
@@ -71,6 +73,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
 
     _selectedCacreId = p.cacreId.isNotEmpty ? p.cacreId : null;
     _selectedMarcbId = p.marcbId.isNotEmpty ? p.marcbId : null;
+    _selectedTrainingGroup = p.grupoEntrenamiento.isNotEmpty ? p.grupoEntrenamiento : null;
 
     final showRegistrationModifications = p.nroPlaca == '0' || p.nroPlaca.isEmpty;
     if (showRegistrationModifications) {
@@ -132,11 +135,29 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       final tipoCarrera = widget.participant.tipoCarrera;
       final brandsFuture = remoteDataSource.getMarcas(tipoCarrera.isNotEmpty ? tipoCarrera : null);
 
-      final results = await Future.wait([centersFuture, brandsFuture]);
+      final tenantId = _tenantManager.value.tenantId;
+      final queryTipoCarrera = tenantId == 2 ? 'RUNNING' : 'BICICLETA';
+      final trainingGroupsFuture = remoteDataSource.getGruposEntrenamiento(queryTipoCarrera);
+
+      final results = await Future.wait([centersFuture, brandsFuture, trainingGroupsFuture]);
       _accreditationCenters = results[0];
       _brands = results[1];
+      _trainingGroups = List<Map<String, dynamic>>.from(results[2] as List);
 
-      debugPrint('Loaded ${_accreditationCenters.length} centers and ${_brands.length} brands.');
+      if (_selectedTrainingGroup != null && _selectedTrainingGroup!.isNotEmpty) {
+        final hasSelected = _trainingGroups.any(
+          (g) => g['gent_nombre']?.toString().trim().toLowerCase() == _selectedTrainingGroup!.trim().toLowerCase()
+        );
+        if (!hasSelected) {
+          _trainingGroups.insert(0, {
+            'gent_id': -1,
+            'gent_nombre': _selectedTrainingGroup,
+            'tipo_carrera': queryTipoCarrera,
+          });
+        }
+      }
+
+      debugPrint('Loaded ${_accreditationCenters.length} centers, ${_brands.length} brands, and ${_trainingGroups.length} training groups.');
     } catch (e) {
       debugPrint('Error loading additional catalogs: $e');
     } finally {
@@ -222,7 +243,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
     super.dispose();
   }
 
-  void _onSave() {
+  void _onSave() async {
     debugPrint('EditParticipantScreen: _onSave button clicked!');
     setState(() {
       _isLoading = true;
@@ -237,6 +258,50 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       orElse: () => <String, dynamic>{},
     );
     final marcbLabel = selectedBrand['marca_nombre']?.toString();
+
+    String? finalTrainingGroupName = _selectedTrainingGroup;
+
+    if (_selectedTrainingGroup == '__other__') {
+      final customName = _trainingGroupController.text.trim();
+      if (customName.isEmpty) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor, ingresa el nombre de tu grupo de entrenamiento.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      try {
+        final tenantId = _tenantManager.value.tenantId;
+        final queryTipoCarrera = tenantId == 2 ? 'RUNNING' : 'BICICLETA';
+        
+        final result = await getIt<CatalogRemoteDataSource>().createGrupoEntrenamiento(
+          customName,
+          queryTipoCarrera,
+        );
+
+        finalTrainingGroupName = result['gent_nombre']?.toString() ?? customName;
+      } catch (e) {
+        debugPrint('Error creating training group during save: $e');
+        setState(() {
+          _isLoading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al registrar grupo de entrenamiento: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+    }
 
     _participantBloc.add(ParticipantEvent.updateParticipant(
       partiId: p.id,
@@ -256,11 +321,9 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       cacreId: widget.participant.tipoCarrera == 'BICICLETA' ? null : _selectedCacreId,
       marcbId: _selectedMarcbId,
       marcbLabel: marcbLabel,
-      grupoEntrenamiento: widget.participant.tipoCarrera == 'BICICLETA' 
-          ? null 
-          : (_trainingGroupController.text.trim().isNotEmpty
-              ? _trainingGroupController.text.trim()
-              : null),
+      grupoEntrenamiento: finalTrainingGroupName != null && finalTrainingGroupName.trim().isNotEmpty
+          ? finalTrainingGroupName.trim()
+          : null,
     ));
   }
 
@@ -569,10 +632,54 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
                                               },
                                             ),
                                             const SizedBox(height: 16),
+                                          ],
+                                          _buildDropdownField(
+                                            label: 'Grupo de Entrenamiento',
+                                            hint: 'Selecciona grupo de entrenamiento',
+                                            value: (_selectedTrainingGroup == '__other__' || _trainingGroups.any((g) => g['gent_nombre']?.toString() == _selectedTrainingGroup))
+                                                ? _selectedTrainingGroup 
+                                                : null,
+                                            prefixIcon: Icons.groups_outlined,
+                                            items: [
+                                              ..._trainingGroups.map((g) {
+                                                return DropdownMenuItem<String>(
+                                                  value: g['gent_nombre']?.toString(),
+                                                  child: Text(
+                                                    g['gent_nombre']?.toString() ?? '',
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                );
+                                              }),
+                                              DropdownMenuItem<String>(
+                                                value: '__other__',
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.add_circle_outline_rounded, color: primaryColor),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      'OTRO',
+                                                      style: TextStyle(color: primaryColor),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                            onChanged: (val) {
+                                              setState(() {
+                                                _selectedTrainingGroup = val;
+                                                if (val == '__other__') {
+                                                  _trainingGroupController.clear();
+                                                }
+                                              });
+                                            },
+                                          ),
+                                          const SizedBox(height: 16),
+                                          if (_selectedTrainingGroup == '__other__') ...[
                                             AppTextField(
-                                              label: 'Grupo de Entrenamiento',
-                                              hint: 'Ingresa grupo de entrenamiento',
-                                              prefixIcon: Icons.groups_outlined,
+                                              label: 'Nombre del Grupo de Entrenamiento',
+                                              hint: 'Ingresa nombre de tu grupo',
+                                              prefixIcon: Icons.edit_outlined,
                                               controller: _trainingGroupController,
                                             ),
                                             const SizedBox(height: 16),
@@ -673,6 +780,7 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
       ],
     );
   }
+
 
   Widget _buildDropdownField({
     required String label,

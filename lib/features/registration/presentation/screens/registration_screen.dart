@@ -1054,13 +1054,15 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             'Largada:',
             detail.largada.isNotEmpty ? detail.largada : 'No especificado',
           ),
-          if (activeTenant.tenantId == 2) ...[
+          if (activeTenant.tenantId == 2 || activeTenant.tenantId == 1) ...[
             _buildInfoColumn(
               'Grupo de Entrenamiento:',
               detail.grupoEntrenamiento.isNotEmpty
                   ? detail.grupoEntrenamiento
                   : 'No especificado',
             ),
+          ],
+          if (activeTenant.tenantId == 2) ...[
             _buildInfoColumn(
               'Centro de Acreditación:',
               detail.centroAcreditacion.isNotEmpty

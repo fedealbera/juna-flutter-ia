@@ -10,6 +10,8 @@ abstract class CatalogRemoteDataSource {
   Future<List<TalleResponseDto>> getTalles();
   Future<List<Map<String, dynamic>>> getCentrosAcreditacion();
   Future<List<Map<String, dynamic>>> getMarcas(String? tipoCarrera);
+  Future<List<Map<String, dynamic>>> getGruposEntrenamiento(String tipoCarrera);
+  Future<Map<String, dynamic>> createGrupoEntrenamiento(String nombre, String tipoCarrera);
 }
 
 @LazySingleton(as: CatalogRemoteDataSource)
@@ -59,5 +61,31 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
           .toList();
     }
     return [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getGruposEntrenamiento(String tipoCarrera) async {
+    final response = await _apiService.getGruposEntrenamiento(tipoCarrera);
+    if (response is Map && response['grupos_entrenamiento'] is List) {
+      return (response['grupos_entrenamiento'] as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+    }
+    return [];
+  }
+
+  @override
+  Future<Map<String, dynamic>> createGrupoEntrenamiento(String nombre, String tipoCarrera) async {
+    final response = await _apiService.createGrupoEntrenamiento({
+      'nombre': nombre,
+      'tipo_carrera': tipoCarrera,
+    });
+    if (response is Map) {
+      if (response['grupo'] is Map) {
+        return Map<String, dynamic>.from(response['grupo'] as Map);
+      }
+      return Map<String, dynamic>.from(response);
+    }
+    return {};
   }
 }
