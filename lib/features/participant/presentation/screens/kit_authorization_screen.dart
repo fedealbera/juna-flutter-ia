@@ -134,12 +134,12 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
           await AppAlertDialog.show(
             context: context,
             type: AppDialogType.info,
-            title: 'Recordatorio',
-            message: 'Recordá que, para poder entregar el kit, es indispensable que presente toda la documentación obligatoria.',
+            title: 'Importante',
+            message: 'Para retirar el kit debe presentarse toda la documentación obligatoria.',
             primaryButtonText: 'Aceptar',
-            customIcon: Icons.assignment_late_rounded,
             customAccentColor: Colors.amber,
             primaryButtonColor: Colors.amber,
+            barrierDismissible: false,
           );
           if (mounted) {
             context.pop(true);
@@ -267,26 +267,13 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   const Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Te presentás a retirar tu kit',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          'Indica que te presentás personalmente a retirar tu kit en los centros habilitados.',
-                                          style: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
+                                    child: Text(
+                                      'Te presentás a retirar tu kit',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -331,26 +318,13 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
                                       ),
                                       const SizedBox(width: 12),
                                       const Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Autorizá a un tercero a retirar tu kit',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Text(
-                                              'Autorizá a un tercero a retirar el kit en tu nombre completando sus datos.',
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
+                                        child: Text(
+                                          'Autorizá a un tercero a retirar tu kit',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ],

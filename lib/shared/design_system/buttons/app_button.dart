@@ -9,6 +9,7 @@ class AppButton extends StatefulWidget {
   final IconData? icon;
   final bool isLoading;
   final double? width;
+  final double? height;
   final Color? color;
   final Color? textColor;
   final Color? borderColor;
@@ -21,6 +22,7 @@ class AppButton extends StatefulWidget {
     this.icon,
     this.isLoading = false,
     this.width,
+    this.height,
     this.color,
     this.textColor,
     this.borderColor,
@@ -77,7 +79,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
           scale: _scaleAnimation,
           child: SizedBox(
             width: widget.width ?? double.infinity,
-            height: 52,
+            height: widget.height ?? 52,
             child: _buildButtonBody(theme),
           ),
         ),
@@ -87,11 +89,12 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
 
   Widget _buildButtonBody(ThemeData theme) {
     final hasIcon = widget.icon != null;
+    final isCompact = widget.height != null && widget.height! < 45;
     final child = widget.isLoading
-        ? const SizedBox(
-            height: 20,
-            width: 20,
-            child: CircularProgressIndicator(
+        ? SizedBox(
+            height: isCompact ? 16 : 20,
+            width: isCompact ? 16 : 20,
+            child: const CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
@@ -100,14 +103,14 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (hasIcon) ...[
-                Icon(widget.icon, size: 20, color: _getTextColor(theme)),
-                const SizedBox(width: 8),
+                Icon(widget.icon, size: isCompact ? 18 : 20, color: _getTextColor(theme)),
+                SizedBox(width: isCompact ? 6 : 8),
               ],
               Text(
                 widget.text,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: isCompact ? 14 : 16,
                   color: _getTextColor(theme),
                 ),
               ),

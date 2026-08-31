@@ -1397,7 +1397,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                     child: Icon(
                       item.icon,
-                      color: isHighlighted ? Colors.white : activeTenant.accentColorRef,
+                      color: activeTenant.tenantName == '21kLG'
+                          ? Colors.white
+                          : (isHighlighted ? Colors.white : activeTenant.accentColorRef),
                       size: 20,
                     ),
                   ),
@@ -1471,7 +1473,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             value,
             style: TextStyle(
               color: tenant.tenantName == '21kLG'
-                  ? tenant.secondaryColorRef
+                  ? Colors.white
                   : tenant.accentColorRef,
               fontSize: 26,
               fontWeight: FontWeight.w900,
@@ -1515,98 +1517,74 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         tipoCarrera.toUpperCase().contains('AVENTURA') ||
         tipoCarrera.toUpperCase().contains('DESAFÍO');
 
-    return AppCard(
-      style: AppCardStyle.glassmorphic,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.wb_sunny_outlined,
-                color: activeTenant.accentColorRef,
-                size: 22,
-              ),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Clima & Equipamiento',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.wb_sunny_outlined,
+              color: activeTenant.accentColorRef,
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Clima & Equipamiento',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_isLoadingWeather)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.0),
-                child: CircularProgressIndicator.adaptive(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_isLoadingWeather)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.0),
+              child: CircularProgressIndicator.adaptive(),
+            ),
+          )
+        else if (_weatherTempBase == null)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.0),
+              child: Text(
+                'No se pudo cargar la información del clima.',
+                style: TextStyle(color: Colors.white60, fontSize: 13),
               ),
-            )
-          else if (_weatherTempBase == null)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.0),
-                child: Text(
-                  'No se pudo cargar la información del clima.',
-                  style: TextStyle(color: Colors.white60, fontSize: 13),
-                ),
-              ),
-            )
-          else ...[
-            Builder(
-              builder: (context) {
-                final baseTemp = _weatherTempBase ?? 0.0;
-                final baseWind = _weatherWindBase ?? 0.0;
-                
-                final baseInfo = _getWeatherInfo(_weatherCodeBase);
-                
-                final summitTemp = baseTemp - 10.0;
-                final summitWind = baseWind * 2.5;
-                final summitInfo = summitWind > 30 
-                    ? {
-                        'desc': 'Viento Fuerte',
-                        'icon': Icons.air_rounded,
-                        'color': Colors.lightBlueAccent,
-                      }
-                    : baseInfo;
-                
-                final arrivalTemp = baseTemp + 1.0;
-                final arrivalInfo = baseInfo;
+            ),
+          )
+        else ...[
+          Builder(
+            builder: (context) {
+              final baseTemp = _weatherTempBase ?? 0.0;
+              final baseWind = _weatherWindBase ?? 0.0;
+              
+              final baseInfo = _getWeatherInfo(_weatherCodeBase);
+              
+              final summitTemp = baseTemp - 10.0;
+              final summitWind = baseWind * 2.5;
+              final summitInfo = summitWind > 30 
+                  ? {
+                      'desc': 'Viento Fuerte',
+                      'icon': Icons.air_rounded,
+                      'color': Colors.lightBlueAccent,
+                    }
+                  : baseInfo;
+              
+              final arrivalTemp = baseTemp + 1.0;
+              final arrivalInfo = baseInfo;
 
-                if (!isMountainRace) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildWeatherMetricItem(
-                        title: 'TEMPERATURA',
-                        temp: '${baseTemp.toStringAsFixed(1)}°C',
-                        desc: baseInfo['desc'] as String,
-                        icon: baseInfo['icon'] as IconData,
-                        iconColor: baseInfo['color'] as Color,
-                      ),
-                      _buildWeatherMetricDivider(),
-                      _buildWeatherMetricItem(
-                        title: 'VIENTO',
-                        temp: '${baseWind.toStringAsFixed(1)} km/h',
-                        desc: _getWindDescription(baseWind),
-                        icon: Icons.air_rounded,
-                        iconColor: Colors.blueGrey.shade300,
-                      ),
-                    ],
-                  );
-                }
-
+              if (!isMountainRace) {
                 return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildWeatherMetricItem(
-                      title: 'BASE (LARGADA)',
+                      title: 'TEMPERATURA',
                       temp: '${baseTemp.toStringAsFixed(1)}°C',
                       desc: baseInfo['desc'] as String,
                       icon: baseInfo['icon'] as IconData,
@@ -1614,117 +1592,163 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                     _buildWeatherMetricDivider(),
                     _buildWeatherMetricItem(
-                      title: 'CUMBRE',
-                      temp: '${summitTemp.toStringAsFixed(1)}°C',
-                      desc: summitInfo['desc'] as String,
-                      icon: summitInfo['icon'] as IconData,
-                      iconColor: summitInfo['color'] as Color,
-                    ),
-                    _buildWeatherMetricDivider(),
-                    _buildWeatherMetricItem(
-                      title: 'LLEGADA',
-                      temp: '${arrivalTemp.toStringAsFixed(1)}°C',
-                      desc: arrivalInfo['desc'] as String,
-                      icon: arrivalInfo['icon'] as IconData,
-                      iconColor: arrivalInfo['color'] as Color,
+                      title: 'VIENTO',
+                      temp: '${baseWind.toStringAsFixed(1)} km/h',
+                      desc: _getWindDescription(baseWind),
+                      icon: Icons.air_rounded,
+                      iconColor: Colors.blueGrey.shade300,
                     ),
                   ],
                 );
-              },
-            ),
-            const SizedBox(height: 18),
-            const Divider(color: Colors.white10, height: 1),
-            const SizedBox(height: 14),
-            Builder(
-              builder: (context) {
-                final baseTemp = _weatherTempBase ?? 0.0;
-                final baseWind = _weatherWindBase ?? 0.0;
-                final summitTemp = baseTemp - 10.0;
-                final summitWind = baseWind * 2.5;
+              }
 
-                IconData warningIcon = Icons.info_outline_rounded;
-                Color warningColor = Colors.grey;
-                String warningMsg = '';
-                
-                if (isMountainRace) {
-                  warningMsg = 'Clima templado en cumbre. Equipamiento estándar sugerido.';
-                  if (summitWind > 30 || summitTemp < 10) {
-                    warningIcon = Icons.warning_amber_rounded;
-                    warningColor = Colors.orangeAccent;
-                    warningMsg = 'Alerta en Cumbre: Viento de ${summitWind.toStringAsFixed(0)} km/h a ${summitTemp.toStringAsFixed(1)}°C. Rompevientos obligatorio.';
-                  } else if (summitTemp < 5) {
-                    warningIcon = Icons.ac_unit_rounded;
-                    warningColor = Colors.lightBlueAccent;
-                    warningMsg = 'Alerta en Cumbre: Temperatura muy baja (${summitTemp.toStringAsFixed(1)}°C). Abrigarse con capas adicionales.';
-                  }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildWeatherMetricItem(
+                    title: 'BASE (LARGADA)',
+                    temp: '${baseTemp.toStringAsFixed(1)}°C',
+                    desc: baseInfo['desc'] as String,
+                    icon: baseInfo['icon'] as IconData,
+                    iconColor: baseInfo['color'] as Color,
+                  ),
+                  _buildWeatherMetricDivider(),
+                  _buildWeatherMetricItem(
+                    title: 'CUMBRE',
+                    temp: '${summitTemp.toStringAsFixed(1)}°C',
+                    desc: summitInfo['desc'] as String,
+                    icon: summitInfo['icon'] as IconData,
+                    iconColor: summitInfo['color'] as Color,
+                  ),
+                  _buildWeatherMetricDivider(),
+                  _buildWeatherMetricItem(
+                    title: 'LLEGADA',
+                    temp: '${arrivalTemp.toStringAsFixed(1)}°C',
+                    desc: arrivalInfo['desc'] as String,
+                    icon: arrivalInfo['icon'] as IconData,
+                    iconColor: arrivalInfo['color'] as Color,
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 18),
+          const Divider(color: Colors.white10, height: 1),
+          const SizedBox(height: 14),
+          Builder(
+            builder: (context) {
+              final baseTemp = _weatherTempBase ?? 0.0;
+              final baseWind = _weatherWindBase ?? 0.0;
+              final summitTemp = baseTemp - 10.0;
+              final summitWind = baseWind * 2.5;
+
+              IconData warningIcon = Icons.info_outline_rounded;
+              Color warningColor = Colors.grey;
+              String warningMsg = '';
+              
+              if (isMountainRace) {
+                warningMsg = 'Clima templado en cumbre. Equipamiento estándar sugerido.';
+                if (summitWind > 30 || summitTemp < 10) {
+                  warningIcon = Icons.warning_amber_rounded;
+                  warningColor = Colors.orangeAccent;
+                  warningMsg = 'Alerta en Cumbre: Viento de ${summitWind.toStringAsFixed(0)} km/h a ${summitTemp.toStringAsFixed(1)}°C. Rompevientos obligatorio.';
+                } else if (summitTemp < 5) {
+                  warningIcon = Icons.ac_unit_rounded;
+                  warningColor = Colors.lightBlueAccent;
+                  warningMsg = 'Alerta en Cumbre: Temperatura muy baja (${summitTemp.toStringAsFixed(1)}°C). Abrigarse con capas adicionales.';
+                }
+              } else {
+                warningMsg = 'Clima agradable para correr. ¡Disfruta de la carrera!';
+                if (baseTemp > 30) {
+                  warningIcon = Icons.warning_amber_rounded;
+                  warningColor = Colors.orangeAccent;
+                  warningMsg = 'Alerta de Calor: Temperatura elevada (${baseTemp.toStringAsFixed(1)}°C). Correr a ritmo controlado y priorizar hidratación.';
+                } else if (baseTemp < 8) {
+                  warningIcon = Icons.ac_unit_rounded;
+                  warningColor = Colors.lightBlueAccent;
+                  warningMsg = 'Alerta de Frío: Temperatura baja (${baseTemp.toStringAsFixed(1)}°C). Se recomienda precalentamiento prolongado y abrigo liviano.';
+                } else if (_weatherCodeBase >= 51 && _weatherCodeBase <= 67) {
+                  warningIcon = Icons.umbrella_rounded;
+                  warningColor = Colors.lightBlue;
+                  warningMsg = 'Pronóstico de Lluvia: Se sugiere rompevientos impermeable y calzado con buena tracción.';
+                } else if (_weatherCodeBase >= 95) {
+                  warningIcon = Icons.thunderstorm_rounded;
+                  warningColor = Colors.deepPurpleAccent;
+                  warningMsg = 'Alerta de Tormenta: Precaución en el circuito por posibles calzadas resbaladizas o tormentas eléctricas.';
+                }
+              }
+
+              String uvMsg = 'Índice UV: Moderado. Se recomienda uso de protector solar.';
+              Color uvColor = Colors.amber;
+              if (_weatherCodeBase == 0 || _weatherCodeBase == 1) {
+                if (baseTemp > 22) {
+                  uvMsg = 'Índice UV: Muy Alto. Llevar protector solar, gorra y anteojos.';
+                  uvColor = Colors.orangeAccent;
                 } else {
-                  warningMsg = 'Clima agradable para correr. ¡Disfruta de la carrera!';
-                  if (baseTemp > 30) {
-                    warningIcon = Icons.warning_amber_rounded;
-                    warningColor = Colors.orangeAccent;
-                    warningMsg = 'Alerta de Calor: Temperatura elevada (${baseTemp.toStringAsFixed(1)}°C). Correr a ritmo controlado y priorizar hidratación.';
-                  } else if (baseTemp < 8) {
-                    warningIcon = Icons.ac_unit_rounded;
-                    warningColor = Colors.lightBlueAccent;
-                    warningMsg = 'Alerta de Frío: Temperatura baja (${baseTemp.toStringAsFixed(1)}°C). Se recomienda precalentamiento prolongado y abrigo liviano.';
-                  } else if (_weatherCodeBase >= 51 && _weatherCodeBase <= 67) {
-                    warningIcon = Icons.umbrella_rounded;
-                    warningColor = Colors.lightBlue;
-                    warningMsg = 'Pronóstico de Lluvia: Se sugiere rompevientos impermeable y calzado con buena tracción.';
-                  } else if (_weatherCodeBase >= 95) {
-                    warningIcon = Icons.thunderstorm_rounded;
-                    warningColor = Colors.deepPurpleAccent;
-                    warningMsg = 'Alerta de Tormenta: Precaución en el circuito por posibles calzadas resbaladizas o tormentas eléctricas.';
-                  }
+                  uvMsg = 'Índice UV: Alto. Llevar protector solar and anteojos.';
                 }
+              }
 
-                String uvMsg = 'Índice UV: Moderado. Se recomienda uso de protector solar.';
-                Color uvColor = Colors.amber;
-                if (_weatherCodeBase == 0 || _weatherCodeBase == 1) {
-                  if (baseTemp > 22) {
-                    uvMsg = 'Índice UV: Muy Alto. Llevar protector solar, gorra y anteojos.';
-                    uvColor = Colors.orangeAccent;
-                  } else {
-                    uvMsg = 'Índice UV: Alto. Llevar protector solar y anteojos.';
-                  }
-                }
+              String hydrationMsg = 'Hidratación: Clima templado. Llevar mínimo 1.5L de líquido.';
+              Color hydrationColor = Colors.blueAccent;
+              if (baseTemp > 25) {
+                hydrationMsg = 'Hidratación: Temperatura elevada (${baseTemp.toStringAsFixed(1)}°C). Llevar mínimo 2.0L de líquido y sales.';
+                hydrationColor = Colors.orange;
+              } else if (baseTemp < 10) {
+                hydrationMsg = 'Hidratación: Clima frío. Llevar mínimo 1.0L de líquido templado.';
+                hydrationColor = Colors.lightBlue;
+              }
 
-                String hydrationMsg = 'Hidratación: Clima templado. Llevar mínimo 1.5L de líquido.';
-                Color hydrationColor = Colors.blueAccent;
-                if (baseTemp > 25) {
-                  hydrationMsg = 'Hidratación: Temperatura elevada (${baseTemp.toStringAsFixed(1)}°C). Llevar mínimo 2.0L de líquido y sales.';
-                  hydrationColor = Colors.orange;
-                } else if (baseTemp < 10) {
-                  hydrationMsg = 'Hidratación: Clima frío. Llevar mínimo 1.0L de líquido templado.';
-                  hydrationColor = Colors.lightBlue;
-                }
-
-                return Column(
-                  children: [
-                    _buildWeatherAdvisoryRow(
-                      icon: warningIcon,
-                      iconColor: warningColor,
-                      message: warningMsg,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildWeatherAdvisoryRow(
-                      icon: Icons.wb_sunny_rounded,
-                      iconColor: uvColor,
-                      message: uvMsg,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildWeatherAdvisoryRow(
-                      icon: Icons.water_drop_rounded,
-                      iconColor: hydrationColor,
-                      message: hydrationMsg,
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
+              return Column(
+                children: [
+                  _buildWeatherAdvisoryRow(
+                    icon: warningIcon,
+                    iconColor: warningColor,
+                    message: warningMsg,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildWeatherAdvisoryRow(
+                    icon: Icons.wb_sunny_rounded,
+                    iconColor: uvColor,
+                    message: uvMsg,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildWeatherAdvisoryRow(
+                    icon: Icons.water_drop_rounded,
+                    iconColor: hydrationColor,
+                    message: hydrationMsg,
+                  ),
+                ],
+              );
+            },
+          ),
         ],
-      ),
+      ],
+    );
+
+    if (activeTenant.tenantName == '21kLG' || activeTenant.tenantName == 'DDLN') {
+      return AppCard(
+        style: AppCardStyle.gradient,
+        padding: const EdgeInsets.all(16.0),
+        customGradient: LinearGradient(
+          colors: [
+            activeTenant.primaryColorRef.withValues(alpha: 0.15),
+            Colors.black.withValues(alpha: 0.6),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        customBorder: Border.all(
+          color: activeTenant.primaryColorRef.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        child: content,
+      );
+    }
+
+    return AppCard(
+      style: AppCardStyle.glassmorphic,
+      child: content,
     );
   }
 

@@ -532,41 +532,6 @@ class _MapsScreenState extends State<MapsScreen> {
       description = 'Lugar y fechas de acreditación de competidores.';
       icon = Icons.badge_outlined;
       iconColor = Colors.orange;
-      
-      if (settings != null && settings.acreditacionesMap.isNotEmpty) {
-        final entries = settings.acreditacionesMap;
-        for (final entry in entries.entries) {
-          final dateStr = entry.key;
-          final val = entry.value;
-          if (val is Map) {
-            final entryLat = _parseCoordinate(val['lat']);
-            final entryLon = _parseCoordinate(val['lon']);
-            if (entryLat != null && entryLon != null) {
-              lat ??= entryLat;
-              lon ??= entryLon;
-            }
-          }
-          extraContent.add(
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Row(
-                children: [
-                  Icon(Icons.calendar_month_rounded, size: 14, color: activeTenant.primaryColorRef),
-                  const SizedBox(width: 6),
-                  Text(
-                    dateStr,
-                    style: const TextStyle(
-                      color: Color(0xFF333333), // gris mas oscuro
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-      }
     } else if (_selectedLayer == 'Reconocimiento') {
       title = 'Reconocimiento';
       description = 'Punto establecido para el reconocimiento del circuito.';
@@ -625,7 +590,69 @@ class _MapsScreenState extends State<MapsScreen> {
               ),
             ],
           ),
-          if (lat != null && lon != null) ...[
+          if (_selectedLayer == 'Acreditación' && settings != null && settings.acreditacionesMap.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(color: Colors.black12, height: 1),
+            const SizedBox(height: 8),
+            ...settings.acreditacionesMap.entries.map((entry) {
+              final dateStr = entry.key;
+              final val = entry.value;
+              double? entryLat;
+              double? entryLon;
+              if (val is Map) {
+                entryLat = _parseCoordinate(val['lat']);
+                entryLon = _parseCoordinate(val['lon']);
+              }
+              
+              return Container(
+                margin: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_month_rounded, size: 16, color: activeTenant.primaryColorRef),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            dateStr,
+                            style: const TextStyle(
+                              color: Color(0xFF1E293B),
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (entryLat != null && entryLon != null) ...[
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppButton(
+                              text: 'CÓMO LLEGAR',
+                              icon: Icons.directions_rounded,
+                              height: 38,
+                              textColor: Colors.white,
+                              type: AppButtonType.primary,
+                              onPressed: () => _launchNavigation(entryLat!, entryLon!),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }),
+          ] else if (lat != null && lon != null) ...[
             const SizedBox(height: 16),
             Row(
               children: [

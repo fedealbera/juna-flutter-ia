@@ -348,8 +348,13 @@ class _EditParticipantScreenState extends State<EditParticipantScreen> {
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Datos actualizados correctamente'),
+                  content: Text(
+                    '¡Listo! Datos actualizados.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
                   backgroundColor: Colors.green,
+                  duration: Duration(milliseconds: 1500),
                 ),
               );
               context.pop(true);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
@@ -144,33 +145,20 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
 
                   // WhatsApp Support Card
                   _buildContactCard(
-                    title: 'Escribinos por WhatsApp',
+                    title: 'WhatsApp',
                     subtitle:
                         _settings?.isEnabledWhatsapp == true
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'WhatsApp: ',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.4),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Text(
-                                          _formatWhatsappPhone(_settings?.whatsappPhone ?? ""),
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(alpha: 0.8),
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    _formatWhatsappPhone(_settings?.whatsappPhone ?? ""),
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.8),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   if (_settings?.contactoMensajeWhatsapp.isNotEmpty == true) ...[
                                     const SizedBox(height: 2),
@@ -188,7 +176,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                               'Canal no Habilitado',
                               style: TextStyle(color: Colors.white24, fontSize: 13),
                             ),
-                    icon: Icons.chat_bubble_outline_rounded,
+                    icon: FontAwesomeIcons.whatsapp,
                     badgeColor: const Color(0xFF25D366),
                     isEnabled: _settings?.isEnabledWhatsapp == true,
                     onTap:
@@ -206,36 +194,23 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
 
                   // Email Support Card
                   _buildContactCard(
-                    title: 'Escribir por mail',
+                    title: 'Mail',
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Correo: ',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 13,
-                              ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                _settings?.emailConsulta ?? '',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          _settings?.emailConsulta ?? '',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Te responderemos en un plazo máximo de 48 hs.',
+                          'Respuesta en hasta 48 h.',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.4),
                             fontSize: 11,
@@ -257,7 +232,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                   _buildContactCard(
                     title: 'Info Importante',
                     subtitle: Text(
-                      'Cronogramas, Reglamentos y más',
+                      'Documentación obligatoria',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 13,
@@ -393,7 +368,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
 
                                     // 2) App description text
                                     Text(
-                                      'App de alto rendimiento Android & iOS',
+                                      'Apps de alto rendimiento\nAndroid & iOS',
                                       style: TextStyle(
                                         color: Colors.white.withValues(alpha: 0.6),
                                         fontSize: 14,
@@ -420,13 +395,13 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                                               () => _launchURL(
                                                 'mailto:churomobile@gmail.com',
                                               ),
-                                          child: Text(
+                                          child: const Text(
                                             'churomobile@gmail.com',
                                             style: TextStyle(
-                                              color: activeTenant.primaryColorRef,
+                                              color: Colors.white,
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
-                                              decoration: TextDecoration.underline,
+                                              decoration: TextDecoration.none,
                                             ),
                                           ),
                                         ),
@@ -466,6 +441,33 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                                         }
                                       },
                                     ),
+                                    const SizedBox(height: 16),
+                                    Center(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.05),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: Colors.white.withValues(alpha: 0.1),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'VERSIÓN $versionDisplay',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.5),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.0,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -483,19 +485,6 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                                 ),
                                 const SizedBox(height: 24),
                               ],
-
-                              // Footer Version Text
-                              Center(
-                                child: Text(
-                                  'Versión $versionDisplay',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.35),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
                               const SizedBox(height: 10),
                             ],
                           );
