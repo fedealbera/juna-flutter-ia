@@ -95,7 +95,7 @@ To ensure a fluid, integrated UX, the `RegistrationScreen` manages its active ta
 * **On Unlinking:** Clicking "DESVINCULAR" clears the local Hive cache, resets state variables, and automatically returns the active tab to **NUEVA INSCRIPCIÓN** (`index = 0`).
 
 ### Discount Code Validation Mapping
-Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{insId}/descuento` sending a body containing `codigo`. The response is mapped as follows:
+Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{insId}/descuento` (where `insId` takes the value of the `ins` field returned by the participant detail GET endpoint) sending a body containing `codigo`. The response is mapped as follows:
 * **`dispo_cod == "VIGENTE"`:** Displays an `AlertDialog` confirming the code validation showing `"Disponible hasta el $fin"`.
 * **Otherwise:** Displays an `AlertDialog` with the error `dispo_msg` returned from the API, and sets the local validation state to false.
 
@@ -321,5 +321,32 @@ The `Makefile` exposes simple targets to easily configure, run, and compile the 
 * **Helpers:**
   - `make clean` - Cleans build caches.
   - `make get` - Installs packages via `flutter pub get`.
+
+---
+
+## 11. Spec-Driven Development (SDD) Methodology & Workflow
+
+The project strictly follows the **Spec-Driven Development (SDD)** lifecycle (documented in `.agents/rules/sdd_workflow.md`) to maintain architectural integrity, clean layer decoupling, and predictable AI pair programming:
+
+### Phase 1: Research & Specification
+* Research existing components and boundary layers before modifying code.
+* Validate API schemas and parameters against OpenAPI/backend specifications.
+* Document technical specifications, vertical slice impacts, and architectural decisions.
+
+### Phase 2: Design Alignment & Review
+* Align on UI/UX, visual tokens, and functional expectations.
+* Obtain explicit approval for complex or architectural adjustments.
+
+### Phase 3: Task Breakdown
+* Plan atomic, testable increments and task checklists before coding.
+
+### Phase 4: Implementation & Verification
+* Utilize project design system components (`AppCard`, `AppButton`, `AppTextField`, `AppAlertDialog`, etc.).
+* Ensure theme colors dynamically adapt to the active tenant via `TenantManager` and `TenantConfig`.
+* Run code generation when necessary (`dart run build_runner build --delete-conflicting-outputs`).
+* Execute continuous verification:
+  * Static Analyzer: `flutter analyze` (enforcing 0 warnings and 0 errors).
+  * Automated Tests: `flutter test` (all test suites passing).
+* Record deliverables, impact, and verification details in `walkthrough.md` and keep `CONTEXT.md` continuously up-to-date as the single source of truth.
 
 

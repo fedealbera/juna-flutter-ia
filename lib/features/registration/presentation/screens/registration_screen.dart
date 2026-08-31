@@ -1268,7 +1268,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   ),
                   onPressed: _isValidatingDiscountCode
                       ? null
-                      : () => _validateDiscountCode(detail.id),
+                      : () => _validateDiscountCode(detail.insId),
                   child:
                       _isValidatingDiscountCode
                           ? const SizedBox(
