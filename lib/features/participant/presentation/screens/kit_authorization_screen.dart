@@ -133,7 +133,7 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
         if (mounted) {
           await AppAlertDialog.show(
             context: context,
-            type: AppDialogType.info,
+            type: AppDialogType.warning,
             title: 'Importante',
             message: 'Para retirar el kit debe presentarse toda la documentación obligatoria.',
             primaryButtonText: 'Aceptar',

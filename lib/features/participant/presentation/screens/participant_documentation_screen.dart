@@ -522,21 +522,43 @@ class _ParticipantDocumentationScreenState extends State<ParticipantDocumentatio
                     letterSpacing: 1.0,
                   ),
                 ),
+                const SizedBox(height: 8),
+                _buildBulletPoint('Llevá impreso y firmado el Deslinde del Corredor.'),
                 const SizedBox(height: 6),
-                const Text(
-                  'Llevá impreso y firmado el Deslinde del Corredor. Si sos menor la autorización de menores',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    height: 1.4,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                _buildBulletPoint('Si sos menor, la autorización de menores.'),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBulletPoint(String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 6, right: 8),
+          width: 5,
+          height: 5,
+          decoration: const BoxDecoration(
+            color: Colors.amber,
+            shape: BoxShape.circle,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              height: 1.4,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

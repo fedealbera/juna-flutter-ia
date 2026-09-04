@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/firebase/notification_service.dart';
@@ -15,6 +16,12 @@ Future<void> bootstrap(EnvConfig envConfig) async {
 
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Lock screen orientation to Portrait only
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
     // Register background messaging handler
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

@@ -1055,6 +1055,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final detail = _linkedParticipant!;
     final bool hasPlate = detail.nroPlaca.isNotEmpty && detail.nroPlaca != '0';
     final bool hasPendingPayment = !hasPlate && detail.linkPago.isNotEmpty;
+    final bool is21k = activeTenant.tenantName == '21kLG' ||
+        activeTenant.name.toLowerCase().contains('21k');
+    final Color runnerIconColor =
+        is21k ? Colors.white : activeTenant.accentColorRef;
 
     return AppCard(
       style: AppCardStyle.gradient,
@@ -1082,7 +1086,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     children: [
                       Icon(
                         Icons.badge_outlined,
-                        color: activeTenant.accentColorRef,
+                        color: runnerIconColor,
                         size: 18,
                       ),
                       const SizedBox(width: 8),
@@ -1152,7 +1156,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             children: [
                               Icon(
                                 Icons.route_outlined,
-                                color: activeTenant.accentColorRef,
+                                color: runnerIconColor,
                                 size: 14,
                               ),
                               const SizedBox(width: 6),
@@ -1175,7 +1179,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             children: [
                               Icon(
                                 Icons.emoji_events_outlined,
-                                color: activeTenant.accentColorRef,
+                                color: runnerIconColor,
                                 size: 14,
                               ),
                               const SizedBox(width: 6),
@@ -1197,7 +1201,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             children: [
                               Icon(
                                 Icons.play_circle_outline_rounded,
-                                color: activeTenant.accentColorRef,
+                                color: runnerIconColor,
                                 size: 14,
                               ),
                               const SizedBox(width: 6),
