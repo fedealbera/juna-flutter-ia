@@ -1,4 +1,4 @@
-export ANDROID_HOME := /Users/federicoalbera/Library/Android/sdk
+export ANDROID_HOME ?= $(HOME)/Library/Android/sdk
 
 .PHONY: config-ddln config-21klg run-dev run-qa run-prod build-apk-dev build-apk-qa build-apk-prod build-aab-dev build-aab-qa build-aab-prod build-ipa-dev build-ipa-qa build-ipa-prod build-ddln-apk-dev build-ddln-apk-prod build-ddln-aab-prod build-ddln-ipa-prod build-21klg-apk-dev build-21klg-apk-prod build-21klg-aab-prod build-21klg-ipa-prod clean get help
 
