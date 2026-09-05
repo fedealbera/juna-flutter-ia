@@ -78,6 +78,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       initialIndex: widget.initialTab ?? 0,
     );
     _tabController.addListener(_handleTabSelection);
+    _dniFocusNode.addListener(_onFocusChanged);
     _participantBloc = getIt<ParticipantBloc>();
     _registrationBloc = getIt<RegistrationBloc>();
     _notificationsBloc = getIt<NotificationsBloc>();
@@ -119,11 +120,22 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       'cached_participant',
     );
     if (cachedJson != null) {
+      final cachedDiscountMsg = cachedJson['_cached_discount_msg'] as String?;
+      final cachedDiscountCode =
+          cachedJson['_cached_discount_code'] as String?;
       if (mounted) {
         setState(() {
           final detail = ParticipantDetail(cachedJson.cast<String, dynamic>());
           _linkedParticipant = detail;
           _discountCodeController.text = detail.insCodDesc;
+          if (cachedDiscountMsg != null &&
+              cachedDiscountCode != null &&
+              detail.insCodDesc.isNotEmpty &&
+              detail.insCodDesc.trim().toUpperCase() ==
+                  cachedDiscountCode.trim().toUpperCase()) {
+            _isDiscountCodeValid = true;
+            _discountCodeSuccessMessage = cachedDiscountMsg;
+          }
           _checkingCache = false;
           _tabController.index = 1;
           _checkLocalKitStatus(detail.id);
@@ -197,8 +209,15 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     _bounceController.dispose();
     _dniController.dispose();
     _discountCodeController.dispose();
+    _dniFocusNode.removeListener(_onFocusChanged);
     _dniFocusNode.dispose();
     super.dispose();
+  }
+
+  void _onFocusChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -232,6 +251,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   }
 
   void _handleTabSelection() {
+    FocusScope.of(context).unfocus();
     if (_tabController.index == 1 && !_tabController.indexIsChanging) {
       if (_tabController.index != _previousTabIndex) {
         if (_shouldSkipRefresh) {
@@ -268,6 +288,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   @override
   Widget build(BuildContext context) {
     final activeTenant = _tenantManager.value;
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final isKeyboardOpen = isIOS &&
+        (MediaQuery.viewInsetsOf(context).bottom > 0 || _dniFocusNode.hasFocus);
 
     return MultiBlocProvider(
       providers: [
@@ -275,14 +298,18 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         BlocProvider<RegistrationBloc>.value(value: _registrationBloc),
         BlocProvider<NotificationsBloc>.value(value: _notificationsBloc),
       ],
-      child: Scaffold(
-        backgroundColor: activeTenant.backgroundColorRef,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          backgroundColor: activeTenant.backgroundColorRef,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
           elevation: 0,
           toolbarHeight: 0,
           bottom: TabBar(
             controller: _tabController,
+            onTap: (_) => FocusScope.of(context).unfocus(),
             indicatorColor: activeTenant.primaryColorRef,
             labelColor: activeTenant.primaryColorRef,
             unselectedLabelColor: Colors.grey.shade400,
@@ -300,185 +327,325 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             ],
           ),
         ),
-        body: MultiBlocListener(
-          listeners: [
-            BlocListener<NotificationsBloc, NotificationsState>(
-              listener: (context, state) {
-                state.maybeWhen(
-                  registered: (res) {
-                    // Token registered successfully in background
-                  },
-                  error: (msg) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error de Token Push: $msg'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  },
-                  orElse: () {},
-                );
-              },
-            ),
-            BlocListener<ParticipantBloc, ParticipantState>(
-              listener: (context, state) {
-                state.maybeWhen(
-                  detailLoaded: (detail) async {
-                    await getIt<HiveService>().put<Map>(
-                      'participant_box',
-                      'cached_participant',
-                      detail.rawJson,
-                    );
-                    if (mounted) {
-                      setState(() {
-                        _linkedParticipant = detail;
-                        _discountCodeController.text = detail.insCodDesc;
-                        _isDiscountCodeValid = null;
-                        _discountCodeErrorMessage = null;
-                        _verificandoPago = false;
-                        _shouldSkipRefresh = true;
-                        _tabController.index = 1;
-                      });
-                      _checkLocalKitStatus(detail.id);
-                    }
-
-                    try {
-                      final token = await FirebaseMessaging.instance.getToken();
-                      if (token != null && token.isNotEmpty) {
-                        _notificationsBloc.add(
-                          NotificationsEvent.registerToken(
-                            documento: detail.dni,
-                            idEvento: '1',
-                            idOrg: '1',
-                            token: token,
+        body: Stack(
+          children: [
+            MultiBlocListener(
+              listeners: [
+                BlocListener<NotificationsBloc, NotificationsState>(
+                  listener: (context, state) {
+                    state.maybeWhen(
+                      registered: (res) {
+                        // Token registered successfully in background
+                      },
+                      error: (msg) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error de Token Push: $msg'),
+                            backgroundColor: Colors.red,
                           ),
                         );
-                      } else {
-                        debugPrint('FCM Token returned null or empty');
-                      }
-                    } catch (e) {
-                      debugPrint('Error getting Firebase token: $e');
-                    }
+                      },
+                      orElse: () {},
+                    );
                   },
-                  error: (msg) {
-                    if (mounted) {
-                      setState(() {
-                        _verificandoPago = false;
-                      });
-                    }
-                  },
-                  orElse: () {},
-                );
-              },
-            ),
-            BlocListener<RegistrationBloc, RegistrationState>(
-              listener: (context, state) {
-                state.maybeWhen(
-                  loading: () {
-                    if (mounted) {
-                      setState(() {
-                        _isValidatingDiscountCode = true;
-                        _isDiscountCodeValid = null;
-                        _discountCodeSuccessMessage = null;
-                      });
-                    }
-                  },
-                  discountValidated: (result) {
-                    final json = result.rawJson;
-                    final dispoCod = json['dispo_cod'] as String?;
-                    final isVigente = dispoCod == 'VIGENTE';
+                ),
+                BlocListener<ParticipantBloc, ParticipantState>(
+                  listener: (context, state) {
+                    state.maybeWhen(
+                      detailLoaded: (detail) async {
+                        final hiveService = getIt<HiveService>();
+                        final Map? prevCached = await hiveService.get<Map>(
+                          'participant_box',
+                          'cached_participant',
+                        );
+                        final String? prevDiscountMsg =
+                            prevCached?['_cached_discount_msg'] as String?;
+                        final String? prevDiscountCode =
+                            prevCached?['_cached_discount_code'] as String?;
 
-                    if (mounted) {
-                      setState(() {
-                        _isValidatingDiscountCode = false;
-                        _isDiscountCodeValid = isVigente;
-                        if (!isVigente) {
-                          _discountCodeErrorMessage = json['dispo_msg'] as String? ?? 'Código no validado';
-                        } else {
-                          _discountCodeSuccessMessage = 'Código de descuento válido';
+                        final Map<String, dynamic> rawToSave =
+                            Map<String, dynamic>.from(detail.rawJson);
+
+                        if (_isDiscountCodeValid == true &&
+                            _discountCodeSuccessMessage != null) {
+                          rawToSave['_cached_discount_msg'] =
+                              _discountCodeSuccessMessage;
+                          rawToSave['_cached_discount_code'] =
+                              _discountCodeController.text.trim();
+                        } else if (prevDiscountMsg != null &&
+                            prevDiscountCode != null) {
+                          rawToSave['_cached_discount_msg'] = prevDiscountMsg;
+                          rawToSave['_cached_discount_code'] = prevDiscountCode;
                         }
-                      });
-                    }
 
-                    if (isVigente) {
-                      final fin = json['locd_fecha_fin'] as String? ?? '';
-                      String formattedFin = fin;
-                      final parts = fin.split('-');
-                      if (parts.length == 3) {
-                        formattedFin = '${parts[2]}/${parts[1]}';
-                      }
+                        await hiveService.put<Map>(
+                          'participant_box',
+                          'cached_participant',
+                          rawToSave,
+                        );
 
-                      final percentVal = json['locd_descuento_porc'];
-                      String percentStr = '';
-                      if (percentVal != null) {
-                        final double? val = double.tryParse(percentVal.toString());
-                        if (val != null && val > 0) {
-                          final intVal = val.toInt();
-                          final cleanVal = (val == intVal) ? intVal.toString() : val.toString();
-                          percentStr = '$cleanVal% OFF';
-                        }
-                      }
+                        final cachedDiscountMsg =
+                            rawToSave['_cached_discount_msg'] as String?;
+                        final cachedDiscountCode =
+                            rawToSave['_cached_discount_code'] as String?;
 
-                      final titleText = percentStr.isNotEmpty
-                          ? 'Código Confirmado\n$percentStr'
-                          : 'Código Confirmado';
-
-                      AppAlertDialog.show(
-                        context: context,
-                        type: AppDialogType.success,
-                        title: titleText,
-                        message: 'Disponible hasta el $formattedFin',
-                        primaryButtonText: 'ACEPTAR',
-                      ).then((_) {
                         if (mounted) {
                           setState(() {
-                            _discountCodeSuccessMessage = percentStr.isNotEmpty
-                                ? '$percentStr - Disponible hasta $formattedFin'
-                                : 'Disponible hasta $formattedFin';
+                            _linkedParticipant = detail;
+                            if (_isDiscountCodeValid == true) {
+                              if (_discountCodeController.text.isEmpty &&
+                                  detail.insCodDesc.isNotEmpty) {
+                                _discountCodeController.text = detail.insCodDesc;
+                              }
+                            } else if (cachedDiscountMsg != null &&
+                                cachedDiscountCode != null &&
+                                detail.insCodDesc.isNotEmpty &&
+                                detail.insCodDesc.trim().toUpperCase() ==
+                                    cachedDiscountCode.trim().toUpperCase()) {
+                              _discountCodeController.text = detail.insCodDesc;
+                              _isDiscountCodeValid = true;
+                              _discountCodeSuccessMessage = cachedDiscountMsg;
+                              _discountCodeErrorMessage = null;
+                            } else {
+                              _discountCodeController.text = detail.insCodDesc;
+                              _isDiscountCodeValid = null;
+                              _discountCodeErrorMessage = null;
+                              _discountCodeSuccessMessage = null;
+                            }
+                            _verificandoPago = false;
+                            _shouldSkipRefresh = true;
+                            _tabController.index = 1;
+                          });
+                          _checkLocalKitStatus(detail.id);
+                        }
+
+                        try {
+                          final token =
+                              await FirebaseMessaging.instance.getToken();
+                          if (token != null && token.isNotEmpty) {
+                            _notificationsBloc.add(
+                              NotificationsEvent.registerToken(
+                                documento: detail.dni,
+                                idEvento: '1',
+                                idOrg: '1',
+                                token: token,
+                              ),
+                            );
+                          } else {
+                            debugPrint('FCM Token returned null or empty');
+                          }
+                        } catch (e) {
+                          debugPrint('Error getting Firebase token: $e');
+                        }
+                      },
+                      error: (msg) {
+                        if (mounted) {
+                          setState(() {
+                            _verificandoPago = false;
                           });
                         }
-                        _refreshParticipantIfLinked();
-                      });
-                    } else {
-                      final errorMsg = json['dispo_msg'] as String? ?? 'Código no validado';
-                      AppAlertDialog.show(
-                        context: context,
-                        type: AppDialogType.error,
-                        title: 'Código No Validado',
-                        message: errorMsg,
-                        primaryButtonText: 'ACEPTAR',
-                      ).then((_) {
-                        _refreshParticipantIfLinked();
-                      });
-                    }
+                      },
+                      orElse: () {},
+                    );
                   },
-                  error: (msg) {
-                    if (mounted) {
-                      setState(() {
-                        _isValidatingDiscountCode = false;
-                        _isDiscountCodeValid = false;
-                        _discountCodeErrorMessage = msg;
-                      });
-                    }
+                ),
+                BlocListener<RegistrationBloc, RegistrationState>(
+                  listener: (context, state) {
+                    state.maybeWhen(
+                      loading: () {
+                        if (mounted) {
+                          setState(() {
+                            _isValidatingDiscountCode = true;
+                            _isDiscountCodeValid = null;
+                            _discountCodeSuccessMessage = null;
+                            _discountCodeErrorMessage = null;
+                          });
+                        }
+                      },
+                      discountValidated: (result) {
+                        final json = result.rawJson;
+                        final dispoCod = json['dispo_cod'] as String?;
+                        final isVigente = dispoCod == 'VIGENTE';
+
+                        if (isVigente) {
+                          final rawFin =
+                              (json['locd_fecha_fin'] as String? ?? '').trim();
+                          String formattedFin = rawFin;
+                          final datePart = rawFin.split(' ').first;
+                          final parts = datePart.split('-');
+                          if (parts.length == 3) {
+                            formattedFin = '${parts[2]}/${parts[1]}';
+                          }
+
+                          final percentVal = json['locd_descuento_porc'];
+                          String percentStr = '';
+                          if (percentVal != null) {
+                            final double? val = double.tryParse(
+                              percentVal.toString(),
+                            );
+                            if (val != null && val > 0) {
+                              final intVal = val.toInt();
+                              final cleanVal =
+                                  (val == intVal)
+                                      ? intVal.toString()
+                                      : val.toString();
+                              percentStr = '$cleanVal% OFF';
+                            }
+                          }
+
+                          final titleText =
+                              percentStr.isNotEmpty
+                                  ? 'Código Confirmado\n$percentStr'
+                                  : 'Código Confirmado';
+
+                          final successMsg =
+                              percentStr.isNotEmpty
+                                  ? '$percentStr - Disponible hasta el $formattedFin'
+                                  : 'Disponible hasta el $formattedFin';
+
+                          if (mounted) {
+                            setState(() {
+                              _isValidatingDiscountCode = false;
+                              _isDiscountCodeValid = true;
+                              _discountCodeSuccessMessage = successMsg;
+                              _discountCodeErrorMessage = null;
+                            });
+                          }
+
+                          if (_linkedParticipant != null) {
+                            final mapToSave = Map<String, dynamic>.from(
+                              _linkedParticipant!.rawJson,
+                            );
+                            mapToSave['_cached_discount_msg'] = successMsg;
+                            mapToSave['_cached_discount_code'] =
+                                _discountCodeController.text.trim();
+                            getIt<HiveService>().put<Map>(
+                              'participant_box',
+                              'cached_participant',
+                              mapToSave,
+                            );
+                          }
+
+                          AppAlertDialog.show(
+                            context: context,
+                            type: AppDialogType.success,
+                            title: titleText,
+                            message: 'Disponible hasta el $formattedFin',
+                            primaryButtonText: 'ACEPTAR',
+                          ).then((_) {
+                            if (mounted) {
+                              setState(() {
+                                _discountCodeSuccessMessage = successMsg;
+                                _isDiscountCodeValid = true;
+                              });
+                            }
+                            _refreshParticipantIfLinked();
+                          });
+                        } else {
+                          final errorMsg =
+                              json['dispo_msg'] as String? ??
+                              'Código no validado';
+                          if (mounted) {
+                            setState(() {
+                              _isValidatingDiscountCode = false;
+                              _isDiscountCodeValid = false;
+                              _discountCodeErrorMessage = errorMsg;
+                              _discountCodeSuccessMessage = null;
+                            });
+                          }
+                          AppAlertDialog.show(
+                            context: context,
+                            type: AppDialogType.error,
+                            title: 'Código No Validado',
+                            message: errorMsg,
+                            primaryButtonText: 'ACEPTAR',
+                          ).then((_) {
+                            _refreshParticipantIfLinked();
+                          });
+                        }
+                      },
+                      error: (msg) {
+                        if (mounted) {
+                          setState(() {
+                            _isValidatingDiscountCode = false;
+                            _isDiscountCodeValid = false;
+                            _discountCodeErrorMessage = msg;
+                          });
+                        }
+                      },
+                      orElse: () {},
+                    );
                   },
-                  orElse: () {},
-                );
-              },
+                ),
+              ],
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Tab 1: New Registration
+                  RegistrationWebView(activeTenant: activeTenant),
+                  // Tab 2: View / Lookups
+                  _buildViewLookupTab(activeTenant),
+                ],
+              ),
             ),
+            if (isKeyboardOpen)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E1E),
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        width: 0.5,
+                      ),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 4,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () {
+                          FocusScope.of(context).unfocus();
+                        },
+                        child: Text(
+                          'Listo',
+                          style: TextStyle(
+                            color: activeTenant.primaryColorRef,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              // Tab 1: New Registration
-              RegistrationWebView(activeTenant: activeTenant),
-              // Tab 2: View / Lookups
-              _buildViewLookupTab(activeTenant),
-            ],
-          ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildViewLookupTab(TenantConfig activeTenant) {
     if (_checkingCache) {
@@ -495,6 +662,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         children: [
           SingleChildScrollView(
             controller: _profileScrollController,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.all(20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -678,6 +846,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         _discountCodeController.clear();
                         _isDiscountCodeValid = null;
                         _discountCodeErrorMessage = null;
+                        _discountCodeSuccessMessage = null;
                       });
                       _dniFocusNode.requestFocus();
                     }
@@ -768,6 +937,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     }
 
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1250,7 +1420,20 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       setState(() {
                         _isDiscountCodeValid = null;
                         _discountCodeErrorMessage = null;
+                        _discountCodeSuccessMessage = null;
                       });
+                      if (_linkedParticipant != null) {
+                        final mapToSave = Map<String, dynamic>.from(
+                          _linkedParticipant!.rawJson,
+                        );
+                        mapToSave.remove('_cached_discount_msg');
+                        mapToSave.remove('_cached_discount_code');
+                        getIt<HiveService>().put<Map>(
+                          'participant_box',
+                          'cached_participant',
+                          mapToSave,
+                        );
+                      }
                     }
                   },
                 ),
@@ -1352,6 +1535,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       setState(() {
         _isDiscountCodeValid = false;
         _discountCodeErrorMessage = 'El código no puede estar vacío';
+        _discountCodeSuccessMessage = null;
       });
       return;
     }

@@ -72,6 +72,7 @@ class EventSettings extends Equatable {
 
   bool get isEnabledWhatsapp => getSetting('ISENABLED_WHATSAPP').toUpperCase() == 'TRUE';
   String get contactoMensajeWhatsapp => getSetting('CONTACTO_MENSAJE_WHATSAPP');
+  String get contactoMensajeMail => getSetting('CONTACTO_MENSAJE_MAIL');
   String get whatsappPhone => getSetting('WHATSAPP_PHONE');
   String get emailConsulta => getSetting('EMAIL_CONSULTA');
   String get urlStores => getSetting('URL_STORES');

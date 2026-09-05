@@ -87,6 +87,32 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  Future<void> _openWhatsapp(String rawPhone) async {
+    final phone = rawPhone.replaceAll(RegExp(r'\D'), '');
+    if (phone.isEmpty) return;
+    final nativeUri = Uri.parse('whatsapp://send?phone=$phone');
+    final webUri = Uri.parse('https://wa.me/$phone');
+    try {
+      if (await canLaunchUrl(nativeUri)) {
+        await launchUrl(nativeUri);
+      } else {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se pudo abrir WhatsApp.'),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _launchURL(String urlString) async {
     if (urlString.isEmpty) return;
     final uri = Uri.parse(urlString);
@@ -181,13 +207,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                     isEnabled: _settings?.isEnabledWhatsapp == true,
                     onTap:
                         _settings?.isEnabledWhatsapp == true
-                            ? () {
-                              final phone = _settings?.whatsappPhone ?? '';
-                              final msg = _settings?.contactoMensajeWhatsapp ?? '';
-                              final url =
-                                  'https://wa.me/$phone?text=${Uri.encodeComponent(msg)}';
-                              _launchURL(url);
-                            }
+                            ? () => _openWhatsapp(_settings?.whatsappPhone ?? '')
                             : null,
                   ),
                   const SizedBox(height: 12),
@@ -208,14 +228,16 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Respuesta en hasta 48 h.',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.4),
-                            fontSize: 11,
+                        if (_settings?.contactoMensajeMail.isNotEmpty == true) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            _settings!.contactoMensajeMail,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.4),
+                              fontSize: 11,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                     icon: Icons.mail_outline_rounded,

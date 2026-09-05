@@ -305,13 +305,13 @@ class ActiveTenantConfig {{
     # 7. Run flutter launcher icons and native splash generation
     print("-> Generating Launcher Icons...")
     subprocess.run(
-        ["flutter", "pub", "run", "flutter_launcher_icons:main", "-f", "flutter_icons.yaml"],
+        ["dart", "run", "flutter_launcher_icons:main", "-f", "flutter_icons.yaml"],
         check=True
     )
     
     print("-> Generating Native Splash screen...")
     subprocess.run(
-        ["flutter", "pub", "run", "flutter_native_splash:create", "--path=flutter_splash.yaml"],
+        ["dart", "run", "flutter_native_splash:create", "--path=flutter_splash.yaml"],
         check=True
     )
     
