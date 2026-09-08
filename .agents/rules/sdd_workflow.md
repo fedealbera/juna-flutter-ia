@@ -37,11 +37,13 @@ Create a `task.md` document mapping out atomic checkboxes for implementation:
 
 ---
 
-## 4. Phase 4: Implementation & Verification
+## 4. Phase 4: Implementation, Verification & Documentation
 1. Develop the changes following the step checklist.
-2. Keep dependencies decoupled and use the project design system components (`AppCard`, `AppButton`, `AppTextField`, etc.).
-3. Regenerate build outputs (`dart run build_runner build --delete-conflicting-outputs`).
+2. Keep dependencies decoupled and use the project design system components (`AppCard`, `AppButton`, `AppTextField`, `AppAlertDialog`, etc.).
+3. Regenerate build outputs if needed (`dart run build_runner build --delete-conflicting-outputs`).
 4. Validate changes:
    - Run `flutter analyze` (ensure 0 warnings/errors).
    - Run `flutter test`.
-5. Create a `walkthrough.md` with links to modified files and verification results.
+5. **Mandatory Documentation Update**:
+   - Update `CONTEXT.md` in the workspace root with every functional/architectural change made.
+   - Update `walkthrough.md` with links to modified files and verification results.

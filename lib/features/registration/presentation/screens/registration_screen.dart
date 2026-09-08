@@ -1548,10 +1548,22 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     );
   }
 
-  void _handleKitAuthorization(ParticipantDetail detail) {
-    context.push('/inscripciones/autorizar-kit', extra: detail).then((_) {
-      _checkLocalKitStatus(detail.id);
-    });
+  Future<void> _handleKitAuthorization(ParticipantDetail detail) async {
+    final result = await context.push<bool>(
+      '/inscripciones/autorizar-kit',
+      extra: detail,
+    );
+    _checkLocalKitStatus(detail.id);
+    if (result == true) {
+      _participantBloc.add(
+        ParticipantEvent.getDetail(
+          dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
+          idOrg: '1',
+          eventoId: '1',
+          roundId: '1',
+        ),
+      );
+    }
   }
 }
 
