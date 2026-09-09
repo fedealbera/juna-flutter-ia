@@ -21,6 +21,7 @@ import '../../../participant/presentation/bloc/participant_event.dart';
 import '../../../participant/domain/entities/participant_detail.dart';
 import '../../../participant/presentation/bloc/participant_state.dart';
 import '../../../../core/storage/hive_service.dart';
+import '../../../settings/domain/entities/event_settings.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../bloc/registration_bloc.dart';
 import '../bloc/registration_event.dart';
@@ -63,7 +64,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   String? _discountCodeErrorMessage;
   String? _discountCodeSuccessMessage;
   bool _verificandoPago = false;
-  final bool _isCheckingKitAuth = false;
+  bool _isCheckingDoc = false;
+  bool _isCheckingKitAuth = false;
+  bool _isCheckingEdit = false;
   int _previousTabIndex = 0;
   bool _shouldSkipRefresh = false;
   bool _yoRetiroKitLocal = false;
@@ -252,6 +255,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
 
   void _handleTabSelection() {
     FocusScope.of(context).unfocus();
+    if (mounted) {
+      setState(() {});
+    }
     if (_tabController.index == 1 && !_tabController.indexIsChanging) {
       if (_tabController.index != _previousTabIndex) {
         if (_shouldSkipRefresh) {
@@ -303,34 +309,139 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         onTap: () => FocusScope.of(context).unfocus(),
         child: Scaffold(
           backgroundColor: activeTenant.backgroundColorRef,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-          elevation: 0,
-          toolbarHeight: 0,
-          bottom: TabBar(
-            controller: _tabController,
-            onTap: (_) => FocusScope.of(context).unfocus(),
-            indicatorColor: activeTenant.primaryColorRef,
-            labelColor: activeTenant.primaryColorRef,
-            unselectedLabelColor: Colors.grey.shade400,
-            tabs: [
-              const Tab(
-                text: 'NUEVA INSCRIPCIÓN',
-                icon: Icon(Icons.add_task_rounded),
-              ),
-              Tab(
-                text: _linkedParticipant != null ? 'MI PERFIL' : 'INICIAR SESIÓN',
-                icon: Icon(
-                  _linkedParticipant != null ? Icons.person_outline : Icons.badge_outlined,
-                ),
-              ),
-            ],
-          ),
-        ),
-        body: Stack(
-          children: [
-            MultiBlocListener(
-              listeners: [
+          body: SafeArea(
+            bottom: false,
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    // Switcher Bar matching requested style
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14.0,
+                        vertical: 8.0,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: AnimatedBuilder(
+                          animation: _tabController.animation ?? _tabController,
+                          builder: (context, child) {
+                            final currentIndex = _tabController.index;
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      FocusScope.of(context).unfocus();
+                                      _tabController.animateTo(0);
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 180),
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: currentIndex == 0
+                                            ? activeTenant.primaryColorRef
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.add_task_rounded,
+                                            size: 24,
+                                            color: currentIndex == 0
+                                                ? Colors.white
+                                                : Colors.white.withValues(alpha: 0.6),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            'NUEVA INSCRIPCIÓN',
+                                            style: TextStyle(
+                                              color: currentIndex == 0
+                                                  ? Colors.white
+                                                  : Colors.white.withValues(alpha: 0.6),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10,
+                                              letterSpacing: 0.3,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      FocusScope.of(context).unfocus();
+                                      _tabController.animateTo(1);
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 180),
+                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: currentIndex == 1
+                                            ? activeTenant.primaryColorRef
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            _linkedParticipant != null
+                                                ? Icons.person_outline
+                                                : Icons.badge_outlined,
+                                            size: 24,
+                                            color: currentIndex == 1
+                                                ? Colors.white
+                                                : Colors.white.withValues(alpha: 0.6),
+                                          ),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            _linkedParticipant != null
+                                                ? 'MI PERFIL'
+                                                : 'INICIAR SESIÓN',
+                                            style: TextStyle(
+                                              color: currentIndex == 1
+                                                  ? Colors.white
+                                                  : Colors.white.withValues(alpha: 0.6),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10,
+                                              letterSpacing: 0.3,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Dynamic Body
+                    Expanded(
+                      child: MultiBlocListener(
+                        listeners: [
                 BlocListener<NotificationsBloc, NotificationsState>(
                   listener: (context, state) {
                     state.maybeWhen(
@@ -588,6 +699,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                 ],
               ),
             ),
+                    ),
+                  ],
+                ),
             if (isKeyboardOpen)
               Positioned(
                 left: 0,
@@ -644,7 +758,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
         ),
       ),
     ),
-  );
+  ),
+);
 }
 
   Widget _buildViewLookupTab(TenantConfig activeTenant) {
@@ -718,9 +833,25 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     text: 'ENVIAR CERTIFICADO',
                     textColor: Colors.white,
                     icon: Icons.description_rounded,
-                    onPressed: () {
-                      context.push('/inscripciones/documentacion', extra: detail);
-                    },
+                    isLoading: _isCheckingDoc,
+                    onPressed: _isCheckingDoc
+                        ? null
+                        : () async {
+                            setState(() => _isCheckingDoc = true);
+                            final settings = await _fetchFreshSettings();
+                            if (mounted) {
+                              setState(() => _isCheckingDoc = false);
+                            }
+                            if (settings != null && !settings.isEnabledSubirDoc) {
+                              if (mounted) {
+                                _showDisabledFeatureDialog(context);
+                              }
+                              return;
+                            }
+                            if (mounted) {
+                              context.push('/inscripciones/documentacion', extra: detail);
+                            }
+                          },
                   ),
                   const SizedBox(height: 12),
                   if (_yoRetiroKitLocal) ...[
@@ -798,25 +929,40 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   text: 'EDITAR DATOS',
                   color: activeTenant.primaryColorRef,
                   textColor: Colors.white,
-                  onPressed: () async {
-                    final result = await context.push<bool>(
-                      '/inscripciones/editar-datos',
-                      extra: detail,
-                    );
-                    if (result == true) {
-                      _participantBloc.add(
-                        ParticipantEvent.getDetail(
-                          dni:
-                              detail.dni.isNotEmpty
-                                  ? detail.dni
-                                  : _dniController.text,
-                          idOrg: '1',
-                          eventoId: '1',
-                          roundId: '1',
-                        ),
-                      );
-                    }
-                  },
+                  isLoading: _isCheckingEdit,
+                  onPressed: _isCheckingEdit
+                      ? null
+                      : () async {
+                          setState(() => _isCheckingEdit = true);
+                          final settings = await _fetchFreshSettings();
+                          if (mounted) {
+                            setState(() => _isCheckingEdit = false);
+                          }
+                          if (settings != null && !settings.isEnabledEdicion) {
+                            if (mounted) {
+                              _showDisabledFeatureDialog(context);
+                            }
+                            return;
+                          }
+                          if (!mounted) return;
+                          final result = await context.push<bool>(
+                            '/inscripciones/editar-datos',
+                            extra: detail,
+                          );
+                          if (result == true) {
+                            _participantBloc.add(
+                              ParticipantEvent.getDetail(
+                                dni:
+                                    detail.dni.isNotEmpty
+                                        ? detail.dni
+                                        : _dniController.text,
+                                idOrg: '1',
+                                eventoId: '1',
+                                roundId: '1',
+                              ),
+                            );
+                          }
+                        },
                 ),
                 const SizedBox(height: 12),
                 AppButton(
@@ -1151,35 +1297,11 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                             ),
                           ),
                         if (detail.status == 'IN')
-                          Container(
+                          Image.asset(
+                            'assets/images/vip.png',
                             width: 38,
                             height: 38,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.05),
-                              border: Border.all(
-                                color: const Color(0xFF22C55E),
-                                width: 2.2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF22C55E).withValues(alpha: 0.25),
-                                  blurRadius: 5,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'INV',
-                                style: TextStyle(
-                                  color: Color(0xFFEF4444),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
+                            fit: BoxFit.contain,
                           ),
                       ],
                     ),
@@ -1265,6 +1387,14 @@ class _RegistrationScreenState extends State<RegistrationScreen>
             'Largada:',
             detail.largada.isNotEmpty ? detail.largada : 'No especificado',
           ),
+          if (activeTenant.tenantId == 2) ...[
+            _buildInfoRow(
+              'Zapatillas:',
+              detail.marcaZapatillas.isNotEmpty
+                  ? detail.marcaZapatillas
+                  : 'No especificado',
+            ),
+          ],
           if (activeTenant.tenantId == 2 || activeTenant.tenantId == 1) ...[
             _buildInfoColumn(
               'Grupo de Entrenamiento:',
@@ -1278,12 +1408,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
               'Centro de Acreditación:',
               detail.centroAcreditacion.isNotEmpty
                   ? detail.centroAcreditacion
-                  : 'No especificado',
-            ),
-            _buildInfoRow(
-              'Marca de Zapatillas:',
-              detail.marcaZapatillas.isNotEmpty
-                  ? detail.marcaZapatillas
                   : 'No especificado',
             ),
           ],
@@ -1548,7 +1672,38 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     );
   }
 
+  Future<EventSettings?> _fetchFreshSettings() async {
+    try {
+      return await getIt<SettingsRepository>().getEventSettings('1', '1');
+    } catch (e) {
+      debugPrint('Error fetching fresh settings: $e');
+      return getIt<SettingsRepository>().getCachedSettings();
+    }
+  }
+
+  void _showDisabledFeatureDialog(BuildContext context) {
+    AppAlertDialog.show(
+      context: context,
+      type: AppDialogType.info,
+      title: 'Información',
+      message: 'Esta funcionalidad no está disponible por el momento.',
+      primaryButtonText: 'ACEPTAR',
+    );
+  }
+
   Future<void> _handleKitAuthorization(ParticipantDetail detail) async {
+    setState(() => _isCheckingKitAuth = true);
+    final settings = await _fetchFreshSettings();
+    if (mounted) {
+      setState(() => _isCheckingKitAuth = false);
+    }
+    if (settings != null && !settings.isEnabledRetirarKit) {
+      if (mounted) {
+        _showDisabledFeatureDialog(context);
+      }
+      return;
+    }
+    if (!mounted) return;
     final result = await context.push<bool>(
       '/inscripciones/autorizar-kit',
       extra: detail,

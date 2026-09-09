@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -149,59 +148,27 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 2. Contact form section redesigned matching screenshot
-                  const Text(
-                    'Estamos para ayudarte',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Escribinos por el canal que prefieras y te respondemos lo antes posible.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
                   // WhatsApp Support Card
                   _buildContactCard(
                     title: 'WhatsApp',
                     subtitle:
                         _settings?.isEnabledWhatsapp == true
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _formatWhatsappPhone(_settings?.whatsappPhone ?? ""),
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.8),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  if (_settings?.contactoMensajeWhatsapp.isNotEmpty == true) ...[
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      _settings!.contactoMensajeWhatsapp,
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.4),
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                            ? Text(
+                                _formatWhatsappPhone(_settings?.whatsappPhone ?? ""),
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                ),
                               )
-                            : const Text(
-                              'Canal no Habilitado',
-                              style: TextStyle(color: Colors.white24, fontSize: 13),
-                            ),
+                            : Text(
+                                'Canal no Habilitado',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
                     icon: FontAwesomeIcons.whatsapp,
                     badgeColor: const Color(0xFF25D366),
                     isEnabled: _settings?.isEnabledWhatsapp == true,
@@ -215,30 +182,14 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                   // Email Support Card
                   _buildContactCard(
                     title: 'Mail',
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _settings?.emailConsulta ?? '',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (_settings?.contactoMensajeMail.isNotEmpty == true) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            _settings!.contactoMensajeMail,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.4),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ],
+                    subtitle: Text(
+                      _settings?.emailConsulta ?? '',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     icon: Icons.mail_outline_rounded,
                     badgeColor: const Color(0xFF2196F3),
@@ -275,18 +226,6 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                         ),
                       );
                     },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 3. Social actions (Share) redesigned matching screenshot
-                  Text(
-                    'GENERAL',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
                   ),
                   const SizedBox(height: 12),
                   _buildContactCard(
@@ -335,18 +274,6 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                         ShareParams(text: shareText, sharePositionOrigin: rect),
                       );
                     },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 4. Platform Specifications (using AboutBloc)
-                  Text(
-                    'ACERCA DE',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
                   ),
                   const SizedBox(height: 12),
                   BlocBuilder<AboutBloc, AboutState>(
@@ -493,20 +420,6 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 24),
-
-                              // Conditional "Cerrar App" Button for Android only (Compliance with iOS)
-                              if (Theme.of(context).platform == TargetPlatform.android) ...[
-                                AppButton(
-                                  text: 'Cerrar App',
-                                  icon: Icons.logout_rounded,
-                                  onPressed: () {
-                                    SystemNavigator.pop();
-                                  },
-                                  type: AppButtonType.outlined,
-                                ),
-                                const SizedBox(height: 24),
-                              ],
                               const SizedBox(height: 10),
                             ],
                           );

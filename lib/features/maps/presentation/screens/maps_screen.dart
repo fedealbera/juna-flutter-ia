@@ -460,7 +460,7 @@ class _MapsScreenState extends State<MapsScreen> {
               ),
               const SizedBox(height: 24),
               const Text(
-                'Punto de Largada aún no se encuentra definido. Será informado a la brevedad.',
+                'Muy pronto conocerás el punto de largada.',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 17,
@@ -535,9 +535,8 @@ class _MapsScreenState extends State<MapsScreen> {
                           context: context,
                           type: AppDialogType.info,
                           title: 'Circuito en Preparación',
-                          message:
-                              'El circuito "$name" aún no se encuentra disponible. Será informado a la brevedad.',
-                          primaryButtonText: 'Entendido',
+                          message: 'Muy pronto podrás conocer el circuito.',
+                          primaryButtonText: 'Volver',
                           customIcon: Icons.alt_route_rounded,
                           customAccentColor: activeTenant.primaryColorRef,
                           primaryButtonColor: activeTenant.primaryColorRef,
@@ -650,7 +649,7 @@ class _MapsScreenState extends State<MapsScreen> {
       lon = settings?.lonLargada;
     } else if (_selectedLayer == 'Acreditación') {
       title = 'Acreditaciones';
-      description = 'Lugar y fechas de acreditación de competidores.';
+      description = '';
       icon = Icons.badge_outlined;
       iconColor = Colors.orange;
     } else if (_selectedLayer == 'Reconocimiento') {
@@ -669,7 +668,9 @@ class _MapsScreenState extends State<MapsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: (description.isEmpty && extraContent.isEmpty)
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
@@ -693,15 +694,17 @@ class _MapsScreenState extends State<MapsScreen> {
                         fontSize: 18,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        color: Color(0xFF333333), // gris mas oscuro para resaltar en el fondo blured
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: const TextStyle(
+                          color: Color(0xFF333333), // gris mas oscuro para resaltar en el fondo blured
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                    ],
                     if (extraContent.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       ...extraContent,

@@ -105,7 +105,7 @@ class _LiveScreenState extends State<LiveScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Sigue la carrera minuto a minuto',
+                  'Sigue la carrera en tiempo real',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14,
@@ -127,8 +127,8 @@ class _LiveScreenState extends State<LiveScreen> {
                 const SizedBox(height: 12),
                 if (_settings?.isEnabledTiempos == true) ...[
                   _buildMenuItem(
-                    title: 'Tiempos',
-                    subtitle: 'Clasificaciones en tiempo real',
+                    title: 'Resultados',
+                    subtitle: '',
                     icon: Icons.emoji_events_outlined,
                     badgeColor: const Color(0xFFFFB300), // Gold/Yellow
                     isFeatured: true,
@@ -153,7 +153,7 @@ class _LiveScreenState extends State<LiveScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => CircuitWebViewScreen(
-                              title: 'Tiempos',
+                              title: 'Resultados',
                               url: url,
                             ),
                           ),
@@ -162,9 +162,9 @@ class _LiveScreenState extends State<LiveScreen> {
                         AppAlertDialog.show(
                           context: context,
                           type: AppDialogType.info,
-                          title: 'Portal de Tiempos',
-                          message: 'El portal de tiempos estará disponible a la brevedad.',
-                          primaryButtonText: 'Entendido',
+                          title: 'Resultados',
+                          message: 'Los resultados estarán disponibles el día de la carrera.',
+                          primaryButtonText: 'Volver',
                           customIcon: Icons.emoji_events_outlined,
                           customAccentColor: activeTenant.primaryColorRef,
                           primaryButtonColor: activeTenant.primaryColorRef,
@@ -356,17 +356,19 @@ class _LiveScreenState extends State<LiveScreen> {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: isFeatured ? 14 : 13,
-                        color: isFeatured 
-                            ? Colors.white.withValues(alpha: 0.9) 
-                            : Colors.white.withValues(alpha: 0.6),
-                        fontWeight: isFeatured ? FontWeight.w500 : FontWeight.w400,
+                    if (subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: isFeatured ? 14 : 13,
+                          color: isFeatured 
+                              ? Colors.white.withValues(alpha: 0.9) 
+                              : Colors.white.withValues(alpha: 0.6),
+                          fontWeight: isFeatured ? FontWeight.w500 : FontWeight.w400,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

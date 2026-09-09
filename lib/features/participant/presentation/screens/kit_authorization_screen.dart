@@ -107,8 +107,13 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
         context.pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Guardado exitosamente'),
+            content: Text(
+              '¡Listo! Datos actualizados.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.green,
+            duration: Duration(milliseconds: 1500),
           ),
         );
       }
@@ -173,8 +178,13 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
             context.pop(true);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Autorización registrada exitosamente'),
+                content: Text(
+                  '¡Listo! Datos actualizados.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white),
+                ),
                 backgroundColor: Colors.green,
+                duration: Duration(milliseconds: 1500),
               ),
             );
           }
