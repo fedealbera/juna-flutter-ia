@@ -86,13 +86,33 @@ Based on the value of `nroPlaca` returned by the runner details endpoint:
 * **`nroPlaca != "0"` (Pago Confirmado):**
   * Displays a green `PAGO CONFIRMADO` tag.
   * Renders a highly highlighted plate code container showing the plate number.
-  * Displays an `ENVIAR CERTIFICADO` button that routes to the document upload screen.
+* **`detail.status == "IN"` (Invitado / VIP):**
+  * Displays an elegant gold `assets/images/vip.png` (38x38) badge next to the status chip on the runner profile card.
+* **Profile Fields Ordering:**
+  * `"Marca de Zapatillas"` was shortened to `"Zapatillas:"` and placed immediately underneath the `"Largada:"` row for optimal legibility.
 
-### Tab Selector Synchronization & Automatic Switching
-To ensure a fluid, integrated UX, the `RegistrationScreen` manages its active tab controller dynamically based on the participant's state:
-* **On Screen Boot:** If a participant is already cached locally in Hive, it automatically sets the active tab index to **VER MI PERFIL** (`_tabController.index = 1`) to immediately display their registration card instead of a blank form.
-* **On Successful Search:** When a user successfully looks up their DNI and links their runner profile, the screen transitions automatically to the **VER MI PERFIL** tab (`index = 1`).
-* **On Unlinking:** Clicking "DESVINCULAR" clears the local Hive cache, resets state variables, and automatically returns the active tab to **NUEVA INSCRIPCIÓN** (`index = 0`).
+### Tab Switcher Navigation (Maps-Style Segmented Bar)
+The `RegistrationScreen` adopts the exact same custom dark segmented switcher bar component as `MapsScreen`:
+* **Aesthetics:** Encased in a black pill container (`color: Colors.black`, `borderRadius: 16`, padded `6px`, with soft bottom shadow `blurRadius: 10, offset: (0, 4)`).
+* **Segment Tabs:**
+  * **Tab 0:** `NUEVA INSCRIPCIÓN` (Icon `Icons.add_task_rounded`).
+  * **Tab 1:** `MI PERFIL` / `INICIAR SESIÓN` (Icon `Icons.person_outline` / `Icons.badge_outlined`).
+* **Active Indicator:** Smooth `AnimatedContainer` highlight using the active tenant's primary brand color (`activeTenant.primaryColorRef`) with white icon and bold typography (`fontSize: 10, letterSpacing: 0.3`). Unselected tabs render with semi-transparent white (60% opacity).
+* **Gesture & Animation Sync:** Utilizes `AnimatedBuilder(animation: _tabController.animation)` and `_tabController.animateTo(index)` to stay in sync with swiping gestures on `TabBarView`.
+* **Dynamic Automatic Switching:**
+  * **On Screen Boot:** If a participant is already cached locally in Hive, it automatically sets the active tab index to **MI PERFIL** (`_tabController.index = 1`) to immediately display their registration card instead of a blank form.
+  * **On Successful Search:** When a user successfully looks up their DNI and links their runner profile, the screen transitions automatically to the **MI PERFIL** tab (`index = 1`).
+  * **On Unlinking / Cerrar Sesión:** Clicking "CERRAR SESIÓN" clears the local Hive cache, resets state variables, and automatically focuses the DNI field.
+
+### Dynamic On-The-Fly Config Validation for Action Buttons
+To avoid requiring users to kill and relaunch the app when organizers toggle event permissions, the profile action buttons fetch the latest live settings directly from the backend (`_fetchFreshSettings()` / `SettingsRepository.getEventSettings`) at the exact moment each button is tapped:
+* **`ENVIAR CERTIFICADO`:** Validates `ISENABLED_SUBIR_DOC`. If `false`, displays an info popup: *"Esta funcionalidad no está disponible por el momento."*
+* **`RETIRAR KIT` / `CAMBIAR`:** Validates `ISENABLED_RETIRAR_KIT`. If `false`, displays the info popup.
+* **`EDITAR DATOS`:** Validates `ISENABLED_EDICION`. If `false`, displays the info popup.
+* Buttons show an `isLoading` spinner while checking permissions in real time.
+
+### Third-Party Kit Authorization Toast Feedback
+* When a runner successfully delegates or updates their kit pickup authorization in `KitAuthorizationScreen`, a streamlined confirmation toast appears centered on screen reading: `"¡Listo! Datos actualizados."` (duration: 1500ms).
 
 ### Discount Code Validation Mapping
 Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{insId}/descuento` (where `insId` takes the value of the `ins` field returned by the participant detail GET endpoint) sending a body containing `codigo`. The response is mapped as follows:
@@ -123,7 +143,7 @@ The document sub-route `/inscripciones/documentacion` manages all required runne
 
 ## 5. Exit & Session Termination
 
-* **Close Application:** Tapping the exit or close session option in `MoreScreen` terminates the application process cleanly by invoking `SystemNavigator.pop()`.
+* **Close Application:** Terminating or backgrounding the application follows standard system lifecycle paradigms across Android and iOS platforms.
 
 ---
 
@@ -172,14 +192,17 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
   * **Next Event & Countdown Card:** Employs dynamic gradients and luminance-aware button text. On race day (`isRaceDay`), it hides the countdown block and button, displaying a compact glassmorphic live status badge ("¡EL EVENTO ESTÁ EN MARCHA!") with a pulsing red status indicator.
   * **Quick Actions Grid:** A 2x2 interactive grid using tenant color accents to route directly using GoRouter to: "Iniciar Sesión" or "Mi Perfil" (`/inscripciones`) depending on whether a runner is linked, "Circuitos" (`/mapas`), "En Vivo" (`/vivo`), and "Ayuda" (`/mas`).
   * **SOS Emergency Button:** Integrates the `geolocator` package to fetch precise GPS coordinates on race day, showing a loading spinner.
-  * **Weather & Gear Advisory Card:** Fetches current weather from Open-Meteo and displays a 3-column altitude-based layout for mountain races (Base, Summit, Arrival) or a 2-column layout for flat races, alongside custom gear and hydration warnings. For both `21kLG` and `DDLN` tenants, it renders using `AppCardStyle.gradient` with the tenant's primary brand color gradient and border.
+  * **Weather & Gear Advisory Card:** Fetches current weather from Open-Meteo and displays a 3-column altitude-based layout for mountain races (Base, Summit, Arrival) or a 2-column layout for flat races, alongside custom gear and hydration warnings. The card header icon (`Icons.wb_sunny_outlined`) is rendered in solid white (`Colors.white`) across all tenants. For both `21kLG` and `DDLN` tenants, it renders using `AppCardStyle.gradient` with the tenant's primary brand color gradient and border.
   * **Floating Scroll-down Indicator:** A centered pill ("DESLIZA PARA VER MÁS") with a bouncing down-arrow animation that automatically fades out past `30` pixels of scroll. Tapping the indicator triggers a smooth auto-scroll down by `250` pixels. It uses a dynamic `IgnorePointer` state (`ignoring: !_showScrollIndicator`) so it only intercepts touch events when visible, avoiding blocking background clicks when faded out.
 * **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". The subtitle text `'Verifica tu estado de inscripción o vincula tu cuenta.'` is removed to streamline the UI.
   * **Keyboard Dismissal & iOS Accessory Bar:** Tapping outside input fields dismisses the soft keyboard via `GestureDetector(onTap: () => FocusScope.of(context).unfocus())`. Switching tabs (e.g., from Iniciar Sesión to Nueva Inscripción) also automatically clears keyboard focus. For numeric fields (such as DNI), a platform-aware "Listo" (Done) accessory bar is displayed on iOS above the number pad to allow one-tap dismissal, while keeping it hidden on Android where native navigation arrows handle dismissal.
   * In the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1):
     * The participant card dynamically displays **DORSAL** instead of **PLACA** inside the bib box for the `21kLG` tenant (when tenant name contains `'21k'`), while continuing to show **PLACA** for other tenants like `DDLN`.
-    * The info details are organized in a specific order: *Nombre*, *DNI*, *Circuito*, *Categoría*, *Fecha de la Carrera*, *Hora de Agrupamiento*, and *Largada* (with *Fecha de Acreditación* removed entirely).
-    * Displays dynamic fields `Centro de Acreditación` and `Marca de Zapatillas` only for the `21kLG` tenant, and `Grupo de Entrenamiento` for both `21kLG` and `DDLN` tenants. To prevent visual clipping on narrow screens, these long text values are dynamically laid out on two stacked vertical lines using `_buildInfoColumn` instead of a single row.
+    * The info details are organized in a specific order: *Nombre*, *DNI*, *Circuito*, *Categoría*, *Hora de Agrupamiento*, *Largada*, *Zapatillas* (for `21kLG`), *Grupo de Entrenamiento*, and *Centro de Acreditación* (for `21kLG`).
+    * Displays dynamic fields `Centro de Acreditación` and `Zapatillas` only for the `21kLG` tenant, and `Grupo de Entrenamiento` for both `21kLG` and `DDLN` tenants. Long text values (`Centro de Acreditación` and `Grupo de Entrenamiento`) are dynamically laid out on two stacked vertical lines using `_buildInfoColumn` to prevent visual clipping on narrow screens.
+    * **Dynamic Feature Gating on Profile Actions:** The action buttons **"ENVIAR CERTIFICADO"**, **"RETIRAR KIT"** (and "CAMBIAR"), and **"EDITAR DATOS"** dynamically validate event configurations (`ISENABLED_SUBIR_DOC`, `ISENABLED_RETIRAR_KIT`, and `ISENABLED_EDICION` respectively) in real-time on-the-fly from the backend upon button tap (via `SettingsRepository.getEventSettings('1', '1')` with cached fallback):
+      * If enabled (`true` / `'TRUE'` / `'1'`), navigation proceeds normally.
+      * If disabled (`false` / not enabled), an `AppAlertDialog` info modal is displayed with the message *"Esta funcionalidad no está disponible por el momento."*.
     * The "PAGAR" and "ENVIAR CERTIFICADO" buttons are styled with explicit white font and icon colors. When payment verification is active, the payment button text updates to `VERIFICANDO PAGO...` showing a sync loader icon, and is disabled.
     * If the participant details response contains a discount code (`insCodDesc`), a glassmorphic **Código de Descuento** card section is conditionally displayed below the participant details card. This card contains an input field (`AppTextField` without a label) to edit the discount code and a validate button (`Validar`) that triggers the real validation.
     * The **"EDITAR DATOS"** and **"CERRAR SESIÓN"** (previously "DESVINCULAR") buttons are stacked vertically and take the full width of the screen. "EDITAR DATOS" (using primary brand color) is on top, and "CERRAR SESIÓN" (using a solid red background and white text) is at the bottom. Tapping "CERRAR SESIÓN" prompts a confirmation popup with the title `"¿Desea cerrar sesión?"`, an empty message body, and buttons `"Cancelar"` / `"Aceptar"`.
@@ -193,17 +216,39 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
     * `Si sos menor, la autorización de menores.`
 * **`KitAuthorizationScreen`:** Displays kit collection options for the runner.
   * **Aesthetic and White-Label Design:** The screen header title uses professional Title Case ("Retirar Kit") and is centered. It implements a dynamic visual tenant-based gradient background (`backgroundColorRef` mixed with transparent-opacity overlays of primary and secondary colors) and uses design system `AppCard` widgets with dynamic glassmorphic borders based on selection.
-  * **Option Selection:** The choices are card-based selections: *"Te presentás a retirar tu kit"* and *"Autorizá a un tercero a retirar tu kit"*. The descriptive subtexts under both options have been removed to streamline the UI.
-  * **Submission Flow:** Submitting the third-party authorization form prompts a custom yellow/amber warning popup (`type: AppDialogType.warning`, with `customAccentColor` and `primaryButtonColor` set to `Colors.amber` using the design system alert/warning icon `Icons.warning_amber_rounded`) titled *"Importante"* and reading: *"Para retirar el kit debe presentarse toda la documentación obligatoria."* To prevent accidental dismissals and routing bugs, this dialog is non-dismissible by tapping outside (`barrierDismissible: false`), forcing the runner to explicitly tap "Aceptar" to acknowledge the message and navigate back to the previous screen.
-* **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, etc.). Selecting a circuit from the list launches `CircuitWebViewScreen` to show web-based track details (e.g., Garmin web or raw images). To ensure raw image tracks (like in 21kLG) display correctly without clipping or incorrect zooming, the web view automatically executes a JavaScript script on page load completion that checks if the loaded document is a raw image or contains exactly one `<img>` tag. If true, it scales the image down (`max-width: 100%`, `max-height: 100%`, `object-fit: contain`) to fit the screen viewport, centers it within a Flexbox layout, sets a dark background (`#121212`) to align with the application's aesthetic, and keeps pinch-to-zoom enabled for close-up inspections. This ensures a consistent, high-fidelity experience across Garmin maps and simple image-based maps.
-* **`LiveScreen`:** Displays real-time event coverage and quick social links. It organizes choices under "COBERTURA" and "SOCIAL & WEB" headers. The "Tiempos" card is dynamically highlighted as the primary live feature, styled with a brand-aligned gradient background and a pulsing red status indicator ("VIVO"). Navigation elements are differentiated, showing the `open_in_new` trailing icon for external web/social links (Facebook, Instagram, Web) and chevrons for internal views.
+  * **Option Selection & Auto Pre-filling:**
+    * Initial state is dynamically derived from the `/api/participantes/{dni}/detalle` API response (`autorizadoDni` and `autorizadoNombre`).
+    * **Authorized Third Party:** If `autorizadoDni` or `autorizadoNombre` contain values, *"Autorizá a un tercero a retirar tu kit"* is checked by default and the DNI and Nombre/Apellido input fields are automatically pre-filled.
+    * **Self-Pickup Default:** If both fields are empty, *"Te presentás a retirar tu kit"* is checked by default.
+  * **Submission & Backend Synchronization:**
+    * Submitting the third-party authorization form prompts a custom yellow/amber warning popup (`type: AppDialogType.warning`, with `customAccentColor` and `primaryButtonColor` set to `Colors.amber` using the design system alert/warning icon `Icons.warning_amber_rounded`) titled *"Importante"* and reading: *"Para retirar el kit debe presentarse toda la documentación obligatoria."* To prevent accidental dismissals and routing bugs, this dialog is non-dismissible by tapping outside (`barrierDismissible: false`), forcing the runner to explicitly tap "Aceptar" to acknowledge the message and navigate back to the previous screen, which displays a centered confirmation toast *"¡Listo! Datos actualizados."* (`duration: 1500ms`).
+    * Selecting *"Te presentás a retirar tu kit"* and pressing "ACEPTAR" invokes `authorizeKit` (`PUT /api/participantes/autorizacion`) sending empty strings for `autorizadoDni` and `autorizadoNombre` to synchronize with the backend and clear previous third-party authorizations, while saving local status in Hive. Returning to `RegistrationScreen` triggers a fresh `getDetail` event to keep profile data synchronized and displays the same centered *"¡Listo! Datos actualizados."* toast.
+* **`MapsScreen`:** Integrates `flutter_map` with interactive custom GPX tracks, simulated live runner movements, and layers toggles (*Largada*, *Acreditación*, *Circuitos*, etc.).
+  * **Real-time Settings Syncing:** Automatically triggers an asynchronous refresh (`getEventSettings('1', '1')`) upon screen mounting (`initState`), tenant change, and whenever the runner switches between layers/tabs (`_onLayerSelected`). This ensures that administrative updates from the backend (such as populating `LAT_LARGADA`, new circuit URLs, or accreditation points) reflect immediately without requiring an app restart.
+  * **State Preservation via `IndexedStack`:** Employs an `IndexedStack` to keep `_buildMapStack` and `FlutterMap` mounted in memory when switching between "Circuitos" and other map layers. This prevents controller disposal exceptions (`FlutterMapInternalController was used after being disposed`), preserves tile cache, and eliminates frame skips. Camera movements via `_mapController.move` are safely executed inside post-frame callbacks.
+  * **Largada Layer & Undefined Start Coordinates:**
+    * The **"Largada"** tab is always available in `_availableLayers`.
+    * If `latLargada` and `lonLargada` are configured, it displays the interactive map with start marker and the "CÓMO LLEGAR" action button.
+    * If `latLargada` or `lonLargada` are null/empty, it displays an informative glassmorphic state with icon `Icons.outlined_flag_rounded` and updated title text: *"Muy pronto conocerás el punto de largada."*
+  * **Acreditación Layer:**
+    * Renders the location cards and dates directly without extra redundant subtitles.
+  * **Circuit List & Availability Checking:**
+    * In the "Circuitos" tab, each circuit entry from `settings.circuitosMap` is evaluated for availability (`url.trim().isNotEmpty`).
+    * **Available Circuit:** Tapping opens `CircuitWebViewScreen` to show web-based track details (e.g., Garmin web or raw images). For image-based tracks (e.g. 21kLG), JavaScript scales the image to fit the screen viewport with a dark background (`#121212`) and pinch-to-zoom enabled.
+    * **Unavailable / Pending Circuit:** If the URL/image is empty, tapping the circuit card prompts an `AppAlertDialog` (*"Circuito en Preparación"*) stating: *"Muy pronto podrás conocer el circuito."* with primary button *"Volver"*.
+* **`LiveScreen`:** Displays real-time event coverage and quick social links. Subtitle reads *"Sigue la carrera en tiempo real"*. It organizes choices under "COBERTURA" and "SOCIAL & WEB" headers.
+  * **Real-time Settings Syncing & On-Tap Verification:** Automatically triggers an asynchronous refresh (`getEventSettings('1', '1')`) upon screen mounting (`initState`) and tenant change (`_onTenantChanged`). Additionally, tapping the "Resultados" card immediately queries `getEventSettings('1', '1')` to evaluate the freshest `URL_TIMES` value directly from the backend before navigating.
+  * **Resultados (Resultados Portal) Availability Checking:** The "Resultados" card is dynamically highlighted as the primary live feature without secondary classifications text, styled with a brand-aligned gradient background and a pulsing red status indicator ("VIVO").
+    * **Available Portal:** When `settings.urlTimes` contains a valid URL, tapping the card opens `CircuitWebViewScreen` (titled *"Resultados"*) to display the live classifications.
+    * **Unavailable / Empty Portal:** If `URL_TIMES` is empty or not defined, tapping prompts an `AppAlertDialog` (*"Resultados"*) stating: *"Los resultados estarán disponibles el día de la carrera."* with primary button *"Volver"* and icon `Icons.emoji_events_outlined`.
+  * **Social & Web Links:** Navigation elements are differentiated, showing the `open_in_new` trailing icon for external web/social links (Facebook, Instagram, Web) and chevrons for internal views.
 * **`ContentListScreen`:** Displays vertical feeds of news articles or information documents categorized by event content types. It features a background gradient dynamically blended using the active tenant's branding colors. When no content is available, it displays a premium centered empty state featuring a glowing icon container, contextual title, description matching the section type (Novedades or Info Importante), and a white-colored "ACTUALIZAR" action button supporting standard Pull-to-Refresh gestures.
 * **`NotificationsScreen`:** Displays a list of received push notifications. Clicking a notification opens a custom detail modal. In the modal, URLs in the message body are automatically detected and parsed into interactive clickable links that launch in the system browser using the event's primary color as highlights. The "Entendido" button font color is styled as white for legibility.
-* **`MoreScreen`:** Embeds contact messages, application sharing, and brand info.
-  * **WhatsApp Card:** Uses the official `FontAwesomeIcons.whatsapp` logo, titled "WhatsApp" and directly formatted phone number. Launches direct chat via `whatsapp://send?phone=...` (falling back to web `https://wa.me/...`) with a clean phone number and without pre-filled message text parameters.
-  * **Mail Card:** Titled "Mail", displaying the email with the dynamic subtitle loaded from event settings key `CONTACTO_MENSAJE_MAIL`.
+* **`MoreScreen`:** Embeds contact messages, application sharing, and brand info directly in sleek glassmorphic cards.
+  * **WhatsApp Card:** Uses the official `FontAwesomeIcons.whatsapp` logo, titled "WhatsApp" and formatted phone number styled cleanly (`color: white50, fontSize: 13, fontWeight: normal`). Launches direct chat via `whatsapp://send?phone=...` (falling back to web `https://wa.me/...`) with a clean phone number and without pre-filled message text parameters.
+  * **Mail Card:** Titled "Mail", displaying the email address formatted with the standard subtle text style (`color: white50, fontSize: 13, fontWeight: normal`).
   * **Info Importante Card:** Subtitled "Documentación obligatoria".
-  * **Acerca de Card:** Displays the custom logo asset, stacked subtitle ("Apps de alto rendimiento\nAndroid & iOS"), email contact link with clean white styling without underline, the update button, and the version label rendered as a stylish chip badge under the button in uppercase format (e.g. `VERSIÓN 1.0.0+2`). It conditionally exposes a **"Cerrar App"** outlined action button only on Android targets (fully hidden on iOS for App Store guideline compliance).
+  * **Acerca de Card:** Displays the custom logo asset, stacked subtitle ("Apps de alto rendimiento\nAndroid & iOS"), email contact link with clean white styling without underline, the update button, and the version label rendered as a stylish chip badge under the button in uppercase format (e.g. `VERSIÓN 1.0.0+2`).
   * **Floating Scroll-down Indicator:** Integrates the "DESLIZA PARA VER MÁS" indicator banner matching `HomeScreen` and `RegistrationScreen`. It tracks scrolling through a dedicated `ScrollController` and executes a smooth auto-scroll to the bottom of the screen on tap, fading out automatically after scroll offsets exceed 30 pixels.
 
 ### Design System — `AppButton`

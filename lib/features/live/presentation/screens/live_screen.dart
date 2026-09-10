@@ -5,6 +5,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../core/theme/branding_manager.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../../content/presentation/screens/content_list_screen.dart';
 import '../../../maps/presentation/screens/maps_screen.dart';
 import '../../../settings/domain/entities/event_settings.dart';
@@ -30,8 +31,20 @@ class _LiveScreenState extends State<LiveScreen> {
     _socialBloc = getIt<SocialBloc>();
     _loadSocial();
     _settings = getIt<SettingsRepository>().getCachedSettings();
+    _fetchSettings();
 
     _tenantManager.addListener(_onTenantChanged);
+  }
+
+  Future<void> _fetchSettings() async {
+    try {
+      final updated = await getIt<SettingsRepository>().getEventSettings('1', '1');
+      if (mounted) {
+        setState(() {
+          _settings = updated;
+        });
+      }
+    } catch (_) {}
   }
 
   void _loadSocial() {
@@ -40,9 +53,7 @@ class _LiveScreenState extends State<LiveScreen> {
 
   void _onTenantChanged() {
     _loadSocial();
-    setState(() {
-      _settings = getIt<SettingsRepository>().getCachedSettings();
-    });
+    _fetchSettings();
   }
 
   @override
@@ -94,7 +105,7 @@ class _LiveScreenState extends State<LiveScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Sigue la carrera minuto a minuto',
+                  'Sigue la carrera en tiempo real',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14,
@@ -116,21 +127,49 @@ class _LiveScreenState extends State<LiveScreen> {
                 const SizedBox(height: 12),
                 if (_settings?.isEnabledTiempos == true) ...[
                   _buildMenuItem(
-                    title: 'Tiempos',
-                    subtitle: 'Clasificaciones en tiempo real',
+                    title: 'Resultados',
+                    subtitle: '',
                     icon: Icons.emoji_events_outlined,
                     badgeColor: const Color(0xFFFFB300), // Gold/Yellow
                     isFeatured: true,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CircuitWebViewScreen(
-                            title: 'Tiempos',
-                            url: _settings?.urlTimes ?? '',
+                    onTap: () async {
+                      EventSettings? currentSettings = _settings;
+                      try {
+                        currentSettings = await getIt<SettingsRepository>().getEventSettings('1', '1');
+                        if (mounted) {
+                          setState(() {
+                            _settings = currentSettings;
+                          });
+                        }
+                      } catch (_) {
+                        currentSettings = _settings ?? getIt<SettingsRepository>().getCachedSettings();
+                      }
+
+                      if (!context.mounted) return;
+                      final url = currentSettings?.urlTimes.trim() ?? '';
+
+                      if (url.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CircuitWebViewScreen(
+                              title: 'Resultados',
+                              url: url,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        AppAlertDialog.show(
+                          context: context,
+                          type: AppDialogType.info,
+                          title: 'Resultados',
+                          message: 'Los resultados estarán disponibles el día de la carrera.',
+                          primaryButtonText: 'Volver',
+                          customIcon: Icons.emoji_events_outlined,
+                          customAccentColor: activeTenant.primaryColorRef,
+                          primaryButtonColor: activeTenant.primaryColorRef,
+                        );
+                      }
                     },
                   ),
                   const SizedBox(height: 12),
@@ -317,17 +356,19 @@ class _LiveScreenState extends State<LiveScreen> {
                         ],
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: isFeatured ? 14 : 13,
-                        color: isFeatured 
-                            ? Colors.white.withValues(alpha: 0.9) 
-                            : Colors.white.withValues(alpha: 0.6),
-                        fontWeight: isFeatured ? FontWeight.w500 : FontWeight.w400,
+                    if (subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: isFeatured ? 14 : 13,
+                          color: isFeatured 
+                              ? Colors.white.withValues(alpha: 0.9) 
+                              : Colors.white.withValues(alpha: 0.6),
+                          fontWeight: isFeatured ? FontWeight.w500 : FontWeight.w400,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

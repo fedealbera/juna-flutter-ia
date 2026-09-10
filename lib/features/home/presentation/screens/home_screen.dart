@@ -1528,7 +1528,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           children: [
             Icon(
               Icons.wb_sunny_outlined,
-              color: activeTenant.accentColorRef,
+              color: Colors.white,
               size: 22,
             ),
             const SizedBox(width: 8),

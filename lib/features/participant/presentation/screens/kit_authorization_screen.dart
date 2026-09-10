@@ -34,7 +34,23 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
   @override
   void initState() {
     super.initState();
-    _loadLocalKitStatus();
+    _initKitState();
+  }
+
+  void _initKitState() {
+    final authDni = widget.participant.autorizadoDni.trim();
+    final authNombre = widget.participant.autorizadoNombre.trim();
+
+    if (authDni.isNotEmpty || authNombre.isNotEmpty) {
+      _envioAOtro = true;
+      _yoRetiro = false;
+      _dniController.text = authDni;
+      _nameController.text = authNombre;
+    } else {
+      _yoRetiro = true;
+      _envioAOtro = false;
+      _loadLocalKitStatus();
+    }
   }
 
   @override
@@ -68,6 +84,18 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
     });
 
     try {
+      final repository = getIt<ParticipantRepository>();
+      final insId = int.tryParse(widget.participant.insId);
+
+      await repository.authorizeKit(
+        dni: widget.participant.dni,
+        insId: insId,
+        idEvento: '1',
+        idOrg: '1',
+        autorizadoDni: '',
+        autorizadoNombre: '',
+      );
+
       final hiveService = getIt<HiveService>();
       await hiveService.put<bool>(
         'kit_box',
@@ -79,8 +107,13 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
         context.pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Guardado localmente de forma exitosa'),
+            content: Text(
+              '¡Listo! Datos actualizados.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.green,
+            duration: Duration(milliseconds: 1500),
           ),
         );
       }
@@ -88,7 +121,7 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al guardar localmente: $e'),
+            content: Text('Error al guardar: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -145,8 +178,13 @@ class _KitAuthorizationScreenState extends State<KitAuthorizationScreen> {
             context.pop(true);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Autorización registrada exitosamente'),
+                content: Text(
+                  '¡Listo! Datos actualizados.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white),
+                ),
                 backgroundColor: Colors.green,
+                duration: Duration(milliseconds: 1500),
               ),
             );
           }

@@ -50,8 +50,18 @@ class ParticipantDetail extends Equatable {
   String get partiFacimo => _data['partiFacimo']?.toString() ?? _data['parti_facimo']?.toString() ?? '';
   String get tipoCarrera => _data['tipoCarrera']?.toString() ?? _data['tipo_carrera']?.toString() ?? '';
   String get tipoEvento => _data['tipoEvento']?.toString() ?? _data['tipo_evento']?.toString() ?? '';
-  String get autorizadoDni => _data['autorizadoDni']?.toString() ?? _data['autorizado_dni']?.toString() ?? '';
-  String get autorizadoNombre => _data['autorizadoNombre']?.toString() ?? _data['autorizado_nombre']?.toString() ?? '';
+  String get autorizadoDni =>
+      _data['autorizadoDni']?.toString() ??
+      _data['autorizado_dni']?.toString() ??
+      rawJson['autorizadoDni']?.toString() ??
+      rawJson['autorizado_dni']?.toString() ??
+      '';
+  String get autorizadoNombre =>
+      _data['autorizadoNombre']?.toString() ??
+      _data['autorizado_nombre']?.toString() ??
+      rawJson['autorizadoNombre']?.toString() ??
+      rawJson['autorizado_nombre']?.toString() ??
+      '';
 
   @override
   List<Object?> get props => [rawJson];

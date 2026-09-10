@@ -10,6 +10,7 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../../tracks/presentation/bloc/tracks_bloc.dart';
 import '../../../tracks/presentation/bloc/tracks_event.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
@@ -80,7 +81,35 @@ class _MapsScreenState extends State<MapsScreen> {
       _selectedLayer = layers.first;
     }
 
+    _fetchSettings();
     _tenantManager.addListener(_onTenantChanged);
+  }
+
+  Future<void> _fetchSettings() async {
+    try {
+      final updated = await getIt<SettingsRepository>().getEventSettings('1', '1');
+      if (mounted) {
+        setState(() {
+          _settings = updated;
+          final layers = _availableLayers;
+          if (layers.isNotEmpty && !layers.contains(_selectedLayer)) {
+            _selectedLayer = layers.first;
+          }
+        });
+        if (_selectedLayer != 'Circuitos') {
+          final center = _getLayerCenter(_selectedLayer, _settings);
+          if (center != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              try {
+                _mapController.move(center, 15.0);
+              } catch (_) {}
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching settings in MapsScreen: $e');
+    }
   }
 
   void _loadTracks() {
@@ -89,18 +118,13 @@ class _MapsScreenState extends State<MapsScreen> {
 
   void _onTenantChanged() {
     _loadTracks();
-    setState(() {
-      _settings = getIt<SettingsRepository>().getCachedSettings();
-      final layers = _availableLayers;
-      if (layers.isNotEmpty && !layers.contains(_selectedLayer)) {
-        _selectedLayer = layers.first;
-      }
-    });
+    _fetchSettings();
   }
 
   @override
   void dispose() {
     _tenantManager.removeListener(_onTenantChanged);
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -112,11 +136,9 @@ class _MapsScreenState extends State<MapsScreen> {
 
   List<String> get _availableLayers {
     final layers = <String>[];
+    layers.add('Largada');
     final settings = _settings;
     if (settings != null) {
-      if (settings.latLargada != null && settings.lonLargada != null) {
-        layers.add('Largada');
-      }
       if (settings.acreditacionesMap.isNotEmpty) {
         layers.add('Acreditación');
       }
@@ -126,7 +148,7 @@ class _MapsScreenState extends State<MapsScreen> {
         layers.add('Reconocimiento');
       }
     } else {
-      layers.addAll(['Largada', 'Acreditación']);
+      layers.add('Acreditación');
     }
     layers.add('Circuitos');
     return layers;
@@ -169,10 +191,17 @@ class _MapsScreenState extends State<MapsScreen> {
     setState(() {
       _selectedLayer = layer;
     });
+    _fetchSettings();
     if (layer != 'Circuitos') {
       final center = _getLayerCenter(layer, _settings);
       if (center != null) {
-        _mapController.move(center, 15.0);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          try {
+            _mapController.move(center, 15.0);
+          } catch (e) {
+            debugPrint('Error moving map: $e');
+          }
+        });
       }
     }
   }
@@ -319,9 +348,13 @@ class _MapsScreenState extends State<MapsScreen> {
               
               // Dynamic Body
               Expanded(
-                child: _selectedLayer == 'Circuitos'
-                    ? _buildCircuitosList(activeTenant)
-                    : _buildMapStack(activeTenant),
+                child: IndexedStack(
+                  index: _selectedLayer == 'Circuitos' ? 1 : 0,
+                  children: [
+                    _buildMapStack(activeTenant),
+                    _buildCircuitosList(activeTenant),
+                  ],
+                ),
               ),
             ],
           ),
@@ -331,6 +364,13 @@ class _MapsScreenState extends State<MapsScreen> {
   }
 
   Widget _buildMapStack(dynamic activeTenant) {
+    final bool isLargadaWithoutCoords = _selectedLayer == 'Largada' &&
+        (_settings?.latLargada == null || _settings?.lonLargada == null);
+
+    if (isLargadaWithoutCoords) {
+      return _buildLargadaEmptyState(activeTenant);
+    }
+
     final initialCenter = _getLayerCenter(_selectedLayer, _settings) ?? _gpxPoints.first;
 
     return Stack(
@@ -385,6 +425,58 @@ class _MapsScreenState extends State<MapsScreen> {
     );
   }
 
+  Widget _buildLargadaEmptyState(dynamic activeTenant) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+        child: AppCard(
+          style: AppCardStyle.glassmorphic,
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: activeTenant.primaryColorRef.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: activeTenant.primaryColorRef.withValues(alpha: 0.4),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: activeTenant.primaryColorRef.withValues(alpha: 0.12),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.outlined_flag_rounded,
+                  color: activeTenant.primaryColorRef,
+                  size: 48,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Muy pronto conocerás el punto de largada.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.3,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCircuitosList(dynamic activeTenant) {
     final Map<String, dynamic> fallbackCircuitos = {
       '30K Rural': 'https://desafiodelasnubes.com.ar/30k.html',
@@ -417,7 +509,8 @@ class _MapsScreenState extends State<MapsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             itemBuilder: (context, index) {
               final name = circuitos.keys.elementAt(index);
-              final url = circuitos[name]?.toString() ?? '';
+              final url = circuitos[name]?.toString().trim() ?? '';
+              final isAvailable = url.isNotEmpty;
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
@@ -427,7 +520,7 @@ class _MapsScreenState extends State<MapsScreen> {
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () {
-                      if (url.isNotEmpty) {
+                      if (isAvailable) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -436,6 +529,17 @@ class _MapsScreenState extends State<MapsScreen> {
                               url: url,
                             ),
                           ),
+                        );
+                      } else {
+                        AppAlertDialog.show(
+                          context: context,
+                          type: AppDialogType.info,
+                          title: 'Circuito en Preparación',
+                          message: 'Muy pronto podrás conocer el circuito.',
+                          primaryButtonText: 'Volver',
+                          customIcon: Icons.alt_route_rounded,
+                          customAccentColor: activeTenant.primaryColorRef,
+                          primaryButtonColor: activeTenant.primaryColorRef,
                         );
                       }
                     },
@@ -473,7 +577,9 @@ class _MapsScreenState extends State<MapsScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Ver altimetría y recorrido',
+                                  isAvailable
+                                      ? 'Ver altimetría y recorrido'
+                                      : 'Disponible próximamente',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.white.withValues(alpha: 0.6),
@@ -488,13 +594,27 @@ class _MapsScreenState extends State<MapsScreen> {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.08),
+                              color: isAvailable
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : activeTenant.primaryColorRef.withValues(alpha: 0.22),
                               borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isAvailable
+                                    ? Colors.white.withValues(alpha: 0.12)
+                                    : activeTenant.primaryColorRef.withValues(alpha: 0.6),
+                                width: 1.2,
+                              ),
                             ),
                             child: Icon(
-                              Icons.open_in_full_rounded,
-                              color: Colors.white.withValues(alpha: 0.6),
-                              size: 18,
+                              isAvailable
+                                  ? Icons.open_in_full_rounded
+                                  : Icons.info_rounded,
+                              color: isAvailable
+                                  ? Colors.white.withValues(alpha: 0.7)
+                                  : (activeTenant.primaryColorRef.computeLuminance() < 0.2
+                                      ? Colors.white
+                                      : activeTenant.primaryColorRef),
+                              size: 20,
                             ),
                           ),
                         ],
@@ -529,7 +649,7 @@ class _MapsScreenState extends State<MapsScreen> {
       lon = settings?.lonLargada;
     } else if (_selectedLayer == 'Acreditación') {
       title = 'Acreditaciones';
-      description = 'Lugar y fechas de acreditación de competidores.';
+      description = '';
       icon = Icons.badge_outlined;
       iconColor = Colors.orange;
     } else if (_selectedLayer == 'Reconocimiento') {
@@ -548,7 +668,9 @@ class _MapsScreenState extends State<MapsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: (description.isEmpty && extraContent.isEmpty)
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
@@ -572,15 +694,17 @@ class _MapsScreenState extends State<MapsScreen> {
                         fontSize: 18,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        color: Color(0xFF333333), // gris mas oscuro para resaltar en el fondo blured
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: const TextStyle(
+                          color: Color(0xFF333333), // gris mas oscuro para resaltar en el fondo blured
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                    ],
                     if (extraContent.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       ...extraContent,

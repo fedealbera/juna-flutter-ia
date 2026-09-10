@@ -28,6 +28,18 @@ class EventSettings extends Equatable {
   String get urlInscripciones => getSetting('URL_INSCRIPCIONES');
 
   bool get isEnabledReconocimiento => getSetting('ISENABLED_RECONOCIMIENTO').toUpperCase() == 'TRUE';
+  bool get isEnabledSubirDoc {
+    final val = getSetting('ISENABLED_SUBIR_DOC').toUpperCase();
+    return val == 'TRUE' || val == '1';
+  }
+  bool get isEnabledRetirarKit {
+    final val = getSetting('ISENABLED_RETIRAR_KIT').toUpperCase();
+    return val == 'TRUE' || val == '1';
+  }
+  bool get isEnabledEdicion {
+    final val = getSetting('ISENABLED_EDICION').toUpperCase();
+    return val == 'TRUE' || val == '1';
+  }
   double? get latReconocimiento => double.tryParse(getSetting('LAT_RECONOCIMIENTO'));
   double? get lonReconocimiento => double.tryParse(getSetting('LON_RECONOCIMIENTO'));
 
