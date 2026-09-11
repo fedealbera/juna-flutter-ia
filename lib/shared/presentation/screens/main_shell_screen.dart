@@ -142,7 +142,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     title: 'Inicio',
                     selected: selectedIndex == 0,
                     onTap: () {
-                      Navigator.pop(context);
+                      if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
+                        Navigator.pop(context);
+                      }
                       _onItemTapped(0, context);
                     },
                     tenant: activeTenant,
@@ -152,7 +154,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     title: 'Inscripciones',
                     selected: selectedIndex == 1,
                     onTap: () {
-                      Navigator.pop(context);
+                      if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
+                        Navigator.pop(context);
+                      }
                       _onItemTapped(1, context);
                     },
                     tenant: activeTenant,
@@ -162,7 +166,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     title: 'Mapas de Circuitos',
                     selected: selectedIndex == 2,
                     onTap: () {
-                      Navigator.pop(context);
+                      if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
+                        Navigator.pop(context);
+                      }
                       _onItemTapped(2, context);
                     },
                     tenant: activeTenant,
@@ -172,7 +178,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     title: 'Vivo / Tracking',
                     selected: selectedIndex == 3,
                     onTap: () {
-                      Navigator.pop(context);
+                      if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
+                        Navigator.pop(context);
+                      }
                       _onItemTapped(3, context);
                     },
                     tenant: activeTenant,
@@ -182,7 +190,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
                     title: 'Ayuda',
                     selected: selectedIndex == 4,
                     onTap: () {
-                      Navigator.pop(context);
+                      if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
+                        Navigator.pop(context);
+                      }
                       _onItemTapped(4, context);
                     },
                     tenant: activeTenant,

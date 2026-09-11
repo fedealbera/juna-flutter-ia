@@ -384,6 +384,11 @@ The `Makefile` exposes simple targets to easily configure, run, and compile the 
   - `make clean` - Cleans build caches.
   - `make get` - Installs packages via `flutter pub get`.
 
+### iOS App Store Transporter Compliance (`Info.plist`)
+To comply with Apple App Store Connect Transporter validation rules (avoiding error 409), all tenant `Info.plist` files (`tenants/21klg/Info.plist`, `tenants/ddln/Info.plist`, and `ios/Runner/Info.plist`) specify:
+- `<key>UIRequiresFullScreen</key><true/>`: Disables iPad split-screen multitasking requirement.
+- `<key>UISupportedInterfaceOrientations~ipad</key>`: Includes all 4 orientations (`UIInterfaceOrientationPortrait`, `UIInterfaceOrientationPortraitUpsideDown`, `UIInterfaceOrientationLandscapeLeft`, `UIInterfaceOrientationLandscapeRight`) required when targeting iPad OS builds.
+
 ---
 
 ## 11. Spec-Driven Development (SDD) Methodology & Workflow
