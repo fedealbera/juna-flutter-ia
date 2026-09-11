@@ -18,7 +18,7 @@ lib/
 │   ├── di/               # Injection configuration (GetIt + Injectable)
 │   ├── env/              # Environment-specific configuration
 │   ├── firebase/         # Dynamic Firebase initialization & Managers
-│   ├── network/          # Network layer (Dio client + Interceptors)
+│   ├── network/          # Network layer (Dio client + Interceptors: ErrorInterceptor handles all DioExceptionTypes exhaustively, including transformTimeout)
 │   ├── routing/          # Routing & Navigation configuration (GoRouter)
 │   └── theme/            # Theme & Branding dynamic config managers
 ├── features/             # Feature domains (vertical slices)
