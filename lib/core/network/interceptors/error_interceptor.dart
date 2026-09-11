@@ -87,7 +87,6 @@ class ErrorInterceptor extends Interceptor {
         break;
 
       case DioExceptionType.unknown:
-      default:
         exception = UnknownException(
           message: err.message ?? 'An unknown network error occurred.',
           code: 'UNKNOWN_NETWORK_ERROR',
