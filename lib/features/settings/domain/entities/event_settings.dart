@@ -40,6 +40,10 @@ class EventSettings extends Equatable {
     final val = getSetting('ISENABLED_EDICION').toUpperCase();
     return val == 'TRUE' || val == '1';
   }
+  bool get isEnabledCodDesc {
+    final val = getSetting('ISENABLED_CODDESC').toUpperCase();
+    return val == 'TRUE' || val == '1';
+  }
   double? get latReconocimiento => double.tryParse(getSetting('LAT_RECONOCIMIENTO'));
   double? get lonReconocimiento => double.tryParse(getSetting('LON_RECONOCIMIENTO'));
 

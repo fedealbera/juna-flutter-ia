@@ -70,11 +70,14 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   int _previousTabIndex = 0;
   bool _shouldSkipRefresh = false;
   bool _yoRetiroKitLocal = false;
+  EventSettings? _settings;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _settings = getIt<SettingsRepository>().getCachedSettings();
+    _fetchSettings();
     _tabController = TabController(
       length: 2,
       vsync: this,
@@ -117,6 +120,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   }
 
   Future<void> _loadLinkedParticipant() async {
+    _fetchSettings();
     final hiveService = getIt<HiveService>();
     final Map? cachedJson = await hiveService.get<Map>(
       'participant_box',
@@ -226,10 +230,24 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _fetchSettings();
       final p = _linkedParticipant;
       if (p != null && p.nroPlaca == '0') {
         _verificarPagoServidor();
       }
+    }
+  }
+
+  Future<void> _fetchSettings() async {
+    try {
+      final updated = await getIt<SettingsRepository>().getEventSettings('1', '1');
+      if (mounted) {
+        setState(() {
+          _settings = updated;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching event settings in registration: $e');
     }
   }
 
@@ -258,26 +276,30 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     if (mounted) {
       setState(() {});
     }
-    if (_tabController.index == 1 && !_tabController.indexIsChanging) {
+    if (!_tabController.indexIsChanging) {
       if (_tabController.index != _previousTabIndex) {
-        if (_shouldSkipRefresh) {
-          _shouldSkipRefresh = false;
-        } else {
-          _refreshParticipantIfLinked();
-        }
-      }
-      if (_linkedParticipant == null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            _dniFocusNode.requestFocus();
+        if (_tabController.index == 1) {
+          _fetchSettings();
+          if (_shouldSkipRefresh) {
+            _shouldSkipRefresh = false;
+          } else {
+            _refreshParticipantIfLinked();
           }
-        });
+          if (_linkedParticipant == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _dniFocusNode.requestFocus();
+              }
+            });
+          }
+        }
+        _previousTabIndex = _tabController.index;
       }
     }
-    _previousTabIndex = _tabController.index;
   }
 
   void _refreshParticipantIfLinked() {
+    _fetchSettings();
     final detail = _linkedParticipant;
     if (detail == null) return;
 
@@ -389,6 +411,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                   child: GestureDetector(
                                     onTap: () {
                                       FocusScope.of(context).unfocus();
+                                      _fetchSettings();
                                       _tabController.animateTo(1);
                                     },
                                     child: AnimatedContainer(
@@ -499,6 +522,8 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                             rawToSave['_cached_discount_msg'] as String?;
                         final cachedDiscountCode =
                             rawToSave['_cached_discount_code'] as String?;
+
+                        _fetchSettings();
 
                         if (mounted) {
                           setState(() {
@@ -768,9 +793,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     }
 
     if (_linkedParticipant != null) {
-      final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
+      final currentSettings = _settings ?? getIt<SettingsRepository>().getCachedSettings();
       final fechaAcreditacion =
-          cachedSettings?.getSetting('FECHA_ACREDITACION') ?? '5 y 6 de Junio';
+          currentSettings?.getSetting('FECHA_ACREDITACION') ?? '5 y 6 de Junio';
       final detail = _linkedParticipant!;
 
       return Stack(
@@ -787,7 +812,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   fechaAcreditacion,
                   activeTenant,
                 ),
-                if (detail.nroPlaca == '0') ...[
+                if (detail.nroPlaca == '0' && (currentSettings?.isEnabledCodDesc == true)) ...[
                   const SizedBox(height: 16),
                   _buildDiscountCodeSection(detail, activeTenant),
                 ],
@@ -1112,6 +1137,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   textInputAction: TextInputAction.search,
                   onFieldSubmitted: (_) {
                     if (_dniController.text.isNotEmpty) {
+                      _fetchSettings();
                       _participantBloc.add(
                         ParticipantEvent.getDetail(
                           dni: _dniController.text,
@@ -1137,6 +1163,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   ),
                   onPressed: () {
                     if (_dniController.text.isNotEmpty) {
+                      _fetchSettings();
                       _participantBloc.add(
                         ParticipantEvent.getDetail(
                           dni: _dniController.text,

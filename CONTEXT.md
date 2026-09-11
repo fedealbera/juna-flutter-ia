@@ -71,7 +71,7 @@ The application is engineered to support true White Label dynamic brand configur
 
 To properly link runners with their corresponding push tokens, the token registration endpoint `/api/participantes/token` is called only under specific user actions:
 
-* **Search & Link:** The runner inputs their DNI and searches for their registration inside the "VER PARTICIPANTE" tab on `RegistrationScreen`.
+* **Search & Link:** The runner inputs their DNI and searches for their registration inside the "VER PARTICIPANTE" tab on `RegistrationScreen`. Initiating the search and receiving `detailLoaded` triggers `_fetchSettings()` to ensure all remote feature flags (like `ISENABLED_CODDESC`) are immediately synchronized with the backend.
 * **Token POST Action:** When the API `GET /api/participantes/{dni}/detalle` returns successfully, the participant is linked (stored in local secure cache via `HiveService`). Only at this point is the `POST /api/participantes/token` endpoint triggered with the runner's DNI, event details, and FCM token. It does not run at application startup.
 * **Inscription ID (insId) Resolution:** For registration updates via the PUT endpoint, the parameter `insId` takes the value of the `ins` field returned by the GET detail endpoint.
 
@@ -99,9 +99,10 @@ The `RegistrationScreen` adopts the exact same custom dark segmented switcher ba
   * **Tab 1:** `MI PERFIL` / `INICIAR SESIÓN` (Icon `Icons.person_outline` / `Icons.badge_outlined`).
 * **Active Indicator:** Smooth `AnimatedContainer` highlight using the active tenant's primary brand color (`activeTenant.primaryColorRef`) with white icon and bold typography (`fontSize: 10, letterSpacing: 0.3`). Unselected tabs render with semi-transparent white (60% opacity).
 * **Gesture & Animation Sync:** Utilizes `AnimatedBuilder(animation: _tabController.animation)` and `_tabController.animateTo(index)` to stay in sync with swiping gestures on `TabBarView`.
-* **Dynamic Automatic Switching:**
+* **Dynamic Automatic Switching & Config Refresh:**
   * **On Screen Boot:** If a participant is already cached locally in Hive, it automatically sets the active tab index to **MI PERFIL** (`_tabController.index = 1`) to immediately display their registration card instead of a blank form.
   * **On Successful Search:** When a user successfully looks up their DNI and links their runner profile, the screen transitions automatically to the **MI PERFIL** tab (`index = 1`).
+  * **On Tab Transition to MI PERFIL:** Whenever the user switches to the **MI PERFIL** tab (via button tap or swipe gesture), `_fetchSettings()` is triggered to fetch the latest remote settings (such as `ISENABLED_CODDESC`), keeping feature flags and section visibility in sync with backend configurations.
   * **On Unlinking / Cerrar Sesión:** Clicking "CERRAR SESIÓN" clears the local Hive cache, resets state variables, and automatically focuses the DNI field.
 
 ### Dynamic On-The-Fly Config Validation for Action Buttons
@@ -114,10 +115,11 @@ To avoid requiring users to kill and relaunch the app when organizers toggle eve
 ### Third-Party Kit Authorization Toast Feedback
 * When a runner successfully delegates or updates their kit pickup authorization in `KitAuthorizationScreen`, a streamlined confirmation toast appears centered on screen reading: `"¡Listo! Datos actualizados."` (duration: 1500ms).
 
-### Discount Code Validation Mapping
-Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{insId}/descuento` (where `insId` takes the value of the `ins` field returned by the participant detail GET endpoint) sending a body containing `codigo`. The response is mapped as follows:
-* **`dispo_cod == "VIGENTE"`:** Displays an `AlertDialog` confirming the code validation showing `"Disponible hasta el $fin"`.
-* **Otherwise:** Displays an `AlertDialog` with the error `dispo_msg` returned from the API, and sets the local validation state to false.
+### Discount Code Section & Validation Mapping
+* **Remote Visibility Control (`ISENABLED_CODDESC`):** The "Código de Descuento" card on the **MI PERFIL** tab is conditionally displayed only when the runner is pre-registered (`detail.nroPlaca == "0"`) **and** the remote configuration `ISENABLED_CODDESC` is active (`"TRUE"` or `"1"` via `EventSettings.isEnabledCodDesc`). If `ISENABLED_CODDESC` is `"FALSE"`, `"0"`, or missing/empty, the section is completely hidden from the UI.
+* **Validation Flow:** Tapping the "Validar" button triggers a POST request to `/api/inscripciones/{insId}/descuento` (where `insId` takes the value of the `ins` field returned by the participant detail GET endpoint) sending a body containing `codigo`. The response is mapped as follows:
+  * **`dispo_cod == "VIGENTE"`:** Displays an `AlertDialog` confirming the code validation showing `"Disponible hasta el $fin"`.
+  * **Otherwise:** Displays an `AlertDialog` with the error `dispo_msg` returned from the API, and sets the local validation state to false.
 
 ---
 
@@ -243,7 +245,7 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
     * **Unavailable / Empty Portal:** If `URL_TIMES` is empty or not defined, tapping prompts an `AppAlertDialog` (*"Resultados"*) stating: *"Los resultados estarán disponibles el día de la carrera."* with primary button *"Volver"* and icon `Icons.emoji_events_outlined`.
   * **Social & Web Links:** Navigation elements are differentiated, showing the `open_in_new` trailing icon for external web/social links (Facebook, Instagram, Web) and chevrons for internal views.
 * **`ContentListScreen`:** Displays vertical feeds of news articles or information documents categorized by event content types. It features a background gradient dynamically blended using the active tenant's branding colors. When no content is available, it displays a premium centered empty state featuring a glowing icon container, contextual title, description matching the section type (Novedades or Info Importante), and a white-colored "ACTUALIZAR" action button supporting standard Pull-to-Refresh gestures.
-* **`NotificationsScreen`:** Displays a list of received push notifications. Clicking a notification opens a custom detail modal. In the modal, URLs in the message body are automatically detected and parsed into interactive clickable links that launch in the system browser using the event's primary color as highlights. The "Entendido" button font color is styled as white for legibility.
+* **`NotificationsScreen`:** Displays a list of received push notifications. Clicking a notification opens a custom detail modal. In the modal, URLs in the message body are automatically detected and parsed into interactive clickable links that launch in the system browser using the event's primary color as highlights. The "Entendido" button font color is styled as white for legibility. Tapping "Limpiar" prompts an `AppAlertDialog` confirmation dialog (`type: AppDialogType.danger`) that safely awaits confirmation before clearing the local notifications history, preventing GoRouter stack pop exceptions.
 * **`MoreScreen`:** Embeds contact messages, application sharing, and brand info directly in sleek glassmorphic cards.
   * **WhatsApp Card:** Uses the official `FontAwesomeIcons.whatsapp` logo, titled "WhatsApp" and formatted phone number styled cleanly (`color: white50, fontSize: 13, fontWeight: normal`). Launches direct chat via `whatsapp://send?phone=...` (falling back to web `https://wa.me/...`) with a clean phone number and without pre-filled message text parameters.
   * **Mail Card:** Titled "Mail", displaying the email address formatted with the standard subtle text style (`color: white50, fontSize: 13, fontWeight: normal`).

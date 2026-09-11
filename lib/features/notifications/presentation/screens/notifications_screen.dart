@@ -313,19 +313,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ),
                     if (notifications.isNotEmpty)
                       TextButton.icon(
-                        onPressed: () {
-                          AppAlertDialog.show(
+                        onPressed: () async {
+                          final confirm = await AppAlertDialog.show<bool>(
                             context: context,
                             type: AppDialogType.danger,
                             title: '¿Eliminar todas?',
                             message: 'Esta acción borrará todo el historial de notificaciones locales.',
                             secondaryButtonText: 'Cancelar',
                             primaryButtonText: 'Eliminar',
-                            onPrimaryPressed: () {
-                              _notificationService.clearAll();
-                              Navigator.pop(context);
-                            },
                           );
+                          if (confirm == true) {
+                            _notificationService.clearAll();
+                          }
                         },
                         icon: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 20),
                         label: const Text(
