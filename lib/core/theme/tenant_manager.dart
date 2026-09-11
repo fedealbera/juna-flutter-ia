@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
+import '../firebase/active_tenant_config.dart';
 import 'tenant_config.dart';
 
 @lazySingleton
 class TenantManager extends ValueNotifier<TenantConfig> {
-  TenantManager() : super(TenantConfig.defaultConfig());
+  TenantManager() : super(ActiveTenantConfig.get());
 
   // In a real application, tenant configurations could be resolved
   // from custom subdomains, package configurations, or initial API calls.

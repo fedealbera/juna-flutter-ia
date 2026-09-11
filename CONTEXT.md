@@ -18,7 +18,7 @@ lib/
 │   ├── di/               # Injection configuration (GetIt + Injectable)
 │   ├── env/              # Environment-specific configuration
 │   ├── firebase/         # Dynamic Firebase initialization & Managers
-│   ├── network/          # Network layer (Dio client + Interceptors: ErrorInterceptor handles all DioExceptionTypes exhaustively, including transformTimeout)
+│   ├── network/          # Network layer (Dio client + Interceptors: ErrorInterceptor handles all DioExceptionTypes exhaustively)
 │   ├── routing/          # Routing & Navigation configuration (GoRouter)
 │   └── theme/            # Theme & Branding dynamic config managers
 ├── features/             # Feature domains (vertical slices)
@@ -50,14 +50,16 @@ lib/
 The application is engineered to support true White Label dynamic brand configurations without requiring recompilation or individual builds.
 
 ### Dynamic Tenant Configuration Flow
-1. **Initial Boot:** The application mounts the `SplashScreen` as the entry point.
+1. **Initial Boot:** `TenantManager` is instantiated via dependency injection and immediately initializes its state with `ActiveTenantConfig.get()`, ensuring the active tenant's identifiers, URLs, colors, and sport flags are applied synchronously from launch.
 2. **Retrieve Configuration:** The `SplashScreen` bootstrap sequence requests configuration from `FirebaseConfigurationRepository`.
-   * *Active Tenant Fallback:* `FirebaseConfigurationRepositoryImpl` returns `ActiveTenantConfig.get()` locally without calling the `/api/tenants/{id}/config` backend endpoint. The `lib/core/firebase/active_tenant_config.dart` file is **generated automatically** by `scripts/configure_tenant.py` at build-time for each tenant. It contains the correct Firebase credentials (read from `google-services.json`), branding colors, and environment URLs for the active tenant. This ensures the correct URLs and configs are always loaded at boot regardless of which tenant is compiled.
-3. **Branding Injection:** The `TenantManager` is updated. Color values (defined as hex strings like `#E58D00`) are parsed dynamically into Flutter `Color` objects at runtime.
-4. **Dynamic Firebase Setup:** Firebase Core and Firebase Analytics are re-initialized on-the-fly.
-5. **FCM Token Retrieval:** The application fetches the device's FCM push token locally, but does *not* send it to the backend on boot.
-6. **Transition:** The user is seamlessly routed to `/home`.
-7. **Dynamic Theme & Configuration Sync from Settings:** In addition, when settings are fetched from `/api/eventos/{eventoId}/settings?idOrg={idOrg}`, if the key `PRIMARY_COLOR` is found in the response, `SettingsRepositoryImpl` dynamically calls `TenantManager.changeTenant` with an updated config using `copyWith` to refresh the primary brand color globally.
+   * *Active Tenant Fallback:* `FirebaseConfigurationRepositoryImpl` returns `ActiveTenantConfig.get()` locally without calling the `/api/tenants/{id}/config` backend endpoint. The `lib/core/firebase/active_tenant_config.dart` file is **generated automatically** by `scripts/configure_tenant.py` at build-time for each tenant. It contains the correct Firebase credentials (read from `google-services.json`), branding colors, and environment URLs for the active tenant.
+3. **Branding Injection & Assets:** The `TenantManager` is updated. Color values (defined as hex strings like `#E58D00`) are parsed dynamically into Flutter `Color` objects at runtime. Tenant asset folders (`assets/21klg/`, `assets/ddln/`, `assets/images/`) are declared in `pubspec.yaml` to ensure local logo/splash assets load correctly.
+4. **Tenant-Isolated Local Storage (Hive):** Participant data and runner pass information are isolated per tenant in Hive using the key `'cached_participant_${tenantId}'` to prevent cross-tenant cache bleeding when switching tenants on the same device.
+5. **Dynamic Screen Fallbacks:** Screens (`HomeScreen`, `RegistrationScreen`, `MapsScreen`) dynamically evaluate `activeTenant` to adapt default sport types (Running / Media Maratón vs Mountain Bike), dates, circuits, and registration URLs.
+6. **Dynamic Firebase Setup:** Firebase Core and Firebase Analytics are re-initialized on-the-fly.
+7. **FCM Token Retrieval:** The application fetches the device's FCM push token locally, but does *not* send it to the backend on boot.
+8. **Transition:** The user is seamlessly routed to `/home`.
+9. **Dynamic Theme & Configuration Sync from Settings:** In addition, when settings are fetched from `/api/eventos/{eventoId}/settings?idOrg={idOrg}`, if the key `PRIMARY_COLOR` is found in the response, `SettingsRepositoryImpl` dynamically calls `TenantManager.changeTenant` with an updated config using `copyWith` to refresh the primary brand color globally.
 
 ### Push Notifications Background Support & Isolate Syncing
 * **Native Tray Alerts:** Uses `flutter_local_notifications` to programmatically display native system tray notification alerts from data-only FCM push payloads when the application is in the background or closed.

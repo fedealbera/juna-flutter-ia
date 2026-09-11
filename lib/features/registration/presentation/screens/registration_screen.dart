@@ -72,6 +72,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   bool _yoRetiroKitLocal = false;
   EventSettings? _settings;
 
+  String get _participantCacheKey =>
+      'cached_participant_${_tenantManager.value.tenantId}';
+
   @override
   void initState() {
     super.initState();
@@ -124,7 +127,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     final hiveService = getIt<HiveService>();
     final Map? cachedJson = await hiveService.get<Map>(
       'participant_box',
-      'cached_participant',
+      _participantCacheKey,
     );
     if (cachedJson != null) {
       final cachedDiscountMsg = cachedJson['_cached_discount_msg'] as String?;
@@ -490,7 +493,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         final hiveService = getIt<HiveService>();
                         final Map? prevCached = await hiveService.get<Map>(
                           'participant_box',
-                          'cached_participant',
+                          _participantCacheKey,
                         );
                         final String? prevDiscountMsg =
                             prevCached?['_cached_discount_msg'] as String?;
@@ -514,7 +517,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
 
                         await hiveService.put<Map>(
                           'participant_box',
-                          'cached_participant',
+                          _participantCacheKey,
                           rawToSave,
                         );
 
@@ -657,7 +660,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                 _discountCodeController.text.trim();
                             getIt<HiveService>().put<Map>(
                               'participant_box',
-                              'cached_participant',
+                              _participantCacheKey,
                               mapToSave,
                             );
                           }
@@ -1008,7 +1011,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
 
                     await getIt<HiveService>().delete<Map>(
                       'participant_box',
-                      'cached_participant',
+                      _participantCacheKey,
                     );
                     _dniController.clear();
                     if (mounted) {
@@ -1581,7 +1584,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                         mapToSave.remove('_cached_discount_code');
                         getIt<HiveService>().put<Map>(
                           'participant_box',
-                          'cached_participant',
+                          _participantCacheKey,
                           mapToSave,
                         );
                       }
@@ -1772,8 +1775,16 @@ class _RegistrationWebViewState extends State<RegistrationWebView>
   void initState() {
     super.initState();
     final cachedSettings = getIt<SettingsRepository>().getCachedSettings();
+    final tenant = getIt<TenantManager>().value;
+    final is21k = tenant.tenantName == '21kLG' ||
+        tenant.name.toLowerCase().contains('21k');
+    final defaultUrl = is21k
+        ? 'https://juna.net.ar/lagaceta2026/'
+        : 'https://juna.net.ar/desafio2026/';
     final urlString =
-        cachedSettings?.urlInscripciones ?? 'https://juna.net.ar/desafio2026/';
+        (cachedSettings?.urlInscripciones.isNotEmpty == true)
+            ? cachedSettings!.urlInscripciones
+            : defaultUrl;
     _url = urlString;
 
     _controller =

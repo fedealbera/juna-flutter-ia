@@ -80,6 +80,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/21klg/
+    - assets/ddln/
 
 dependency_overrides:
   analyzer: ^7.3.0

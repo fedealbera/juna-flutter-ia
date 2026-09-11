@@ -478,12 +478,21 @@ class _MapsScreenState extends State<MapsScreen> {
   }
 
   Widget _buildCircuitosList(dynamic activeTenant) {
-    final Map<String, dynamic> fallbackCircuitos = {
-      '30K Rural': 'https://desafiodelasnubes.com.ar/30k.html',
-      '35K XC': 'https://desafiodelasnubes.com.ar/35k.html',
-      '50K XC': 'https://desafiodelasnubes.com.ar/50k.html',
-      '80K Rural': 'https://desafiodelasnubes.com.ar/80k.html',
-    };
+    final bool is21k = activeTenant.tenantName == '21kLG' ||
+        activeTenant.name.toString().toLowerCase().contains('21k');
+
+    final Map<String, dynamic> fallbackCircuitos = is21k
+        ? {
+            '21K Media Maratón': 'https://juna.net.ar/lagaceta2026/',
+            '10K Competitiva': 'https://juna.net.ar/lagaceta2026/',
+            '3K Participativa': 'https://juna.net.ar/lagaceta2026/',
+          }
+        : {
+            '30K Rural': 'https://desafiodelasnubes.com.ar/30k.html',
+            '35K XC': 'https://desafiodelasnubes.com.ar/35k.html',
+            '50K XC': 'https://desafiodelasnubes.com.ar/50k.html',
+            '80K Rural': 'https://desafiodelasnubes.com.ar/80k.html',
+          };
 
     final circuitos = _settings?.circuitosMap.isNotEmpty == true 
         ? _settings!.circuitosMap 

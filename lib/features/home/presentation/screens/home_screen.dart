@@ -169,13 +169,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> _loadLinkedParticipant() async {
     try {
       final hiveService = getIt<HiveService>();
+      final activeTenant = _tenantManager.value;
       final Map? cachedJson = await hiveService.get<Map>(
         'participant_box',
-        'cached_participant',
+        'cached_participant_${activeTenant.tenantId}',
       );
-      if (cachedJson != null && mounted) {
+      if (mounted) {
         setState(() {
-          _linkedParticipant = ParticipantDetail(cachedJson.cast<String, dynamic>());
+          _linkedParticipant = cachedJson != null
+              ? ParticipantDetail(cachedJson.cast<String, dynamic>())
+              : null;
         });
       }
     } catch (e) {
@@ -279,14 +282,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   settings?.edicion.isNotEmpty == true
                       ? settings!.edicion
                       : '2026';
+              final bool is21k = activeTenant.tenantName == '21kLG' ||
+                  activeTenant.name.toLowerCase().contains('21k');
               final tipoCarrera =
                   settings?.tipoCarrera.isNotEmpty == true
                       ? settings!.tipoCarrera
-                      : 'MOUNTAIN BIKE';
+                      : (is21k ? 'MEDIA MARATÓN' : 'MOUNTAIN BIKE');
                final fechaCarrera =
                    settings?.fechaCarrera.isNotEmpty == true
                        ? settings!.fechaCarrera
-                       : '7 de Junio';
+                       : (is21k ? '14 de Junio' : '7 de Junio');
 
               final bool isBikeRace = tipoCarrera.toUpperCase().contains('BIKE') ||
                   tipoCarrera.toUpperCase().contains('CICLI') ||

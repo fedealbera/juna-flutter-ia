@@ -13,7 +13,6 @@ class ErrorInterceptor extends Interceptor {
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.connectionError:
-      case DioExceptionType.transformTimeout:
         exception = NetworkException(
           message: 'Connection timed out. Please check your internet connection.',
           code: 'CONNECTION_TIMEOUT',
