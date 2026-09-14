@@ -228,11 +228,18 @@ class _MapsScreenState extends State<MapsScreen> {
     return markers;
   }
 
-  Future<void> _launchNavigation(double lat, double lon) async {
+  Future<void> _launchNavigation(double lat, double lon, {String? query, String? label}) async {
     // In Android and iOS, try launching native deep links directly (without canLaunchUrl, which can fail due to OS queries configurations).
     final isApple = Theme.of(context).platform == TargetPlatform.iOS;
-    final googleMapsUrl = Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$lon");
-    final appleMapsUrl = Uri.parse("https://maps.apple.com/?ll=$lat,$lon&q=Ubicacion");
+    final String queryParam = (query != null && query.trim().isNotEmpty)
+        ? Uri.encodeComponent(query.trim())
+        : '$lat,$lon';
+    final String labelParam = (label != null && label.trim().isNotEmpty)
+        ? Uri.encodeComponent(label.trim())
+        : (query != null && query.trim().isNotEmpty ? Uri.encodeComponent(query.trim()) : 'Ubicacion');
+
+    final googleMapsUrl = Uri.parse("https://www.google.com/maps/search/?api=1&query=$queryParam");
+    final appleMapsUrl = Uri.parse("https://maps.apple.com/?ll=$lat,$lon&q=$labelParam");
 
     try {
       bool launched = false;
@@ -732,10 +739,18 @@ class _MapsScreenState extends State<MapsScreen> {
               final val = entry.value;
               double? entryLat;
               double? entryLon;
+              String? lugar;
+              String? direccion;
               if (val is Map) {
                 entryLat = _parseCoordinate(val['lat']);
                 entryLon = _parseCoordinate(val['lon']);
+                lugar = val['lugar']?.toString() ?? val['nombre']?.toString() ?? val['titulo']?.toString();
+                direccion = val['direccion']?.toString() ?? val['address']?.toString();
               }
+              
+              final hasLugar = lugar != null && lugar.trim().isNotEmpty;
+              final hasDireccion = direccion != null && direccion.trim().isNotEmpty;
+              final searchQuery = [if (hasLugar) lugar.trim(), if (hasDireccion) direccion.trim()].join(', ');
               
               return Container(
                 margin: const EdgeInsets.only(top: 8),
@@ -764,21 +779,69 @@ class _MapsScreenState extends State<MapsScreen> {
                         ),
                       ],
                     ),
-                    if (entryLat != null && entryLon != null) ...[
-                      const SizedBox(height: 10),
+                    if (hasLugar) ...[
+                      const SizedBox(height: 6),
                       Row(
                         children: [
+                          Icon(Icons.storefront_rounded, size: 15, color: Colors.blueGrey.shade700),
+                          const SizedBox(width: 8),
                           Expanded(
-                            child: AppButton(
-                              text: 'CÓMO LLEGAR',
-                              icon: Icons.directions_rounded,
-                              height: 38,
-                              textColor: Colors.white,
-                              type: AppButtonType.primary,
-                              onPressed: () => _launchNavigation(entryLat!, entryLon!),
+                            child: Text(
+                              lugar.trim(),
+                              style: const TextStyle(
+                                color: Color(0xFF334155),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                    if (hasDireccion) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_outlined, size: 15, color: Colors.blueGrey.shade600),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              direccion.trim(),
+                              style: TextStyle(
+                                color: Colors.blueGrey.shade600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (entryLat != null && entryLon != null) ...[
+                      const SizedBox(height: 10),
+                      Builder(
+                        builder: (context) {
+                          final double navLat = entryLat!;
+                          final double navLon = entryLon!;
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: AppButton(
+                                  text: 'CÓMO LLEGAR',
+                                  icon: Icons.directions_rounded,
+                                  height: 38,
+                                  textColor: Colors.white,
+                                  type: AppButtonType.primary,
+                                  onPressed: () => _launchNavigation(
+                                    navLat,
+                                    navLon,
+                                    query: searchQuery.isNotEmpty ? searchQuery : null,
+                                    label: hasLugar ? lugar?.trim() : null,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ],

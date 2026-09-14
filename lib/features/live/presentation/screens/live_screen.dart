@@ -6,6 +6,7 @@ import '../../../../core/theme/tenant_manager.dart';
 import '../../../../core/theme/branding_manager.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
 import '../../../../shared/design_system/dialogs/app_dialog.dart';
+import '../../../content/domain/repositories/content_repository.dart';
 import '../../../content/presentation/screens/content_list_screen.dart';
 import '../../../maps/presentation/screens/maps_screen.dart';
 import '../../../settings/domain/entities/event_settings.dart';
@@ -24,6 +25,7 @@ class _LiveScreenState extends State<LiveScreen> {
   final TenantManager _tenantManager = getIt<TenantManager>();
   late final SocialBloc _socialBloc;
   EventSettings? _settings;
+  bool _isCheckingNovedades = false;
 
   @override
   void initState() {
@@ -179,17 +181,64 @@ class _LiveScreenState extends State<LiveScreen> {
                   subtitle: 'Noticias y actualizaciones',
                   icon: Icons.feed_outlined,
                   badgeColor: const Color(0xFF2196F3), // Blue
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ContentListScreen(
-                          title: 'Novedades',
-                          tipoContenido: 2,
-                        ),
-                      ),
-                    );
-                  },
+                  isLoading: _isCheckingNovedades,
+                  onTap: _isCheckingNovedades
+                      ? null
+                      : () async {
+                          setState(() => _isCheckingNovedades = true);
+                          try {
+                            final content = await getIt<ContentRepository>().getEventContent('1', '1');
+                            if (mounted) {
+                              setState(() => _isCheckingNovedades = false);
+                            }
+                            final List<dynamic> archivos = content.rawJson['archivos'] ?? [];
+                            final hasNovedades = archivos.any((item) {
+                              final tc = item['tipoContenido'];
+                              final tcInt = int.tryParse(tc?.toString() ?? '');
+                              return tcInt == 2;
+                            });
+
+                            if (!context.mounted) return;
+
+                            if (hasNovedades) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ContentListScreen(
+                                    title: 'Novedades',
+                                    tipoContenido: 2,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              AppAlertDialog.show(
+                                context: context,
+                                type: AppDialogType.info,
+                                title: 'Sin novedades por el momento',
+                                message: '',
+                                primaryButtonText: 'Volver',
+                                customIcon: Icons.feed_outlined,
+                                customAccentColor: activeTenant.primaryColorRef,
+                                primaryButtonColor: activeTenant.primaryColorRef,
+                              );
+                            }
+                          } catch (_) {
+                            if (mounted) {
+                              setState(() => _isCheckingNovedades = false);
+                            }
+                            if (!context.mounted) return;
+                            AppAlertDialog.show(
+                              context: context,
+                              type: AppDialogType.info,
+                              title: 'Sin novedades por el momento',
+                              message: '',
+                              primaryButtonText: 'Volver',
+                              customIcon: Icons.feed_outlined,
+                              customAccentColor: activeTenant.primaryColorRef,
+                              primaryButtonColor: activeTenant.primaryColorRef,
+                            );
+                          }
+                        },
                 ),
                 const SizedBox(height: 32),
 
@@ -298,9 +347,10 @@ class _LiveScreenState extends State<LiveScreen> {
     required String subtitle,
     required IconData icon,
     required Color badgeColor,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
     bool isFeatured = false,
     bool isExternal = false,
+    bool isLoading = false,
   }) {
     final activeTenant = _tenantManager.value;
 
@@ -374,14 +424,24 @@ class _LiveScreenState extends State<LiveScreen> {
               ),
 
               const SizedBox(width: 8),
-              // Trailing indicator (Chevron or External link icon)
-              Icon(
-                isExternal ? Icons.open_in_new_rounded : Icons.arrow_forward_ios_rounded,
-                color: isFeatured 
-                    ? Colors.white.withValues(alpha: 0.8) 
-                    : Colors.white.withValues(alpha: 0.4),
-                size: isFeatured ? 18 : 16,
-              ),
+              // Trailing indicator (Loading spinner, Chevron or External link icon)
+              if (isLoading)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                  ),
+                )
+              else
+                Icon(
+                  isExternal ? Icons.open_in_new_rounded : Icons.arrow_forward_ios_rounded,
+                  color: isFeatured 
+                      ? Colors.white.withValues(alpha: 0.8) 
+                      : Colors.white.withValues(alpha: 0.4),
+                  size: isFeatured ? 18 : 16,
+                ),
             ],
           ),
         ),
