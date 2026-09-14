@@ -12,7 +12,6 @@ import '../../../about/presentation/bloc/about_event.dart';
 import '../../../about/presentation/bloc/about_state.dart';
 import '../../../settings/domain/entities/event_settings.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
-import '../../../content/presentation/screens/content_list_screen.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
@@ -148,6 +147,29 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. Header Section
+                  const Text(
+                    'Más Información',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // 2. Contact Section
+                  Text(
+                    'CONTÁCTANOS',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
                   // WhatsApp Support Card
                   _buildContactCard(
                     title: 'WhatsApp',
@@ -218,35 +240,21 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                       _launchURL('mailto:$email');
                     },
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 24),
 
-                  // Info Importante Card
-                  _buildContactCard(
-                    title: 'Info Importante',
-                    subtitle: Text(
-                      'Documentación obligatoria',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
+                  // 3. About Section
+                  Text(
+                    'ACERCA DE',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
                     ),
-                    icon: Icons.info_outline_rounded,
-                    badgeColor: const Color(0xFF9C27B0), // Purple
-                    isEnabled: true,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ContentListScreen(
-                            title: 'Info Importante',
-                            tipoContenido: 3,
-                          ),
-                        ),
-                      );
-                    },
                   ),
                   const SizedBox(height: 12),
+
+                  // Compartir la App Card
                   _buildContactCard(
                     title: 'Compartir la App',
                     subtitle: Text(

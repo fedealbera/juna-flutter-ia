@@ -177,6 +177,24 @@ class _LiveScreenState extends State<LiveScreen> {
                   const SizedBox(height: 12),
                 ],
                 _buildMenuItem(
+                  title: 'Info Importante',
+                  subtitle: 'Documentación obligatoria',
+                  icon: Icons.info_outline_rounded,
+                  badgeColor: const Color(0xFF9C27B0), // Purple
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ContentListScreen(
+                          title: 'Info Importante',
+                          tipoContenido: 3,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildMenuItem(
                   title: 'Novedades',
                   subtitle: 'Noticias y actualizaciones',
                   icon: Icons.feed_outlined,
