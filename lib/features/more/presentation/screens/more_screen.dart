@@ -182,14 +182,33 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                   // Email Support Card
                   _buildContactCard(
                     title: 'Mail',
-                    subtitle: Text(
-                      _settings?.emailConsulta ?? '',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_settings?.emailConsulta.isNotEmpty == true)
+                          Text(
+                            _settings!.emailConsulta,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        if (_settings?.contactoMensajeMail.isNotEmpty == true) ...[
+                          if (_settings?.emailConsulta.isNotEmpty == true)
+                            const SizedBox(height: 2),
+                          Text(
+                            _settings!.contactoMensajeMail,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     icon: Icons.mail_outline_rounded,
                     badgeColor: const Color(0xFF2196F3),

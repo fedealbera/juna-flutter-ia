@@ -98,7 +98,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       const BottomNavigationBarItem(
         icon: Icon(Icons.more_horiz_rounded),
         activeIcon: Icon(Icons.more_horiz_rounded),
-        label: 'Ayuda',
+        label: 'Más',
       ),
     ];
 
@@ -187,7 +187,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   ),
                   _buildDrawerItem(
                     icon: Icons.settings_accessibility_rounded,
-                    title: 'Ayuda',
+                    title: 'Más',
                     selected: selectedIndex == 4,
                     onTap: () {
                       if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {

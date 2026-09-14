@@ -123,7 +123,8 @@ class AppAlertDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
                 color: accentColor.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
@@ -139,10 +140,12 @@ class AppAlertDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(
-                iconData,
-                color: accentColor,
-                size: 40,
+              child: Center(
+                child: Icon(
+                  iconData,
+                  color: accentColor,
+                  size: 40,
+                ),
               ),
             ),
             const SizedBox(height: 20),

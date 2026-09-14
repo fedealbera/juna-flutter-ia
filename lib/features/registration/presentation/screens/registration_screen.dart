@@ -1270,18 +1270,20 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                 width: 1.2,
                               ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.check_circle_rounded,
                                   color: Colors.green,
                                   size: 14,
                                 ),
-                                SizedBox(width: 6),
+                                const SizedBox(width: 6),
                                 Text(
-                                  'PAGO CONFIRMADO',
-                                  style: TextStyle(
+                                  detail.status == 'IN'
+                                      ? 'INVITADO'
+                                      : 'PAGO CONFIRMADO',
+                                  style: const TextStyle(
                                     color: Colors.green,
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
@@ -1325,13 +1327,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                 ),
                               ],
                             ),
-                          ),
-                        if (detail.status == 'IN')
-                          Image.asset(
-                            'assets/images/vip.png',
-                            width: 38,
-                            height: 38,
-                            fit: BoxFit.contain,
                           ),
                       ],
                     ),

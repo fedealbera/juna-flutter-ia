@@ -85,11 +85,10 @@ Based on the value of `nroPlaca` returned by the runner details endpoint:
   * Displays a custom `PAGAR` button styled with tenant brand colors. Tapping this button launches the runner's unique `linkPago` in an external system browser.
   * **Automatic Verification on Resume:** Uses `WidgetsBindingObserver` to listen to app lifecycle changes. When the app is resumed (e.g. returning from the external browser after paying), it automatically executes a query via `ParticipantBloc` to check if the payment is confirmed.
   * **Manual Verification Option:** Displays a `¿Ya pagaste? Verificar estado` text button below the main payment button to let runners manually request verification of their payment status.
-* **`nroPlaca != "0"` (Pago Confirmado):**
-  * Displays a green `PAGO CONFIRMADO` tag.
+* **`nroPlaca != "0"` (Inscripción Confirmada):**
+  * Displays a green `PAGO CONFIRMADO` tag for regular participants.
+  * **`detail.status == "IN"` (Invitado):** If the runner has status `"IN"`, the tag displays `INVITADO` in place of `PAGO CONFIRMADO` (without external VIP icons).
   * Renders a highly highlighted plate code container showing the plate number.
-* **`detail.status == "IN"` (Invitado / VIP):**
-  * Displays an elegant gold `assets/images/vip.png` (38x38) badge next to the status chip on the runner profile card.
 * **Profile Fields Ordering:**
   * `"Marca de Zapatillas"` was shortened to `"Zapatillas:"` and placed immediately underneath the `"Largada:"` row for optimal legibility.
 
@@ -194,7 +193,7 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
     * **Direct Payment Redirect:** If they are pending payment and have a `linkPago` link, it shows an interactive warning bar that launches their payment link in the external browser using a robust try-catch wrapper (avoiding query permission checks).
     * **Pass Card Tap Target:** Tapping the main body of the card routes to `/inscripciones` and automatically focuses the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1).
   * **Next Event & Countdown Card:** Employs dynamic gradients and luminance-aware button text. On race day (`isRaceDay`), it hides the countdown block and button, displaying a compact glassmorphic live status badge ("¡EL EVENTO ESTÁ EN MARCHA!") with a pulsing red status indicator.
-  * **Quick Actions Grid:** A 2x2 interactive grid using tenant color accents to route directly using GoRouter to: "Iniciar Sesión" or "Mi Perfil" (`/inscripciones`) depending on whether a runner is linked, "Circuitos" (`/mapas`), "En Vivo" (`/vivo`), and "Ayuda" (`/mas`).
+  * **Quick Actions Grid:** A 2x2 interactive grid using tenant color accents to route directly using GoRouter to: "Iniciar Sesión" or "Mi Perfil" (`/inscripciones`) depending on whether a runner is linked, "Circuitos" (`/mapas`), "En Vivo" (`/vivo`), and "Más" (`/mas`).
   * **SOS Emergency Button:** Integrates the `geolocator` package to fetch precise GPS coordinates on race day, showing a loading spinner.
   * **Weather & Gear Advisory Card:** Fetches current weather from Open-Meteo and displays a 3-column altitude-based layout for mountain races (Base, Summit, Arrival) or a 2-column layout for flat races, alongside custom gear and hydration warnings. The card header icon (`Icons.wb_sunny_outlined`) is rendered in solid white (`Colors.white`) across all tenants. For both `21kLG` and `DDLN` tenants, it renders using `AppCardStyle.gradient` with the tenant's primary brand color gradient and border.
   * **Floating Scroll-down Indicator:** A centered pill ("DESLIZA PARA VER MÁS") with a bouncing down-arrow animation that automatically fades out past `30` pixels of scroll. Tapping the indicator triggers a smooth auto-scroll down by `250` pixels. It uses a dynamic `IgnorePointer` state (`ignoring: !_showScrollIndicator`) so it only intercepts touch events when visible, avoiding blocking background clicks when faded out.
@@ -253,7 +252,7 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
 * **`NotificationsScreen`:** Displays a list of received push notifications. Clicking a notification opens a custom detail modal. In the modal, URLs in the message body are automatically detected and parsed into interactive clickable links that launch in the system browser using the event's primary color as highlights. The "Entendido" button font color is styled as white for legibility. Tapping "Limpiar" prompts an `AppAlertDialog` confirmation dialog (`type: AppDialogType.danger`) that safely awaits confirmation before clearing the local notifications history, preventing GoRouter stack pop exceptions.
 * **`MoreScreen`:** Embeds contact messages, application sharing, and brand info directly in sleek glassmorphic cards.
   * **WhatsApp Card:** Uses the official `FontAwesomeIcons.whatsapp` logo, titled "WhatsApp" and formatted phone number styled cleanly (`color: white50, fontSize: 13, fontWeight: normal`). Launches direct chat via `whatsapp://send?phone=...` (falling back to web `https://wa.me/...`) with a clean phone number and without pre-filled message text parameters.
-  * **Mail Card:** Titled "Mail", displaying the email address formatted with the standard subtle text style (`color: white50, fontSize: 13, fontWeight: normal`).
+  * **Mail Card:** Titled "Mail", displaying the email address (`EMAIL_CONSULTA`) and the contact message (`CONTACTO_MENSAJE_MAIL`) with homogeneous subtle styling (`color: white50, fontSize: 13, fontWeight: normal`), launching `mailto:$email` upon tap.
   * **Info Importante Card:** Subtitled "Documentación obligatoria".
   * **Acerca de Card:** Displays the custom logo asset, stacked subtitle ("Apps de alto rendimiento\nAndroid & iOS"), email contact link with clean white styling without underline, the update button, and the version label rendered as a stylish chip badge under the button in uppercase format (e.g. `VERSIÓN 1.0.0+2`).
   * **Floating Scroll-down Indicator:** Integrates the "DESLIZA PARA VER MÁS" indicator banner matching `HomeScreen` and `RegistrationScreen`. It tracks scrolling through a dedicated `ScrollController` and executes a smooth auto-scroll to the bottom of the screen on tap, fading out automatically after scroll offsets exceed 30 pixels.
@@ -270,6 +269,7 @@ These allow per-usage custom styling without subclassing, enabling tenant-aware 
 * `customAccentColor` — overrides the background tint of the icon container, borders, and shadows of the dialog (e.g. enabling yellow warnings or custom brand colors).
 * `primaryButtonColor` — overrides the primary action button's background color.
 * `customIcon` — overrides the default dialog type icon.
+* **Centered Icon Container:** Employs a fixed `76x76` circular container with `Center(child: Icon(..., size: 40))` to guarantee clean, symmetric geometric centering (exact 22 px margins on all axes) for all dialog types and icon glyphs without manual or skewed offsets.
 
 ### Design System — `AppTextField`
 `AppTextField` (`lib/shared/design_system/text_fields/app_text_field.dart`) supports an optional `label` parameter (defaulting to `""`). When no label is provided or is empty, the label widget and its accompanying vertical spacing are omitted from the layout, facilitating cleaner UI designs.

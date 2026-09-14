@@ -1343,7 +1343,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
       _QuickActionItem(
         icon: Icons.info_outline_rounded,
-        label: 'Ayuda',
+        label: 'Más',
         description: 'Contacto y reglamento',
         onTap: () => context.go('/mas'),
       ),
