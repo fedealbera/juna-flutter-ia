@@ -543,8 +543,8 @@ class _MapsScreenState extends State<MapsScreen> {
                         AppAlertDialog.show(
                           context: context,
                           type: AppDialogType.info,
-                          title: 'Circuito en Preparación',
-                          message: 'Muy pronto podrás conocer el circuito.',
+                          title: 'Pronto podrás conocer el circuito.',
+                          message: '',
                           primaryButtonText: 'Volver',
                           customIcon: Icons.alt_route_rounded,
                           customAccentColor: activeTenant.primaryColorRef,

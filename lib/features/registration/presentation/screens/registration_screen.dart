@@ -1714,10 +1714,11 @@ class _RegistrationScreenState extends State<RegistrationScreen>
   void _showDisabledFeatureDialog(BuildContext context) {
     AppAlertDialog.show(
       context: context,
-      type: AppDialogType.info,
-      title: 'Información',
+      type: AppDialogType.warning,
+      customAccentColor: const Color(0xFFFFC107),
+      title: 'No disponible',
       message: 'Esta funcionalidad no está disponible por el momento.',
-      primaryButtonText: 'ACEPTAR',
+      primaryButtonText: 'Continuar',
     );
   }
 

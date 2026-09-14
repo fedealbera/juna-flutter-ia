@@ -156,10 +156,11 @@ class AppAlertDialog extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
-            if (content != null)
-              content!
-            else
+            if (content != null) ...[
+              const SizedBox(height: 12),
+              content!,
+            ] else if (message.isNotEmpty) ...[
+              const SizedBox(height: 12),
               Text(
                 message,
                 style: const TextStyle(
@@ -169,6 +170,7 @@ class AppAlertDialog extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
+            ],
             const SizedBox(height: 24),
             if (secondaryButtonText != null)
               Row(

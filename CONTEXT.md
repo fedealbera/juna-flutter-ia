@@ -109,9 +109,9 @@ The `RegistrationScreen` adopts the exact same custom dark segmented switcher ba
 
 ### Dynamic On-The-Fly Config Validation for Action Buttons
 To avoid requiring users to kill and relaunch the app when organizers toggle event permissions, the profile action buttons fetch the latest live settings directly from the backend (`_fetchFreshSettings()` / `SettingsRepository.getEventSettings`) at the exact moment each button is tapped:
-* **`ENVIAR CERTIFICADO`:** Validates `ISENABLED_SUBIR_DOC`. If `false`, displays an info popup: *"Esta funcionalidad no está disponible por el momento."*
-* **`RETIRAR KIT` / `CAMBIAR`:** Validates `ISENABLED_RETIRAR_KIT`. If `false`, displays the info popup.
-* **`EDITAR DATOS`:** Validates `ISENABLED_EDICION`. If `false`, displays the info popup.
+* **`ENVIAR CERTIFICADO`:** Validates `ISENABLED_SUBIR_DOC`. If `false` (or `'0'`), displays the warning popup: Title *"No disponible"*, yellow symbol/contour (`#FFC107`), message *"Esta funcionalidad no está disponible por el momento."*, and action button *"Continuar"*.
+* **`RETIRAR KIT` / `CAMBIAR`:** Validates `ISENABLED_RETIRAR_KIT`. If `false` (or `'0'`), displays the same warning popup (*"No disponible"*, yellow symbol/contour, *"Continuar"*).
+* **`EDITAR DATOS`:** Validates `ISENABLED_EDICION`. If `false` (or `'0'`), displays the same warning popup (*"No disponible"*, yellow symbol/contour, *"Continuar"*).
 * Buttons show an `isLoading` spinner while checking permissions in real time.
 
 ### Third-Party Kit Authorization Toast Feedback
@@ -239,7 +239,7 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
   * **Circuit List & Availability Checking:**
     * In the "Circuitos" tab, each circuit entry from `settings.circuitosMap` is evaluated for availability (`url.trim().isNotEmpty`).
     * **Available Circuit:** Tapping opens `CircuitWebViewScreen` to show web-based track details (e.g., Garmin web or raw images). For image-based tracks (e.g. 21kLG), JavaScript scales the image to fit the screen viewport with a dark background (`#121212`) and pinch-to-zoom enabled.
-    * **Unavailable / Pending Circuit:** If the URL/image is empty, tapping the circuit card prompts an `AppAlertDialog` (*"Circuito en Preparación"*) stating: *"Muy pronto podrás conocer el circuito."* with primary button *"Volver"*.
+    * **Unavailable / Pending Circuit:** If the URL/image is empty, tapping the circuit card prompts an `AppAlertDialog` with title *"Pronto podrás conocer el circuito."*, no subtitle message, and primary button *"Volver"* (using icon `Icons.alt_route_rounded` and tenant accent colors).
 * **`LiveScreen`:** Displays real-time event coverage and quick social links. Subtitle reads *"Sigue la carrera en tiempo real"*. It organizes choices under "COBERTURA" and "SOCIAL & WEB" headers.
   * **Real-time Settings Syncing & On-Tap Verification:** Automatically triggers an asynchronous refresh (`getEventSettings('1', '1')`) upon screen mounting (`initState`) and tenant change (`_onTenantChanged`). Additionally, tapping the "Resultados" card immediately queries `getEventSettings('1', '1')` to evaluate the freshest `URL_TIMES` value directly from the backend before navigating.
   * **Resultados (Resultados Portal) Availability Checking:** The "Resultados" card is dynamically highlighted as the primary live feature without secondary classifications text, styled with a brand-aligned gradient background and a pulsing red status indicator ("VIVO").
