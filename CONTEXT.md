@@ -272,7 +272,18 @@ These allow per-usage custom styling without subclassing, enabling tenant-aware 
 * `customAccentColor` — overrides the background tint of the icon container, borders, and shadows of the dialog (e.g. enabling yellow warnings or custom brand colors).
 * `primaryButtonColor` — overrides the primary action button's background color.
 * `customIcon` — overrides the default dialog type icon.
+* `canPop` — defaults to `true`. When set to `false`, wraps the modal in `PopScope(canPop: false)` to prevent dismissing the dialog via system back gestures or hardware back buttons on Android (used for mandatory blockers).
 * **Centered Icon Container:** Employs a fixed `76x76` circular container with `Center(child: Icon(..., size: 40))` to guarantee clean, symmetric geometric centering (exact 22 px margins on all axes) for all dialog types and icon glyphs without manual or skewed offsets.
+
+### Features — Check Version & Mandatory App Update
+* **Settings Keys:**
+  * `CHECK_VERSION` (`settings.isEnabledCheckVersion`): Boolean flag (`'TRUE'` / `'1'`) controlling whether remote version enforcement is active.
+  * `APP_VERSION` (`settings.appVersion`): Required target version string (e.g., `'3.0.8'`).
+  * `URL_STORES` (`settings.urlStoresMap` / `settings.urlStores`): Store URLs per platform (`IOS`, `ANDROID`).
+* **Bootstrap Verification (`SplashScreen`):**
+  * When `isEnabledCheckVersion` is `true` and `appVersion` is not empty, the current app version from `PackageInfo.fromPlatform()` (`packageInfo.version`, representing the `pubspec.yaml` version) is compared against `appVersion`.
+  * If `packageInfo.version != appVersion`, bootstrap halts, preventing navigation to `/home`, and launches a mandatory non-dismissible `AppAlertDialog` (`barrierDismissible: false`, `canPop: false`) prompting the user to update.
+  * Tapping "Actualizar" invokes `launchStoreUrl(context, settings)` (`lib/shared/utils/store_launcher.dart`) to open the respective App Store or Google Play Store link.
 
 ### Design System — `AppTextField`
 `AppTextField` (`lib/shared/design_system/text_fields/app_text_field.dart`) supports an optional `label` parameter (defaulting to `""`). When no label is provided or is empty, the label widget and its accompanying vertical spacing are omitted from the layout, facilitating cleaner UI designs.

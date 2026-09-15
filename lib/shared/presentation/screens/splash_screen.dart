@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/theme/tenant_manager.dart';
 import '../../../core/firebase/firebase_configuration_repository.dart';
 import '../../../core/firebase/initialize_firebase_use_case.dart';
 import '../../../core/firebase/firebase_manager.dart';
 import '../../../core/firebase/notification_service.dart';
+import '../../../features/settings/domain/entities/event_settings.dart';
 import '../../../features/settings/domain/repositories/settings_repository.dart';
+import '../../design_system/dialogs/app_dialog.dart';
+import '../../utils/store_launcher.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,6 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _bootstrapApp() async {
+    bool needsMandatoryUpdate = false;
     try {
       // 1. Obtener active tenant ID (default to 1 - DDLN)
       final currentTenant = _tenantManager.value;
@@ -61,19 +66,55 @@ class _SplashScreenState extends State<SplashScreen> {
         await _firebaseManager.getFcmToken();
       }
 
-      // 6. Obtener y cachear settings del evento 1 de la organización 1
+      // 7. Obtener y cachear settings del evento 1 de la organización 1
+      EventSettings? eventSettings;
       try {
-        await getIt<SettingsRepository>().getEventSettings('1', '1');
+        eventSettings = await getIt<SettingsRepository>().getEventSettings('1', '1');
       } catch (e) {
         debugPrint('Error loading event settings during bootstrap: $e');
+      }
+
+      // 8. Control de versión obligatorio (CHECK_VERSION y APP_VERSION)
+      if (eventSettings != null && eventSettings.isEnabledCheckVersion) {
+        final requiredVersion = eventSettings.appVersion.trim();
+        if (requiredVersion.isNotEmpty) {
+          try {
+            final packageInfo = await PackageInfo.fromPlatform();
+            final currentVersion = packageInfo.version.trim();
+
+            if (currentVersion != requiredVersion) {
+              needsMandatoryUpdate = true;
+              if (mounted) {
+                final tenant = _tenantManager.value;
+                AppAlertDialog.show(
+                  context: context,
+                  barrierDismissible: false,
+                  canPop: false,
+                  type: AppDialogType.info,
+                  customIcon: Icons.system_update_rounded,
+                  customAccentColor: tenant.primaryColorRef,
+                  primaryButtonColor: tenant.primaryColorRef,
+                  title: 'Actualización requerida',
+                  message:
+                      'Hay una nueva versión disponible de la aplicación ($requiredVersion). Por favor, actualizala para continuar.',
+                  primaryButtonText: 'Actualizar',
+                  onPrimaryPressed: () => launchStoreUrl(context, eventSettings),
+                );
+              }
+              return;
+            }
+          } catch (e) {
+            debugPrint('Error checking app version: $e');
+          }
+        }
       }
     } catch (e) {
       debugPrint(
         'Error during application bootstrap: $e. Falling back to default.',
       );
     } finally {
-      // 6. Continuar aplicación (ir a /home)
-      if (mounted) {
+      // 9. Continuar aplicación (ir a /home) solo si no requiere actualización obligatoria
+      if (!needsMandatoryUpdate && mounted) {
         context.go('/home');
       }
     }

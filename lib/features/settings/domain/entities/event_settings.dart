@@ -94,6 +94,12 @@ class EventSettings extends Equatable {
   String get urlStores => getSetting('URL_STORES');
   String get typeVersion => getSetting('TYPE_VERSION');
 
+  bool get isEnabledCheckVersion {
+    final val = getSetting('CHECK_VERSION').toUpperCase();
+    return val == 'TRUE' || val == '1';
+  }
+  String get appVersion => getSetting('APP_VERSION');
+
   Map<String, dynamic> get urlStoresMap {
     final value = getSetting('URL_STORES');
     if (value.isEmpty) return const {};

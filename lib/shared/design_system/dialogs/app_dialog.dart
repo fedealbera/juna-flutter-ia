@@ -17,6 +17,7 @@ class AppAlertDialog extends StatelessWidget {
   final IconData? customIcon;
   final Color? primaryButtonColor;
   final Color? customAccentColor;
+  final bool canPop;
 
   const AppAlertDialog({
     super.key,
@@ -31,6 +32,7 @@ class AppAlertDialog extends StatelessWidget {
     this.customIcon,
     this.primaryButtonColor,
     this.customAccentColor,
+    this.canPop = true,
   });
 
   static Future<T?> show<T>({
@@ -47,6 +49,7 @@ class AppAlertDialog extends StatelessWidget {
     Color? primaryButtonColor,
     Color? customAccentColor,
     bool barrierDismissible = true,
+    bool canPop = true,
   }) {
     return showDialog<T>(
       context: context,
@@ -63,6 +66,7 @@ class AppAlertDialog extends StatelessWidget {
         customIcon: customIcon,
         primaryButtonColor: primaryButtonColor,
         customAccentColor: customAccentColor,
+        canPop: canPop,
       ),
     );
   }
@@ -106,7 +110,7 @@ class AppAlertDialog extends StatelessWidget {
 
     const dialogBg = Color(0xFF161616);
 
-    return AlertDialog(
+    final dialog = AlertDialog(
       backgroundColor: dialogBg,
       elevation: 16,
       shadowColor: accentColor.withValues(alpha: 0.15),
@@ -208,6 +212,11 @@ class AppAlertDialog extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    return PopScope(
+      canPop: canPop,
+      child: dialog,
     );
   }
 }

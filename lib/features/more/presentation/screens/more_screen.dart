@@ -12,6 +12,7 @@ import '../../../about/presentation/bloc/about_event.dart';
 import '../../../about/presentation/bloc/about_state.dart';
 import '../../../settings/domain/entities/event_settings.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
+import '../../../../shared/utils/store_launcher.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
@@ -391,31 +392,7 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
                                       icon: Icons.file_download_rounded,
                                       textColor: Colors.white,
                                       type: AppButtonType.primary,
-                                      onPressed: () {
-                                        final stores =
-                                            _settings?.urlStoresMap ?? const {};
-                                        final iosLink = stores['IOS']?.toString() ?? '';
-                                        final androidLink =
-                                            stores['ANDROID']?.toString() ?? '';
-
-                                        final platform = Theme.of(context).platform;
-                                        if (platform == TargetPlatform.iOS) {
-                                          if (iosLink.isNotEmpty) {
-                                            _launchURL(iosLink);
-                                          }
-                                        } else if (platform == TargetPlatform.android) {
-                                          if (androidLink.isNotEmpty) {
-                                            _launchURL(androidLink);
-                                          }
-                                        } else {
-                                          // Fallback for other environments
-                                          if (androidLink.isNotEmpty) {
-                                            _launchURL(androidLink);
-                                          } else if (iosLink.isNotEmpty) {
-                                            _launchURL(iosLink);
-                                          }
-                                        }
-                                      },
+                                      onPressed: () => launchStoreUrl(context, _settings),
                                     ),
                                     const SizedBox(height: 16),
                                     Center(

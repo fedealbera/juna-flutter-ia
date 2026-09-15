@@ -56,4 +56,41 @@ void main() {
       expect(noSettings.isEnabledCodDesc, isFalse);
     });
   });
+
+  group('EventSettings - isEnabledCheckVersion & appVersion', () {
+    test('returns true when CHECK_VERSION is "TRUE" and parses APP_VERSION correctly', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'CHECK_VERSION', 'valor': 'TRUE'},
+          {'clave': 'APP_VERSION', 'valor': '3.0.8'},
+        ],
+      });
+      expect(settings.isEnabledCheckVersion, isTrue);
+      expect(settings.appVersion, equals('3.0.8'));
+    });
+
+    test('returns true when CHECK_VERSION is "1"', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'CHECK_VERSION', 'valor': '1'},
+        ],
+      });
+      expect(settings.isEnabledCheckVersion, isTrue);
+    });
+
+    test('returns false when CHECK_VERSION is "FALSE"', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'CHECK_VERSION', 'valor': 'FALSE'},
+        ],
+      });
+      expect(settings.isEnabledCheckVersion, isFalse);
+    });
+
+    test('returns empty string when APP_VERSION is not configured', () {
+      final settings = EventSettings({'settings': []});
+      expect(settings.appVersion, isEmpty);
+      expect(settings.isEnabledCheckVersion, isFalse);
+    });
+  });
 }
