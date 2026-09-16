@@ -158,11 +158,14 @@ import '../firebase/firebase_configuration_repository.dart' as _i322;
 import '../firebase/firebase_manager.dart' as _i352;
 import '../firebase/initialize_firebase_use_case.dart' as _i186;
 import '../firebase/notification_service.dart' as _i650;
+import '../network/connectivity_dialog_service.dart' as _i1006;
 import '../network/dio_client.dart' as _i667;
 import '../network/interceptors/api_key_interceptor.dart' as _i102;
+import '../network/interceptors/connectivity_interceptor.dart' as _i693;
 import '../network/interceptors/error_interceptor.dart' as _i511;
 import '../network/interceptors/logger_interceptor.dart' as _i238;
 import '../network/interceptors/retry_interceptor.dart' as _i914;
+import '../network/network_info.dart' as _i932;
 import '../routing/app_router.dart' as _i282;
 import '../storage/hive_service.dart' as _i459;
 import '../storage/secure_storage_service.dart' as _i666;
@@ -192,7 +195,6 @@ extension GetItInjectableX on _i174.GetIt {
     final documentsApiModule = _$DocumentsApiModule();
     final geographyApiModule = _$GeographyApiModule();
     gh.lazySingleton<_i914.RetryInterceptor>(() => _i914.RetryInterceptor());
-    gh.lazySingleton<_i511.ErrorInterceptor>(() => _i511.ErrorInterceptor());
     gh.lazySingleton<_i238.LoggerInterceptor>(() => _i238.LoggerInterceptor());
     gh.lazySingleton<_i459.HiveService>(() => _i459.HiveService());
     gh.lazySingleton<_i666.SecureStorageService>(
@@ -204,20 +206,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i9.BrandingManager>(() => _i9.BrandingManager());
     gh.lazySingleton<_i282.AppRouter>(() => _i282.AppRouter());
     gh.lazySingleton<_i769.MapsRepository>(() => _i368.MapsRepositoryImpl());
+    gh.lazySingleton<_i932.NetworkInfo>(() => _i932.NetworkInfoImpl());
     gh.lazySingleton<_i302.AboutRepository>(() => _i857.AboutRepositoryImpl());
     gh.lazySingleton<_i640.SocialRepository>(() => _i5.SocialRepositoryImpl());
     gh.lazySingleton<_i102.ApiKeyInterceptor>(() => _i102.ApiKeyInterceptor(
           gh<_i0.EnvConfig>(),
           gh<_i476.TenantManager>(),
         ));
-    gh.lazySingleton<_i667.DioClient>(() => _i667.DioClient(
-          gh<_i0.EnvConfig>(),
-          gh<_i102.ApiKeyInterceptor>(),
-          gh<_i238.LoggerInterceptor>(),
-          gh<_i914.RetryInterceptor>(),
-          gh<_i511.ErrorInterceptor>(),
-          gh<_i476.TenantManager>(),
-        ));
+    gh.lazySingleton<_i1006.ConnectivityDialogService>(
+        () => _i1006.ConnectivityDialogService(gh<_i282.AppRouter>()));
+    gh.lazySingleton<_i693.ConnectivityInterceptor>(
+        () => _i693.ConnectivityInterceptor(
+              gh<_i932.NetworkInfo>(),
+              gh<_i1006.ConnectivityDialogService>(),
+            ));
     gh.lazySingleton<_i728.TenantRepository>(
         () => _i981.TenantRepositoryImpl(gh<_i476.TenantManager>()));
     gh.lazySingleton<_i508.GetMapSettings>(
@@ -233,6 +235,17 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i650.GetSocialLinks(gh<_i640.SocialRepository>()));
     gh.factory<_i17.SocialBloc>(
         () => _i17.SocialBloc(gh<_i650.GetSocialLinks>()));
+    gh.lazySingleton<_i511.ErrorInterceptor>(
+        () => _i511.ErrorInterceptor(gh<_i1006.ConnectivityDialogService>()));
+    gh.lazySingleton<_i667.DioClient>(() => _i667.DioClient(
+          gh<_i0.EnvConfig>(),
+          gh<_i693.ConnectivityInterceptor>(),
+          gh<_i102.ApiKeyInterceptor>(),
+          gh<_i238.LoggerInterceptor>(),
+          gh<_i914.RetryInterceptor>(),
+          gh<_i511.ErrorInterceptor>(),
+          gh<_i476.TenantManager>(),
+        ));
     gh.lazySingleton<_i351.TenantApiService>(
         () => tenantApiModule.provideTenantApiService(gh<_i667.DioClient>()));
     gh.lazySingleton<_i998.EventsApiService>(

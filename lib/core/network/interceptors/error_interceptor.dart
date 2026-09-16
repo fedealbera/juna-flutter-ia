@@ -1,9 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../error/exceptions.dart';
+import '../connectivity_dialog_service.dart';
 
 @lazySingleton
 class ErrorInterceptor extends Interceptor {
+  final ConnectivityDialogService _connectivityDialogService;
+
+  ErrorInterceptor(this._connectivityDialogService);
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     AppException exception;
@@ -13,11 +18,16 @@ class ErrorInterceptor extends Interceptor {
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.connectionError:
-        exception = NetworkException(
-          message: 'Connection timed out. Please check your internet connection.',
-          code: 'CONNECTION_TIMEOUT',
-          statusCode: err.response?.statusCode,
-        );
+        _connectivityDialogService.showNoInternetDialog();
+        if (err.error is AppException) {
+          exception = err.error as AppException;
+        } else {
+          exception = NetworkException(
+            message: 'No hay conexión a internet en este momento. Por favor, prueba en unos minutos.',
+            code: 'CONNECTION_TIMEOUT',
+            statusCode: err.response?.statusCode,
+          );
+        }
         break;
 
       case DioExceptionType.badResponse:

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../env/env_config.dart';
 import 'interceptors/api_key_interceptor.dart';
+import 'interceptors/connectivity_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
 import 'interceptors/logger_interceptor.dart';
 import 'interceptors/retry_interceptor.dart';
@@ -52,6 +53,7 @@ class DioClient {
 
   DioClient(
     EnvConfig envConfig,
+    ConnectivityInterceptor connectivityInterceptor,
     ApiKeyInterceptor apiKeyInterceptor,
     LoggerInterceptor loggerInterceptor,
     RetryInterceptor retryInterceptor,
@@ -68,6 +70,7 @@ class DioClient {
         'Accept': 'application/json',
       }
       ..interceptors.addAll([
+        connectivityInterceptor,
         BaseUrlInterceptor(tenantManager, envConfig),
         apiKeyInterceptor,
         retryInterceptor,

@@ -18,7 +18,7 @@ lib/
 │   ├── di/               # Injection configuration (GetIt + Injectable)
 │   ├── env/              # Environment-specific configuration
 │   ├── firebase/         # Dynamic Firebase initialization & Managers
-│   ├── network/          # Network layer (Dio client + Interceptors: ErrorInterceptor handles all DioExceptionTypes exhaustively)
+│   ├── network/          # Network layer (Dio client, NetworkInfo, ConnectivityDialogService, Interceptors: ConnectivityInterceptor, ErrorInterceptor, RetryInterceptor, ApiKeyInterceptor, BaseUrlInterceptor)
 │   ├── routing/          # Routing & Navigation configuration (GoRouter)
 │   └── theme/            # Theme & Branding dynamic config managers
 ├── features/             # Feature domains (vertical slices)
@@ -42,6 +42,18 @@ lib/
 │   └── tracks/
 └── shared/               # Shared widgets and design system components
 ```
+
+### Network Architecture & Pre-Flight Connectivity Verification
+* **Pre-Flight Connection Checking:** Every outgoing API request goes through `ConnectivityInterceptor` before touching the network.
+  * `NetworkInfo` checks active interfaces (`connectivity_plus`) and performs a non-blocking DNS reachability lookup (`InternetAddress.lookup('google.com')`).
+  * If the device is offline, the request is rejected immediately with `DioExceptionType.connectionError` and a mapped `NetworkException`, preventing socket hang and timeouts.
+* **Global No-Internet Modal (`ConnectivityDialogService`):**
+  * When an offline state is detected (either in `ConnectivityInterceptor` pre-flight or `ErrorInterceptor` inflight timeout/connection drop), `ConnectivityDialogService.showNoInternetDialog()` displays the design system modal (`AppAlertDialog`).
+  * **Title:** *"Sin conexión a internet"*
+  * **Message:** *"En este momento no dispones de conexión a internet. Por favor, comprueba tu conexión y vuelve a intentar en unos minutos."*
+  * **Icon:** `Icons.wifi_off_rounded` (styled with warning amber accents).
+  * **Concurrency Control (Deduplication):** Uses a boolean flag `_isShowingDialog` to ensure that even if multiple parallel API requests fail simultaneously, only a single modal is displayed to the user.
+  * **Bypass Support:** Allows specific requests to skip connectivity checking if necessary via `options.extra['skipConnectivityCheck'] = true`.
 
 ---
 
