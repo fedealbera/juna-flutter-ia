@@ -862,7 +862,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                     textColor: Colors.white,
                     icon: Icons.description_rounded,
                     isLoading: _isCheckingDoc,
-                    onPressed: _isCheckingDoc
+                    onPressed: (_isCheckingDoc || detail.isAcreditado)
                         ? null
                         : () async {
                             setState(() => _isCheckingDoc = true);
@@ -882,7 +882,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                           },
                   ),
                   const SizedBox(height: 12),
-                  if (_yoRetiroKitLocal) ...[
+                  if (!detail.isAcreditado && _yoRetiroKitLocal) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
@@ -946,7 +946,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       textColor: Colors.white,
                       icon: Icons.assignment_turned_in_rounded,
                       isLoading: _isCheckingKitAuth,
-                      onPressed: _isCheckingKitAuth
+                      onPressed: (_isCheckingKitAuth || detail.isAcreditado)
                           ? null
                           : () => _handleKitAuthorization(detail),
                     ),
@@ -958,7 +958,7 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                   color: activeTenant.primaryColorRef,
                   textColor: Colors.white,
                   isLoading: _isCheckingEdit,
-                  onPressed: _isCheckingEdit
+                  onPressed: (_isCheckingEdit || detail.isAcreditado)
                       ? null
                       : () async {
                           setState(() => _isCheckingEdit = true);
@@ -1282,7 +1282,9 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                 Text(
                                   detail.status == 'IN'
                                       ? 'INVITADO'
-                                      : 'PAGO CONFIRMADO',
+                                      : (detail.isAcreditado
+                                          ? 'ACREDITADO'
+                                          : 'PAGO CONFIRMADO'),
                                   style: const TextStyle(
                                     color: Colors.green,
                                     fontSize: 11,

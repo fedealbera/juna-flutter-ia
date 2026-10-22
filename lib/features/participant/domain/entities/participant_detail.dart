@@ -13,6 +13,7 @@ class ParticipantDetail extends Equatable {
   String get name => _data['nombre']?.toString() ?? '';
   String get dni => _data['dni']?.toString() ?? _data['documento']?.toString() ?? '';
   String get status => _data['estado']?.toString() ?? _data['status']?.toString() ?? '';
+  bool get isAcreditado => status.trim().toUpperCase() == 'AC';
   String get nroPlaca => _data['nroPlaca']?.toString() ?? '';
   String get linkPago => _data['linkPago']?.toString() ?? '';
   String get lastName => _data['apellido']?.toString() ?? '';

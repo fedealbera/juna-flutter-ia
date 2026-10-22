@@ -26,14 +26,14 @@ class ActiveTenantConfig {
         enableCrashlytics: true,
         enableRemoteConfig: true,
       ),
-      baseUrl: 'https://juna.net.ar/lagaceta2026_test/api',
+      baseUrl: 'https://juna.net.ar/lagaceta2026_off/api',
       environments: const {
         AppEnvironment.development: TenantEnvConfig(
-          baseUrl: 'https://juna.net.ar/lagaceta2026_test/api',
+          baseUrl: 'https://juna.net.ar/lagaceta2026_off/api',
           apiKey: 'juna_api_f7b9c3x2_secure_key_2026',
         ),
         AppEnvironment.qa: TenantEnvConfig(
-          baseUrl: 'https://juna.net.ar/lagaceta2026_test/api',
+          baseUrl: 'https://juna.net.ar/lagaceta2026_off/api',
           apiKey: 'juna_api_f7b9c3x2_secure_key_2026',
         ),
         AppEnvironment.production: TenantEnvConfig(

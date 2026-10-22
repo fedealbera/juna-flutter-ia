@@ -100,7 +100,14 @@ Based on the value of `nroPlaca` returned by the runner details endpoint:
 * **`nroPlaca != "0"` (Inscripción Confirmada):**
   * Displays a green `PAGO CONFIRMADO` tag for regular participants.
   * **`detail.status == "IN"` (Invitado):** If the runner has status `"IN"`, the tag displays `INVITADO` in place of `PAGO CONFIRMADO` (without external VIP icons).
+  * **`detail.status == "AC"` (Acreditado):** If the runner has status `"AC"` (`detail.isAcreditado`), the tag displays `ACREDITADO`.
   * Renders a highly highlighted plate code container showing the plate number.
+* **Corredor Acreditado ("AC") - Deshabilitación de Acciones en Mi Perfil:**
+  * Cuando el corredor tiene estado `"AC"` (`isAcreditado == true`), se deshabilitan funcional y visualmente los siguientes botones:
+    * `ENVIAR CERTIFICADO`: Botón deshabilitado (`onPressed: null`).
+    * `RETIRAR KIT`: Botón `AppButton` mostrado deshabilitado (`onPressed: null`). Se omite el contenedor verde de retiro personal confirmado para mostrar el botón inactivo explícito.
+    * `EDITAR DATOS`: Botón deshabilitado (`onPressed: null`).
+  * En cualquier otro estado (`isAcreditado == false`), estos botones permanecen completamente habilitados.
 * **Profile Fields Ordering:**
   * `"Marca de Zapatillas"` was shortened to `"Zapatillas:"` and placed immediately underneath the `"Largada:"` row for optimal legibility.
 
@@ -386,8 +393,8 @@ The following table summarizes the environment configurations (Base URLs and API
 | **DDLN** | Development | `https://juna.net.ar/desafio2026_testtt/api` | `juna_api_f7b9c3x2_secure_key_2026` | `com.churo.desafiomobile` |
 | | QA | `https://juna.net.ar/desafio2026_testtt/api` | `juna_api_f7b9c3x2_secure_key_2026` | |
 | | Production | `https://juna.net.ar/desafio2026/api` | `juna_api_f7b9c3x2_secure_key_2026` | |
-| **21kLG** | Development | `https://juna.net.ar/lagaceta2026_test/api` | `juna_api_f7b9c3x2_secure_key_2026` | `com.churomobile.lagaceta21k` |
-| | QA | `https://juna.net.ar/lagaceta2026_test/api` | `juna_api_f7b9c3x2_secure_key_2026` | |
+| **21kLG** | Development | `https://juna.net.ar/lagaceta2026_off/api` | `juna_api_f7b9c3x2_secure_key_2026` | `com.churomobile.lagaceta21k` |
+| | QA | `https://juna.net.ar/lagaceta2026_off/api` | `juna_api_f7b9c3x2_secure_key_2026` | |
 | | Production | `https://juna.net.ar/lagaceta2026/api` | `juna_api_7a1e4c9b_secure_key_2026` | |
 
 ### Available Makefile Targets
