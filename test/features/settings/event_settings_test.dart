@@ -93,4 +93,75 @@ void main() {
       expect(settings.isEnabledCheckVersion, isFalse);
     });
   });
+
+  group('EventSettings - FECHA_FIN_ACREDITACION_TS & isAcreditacionFinalizada', () {
+    test('returns true when FECHA_FIN_ACREDITACION_TS is in the past (seconds)', () {
+      final pastSeconds = (DateTime.now().millisecondsSinceEpoch ~/ 1000) - 3600; // 1 hour ago
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'FECHA_FIN_ACREDITACION_TS', 'valor': pastSeconds.toString()},
+        ],
+      });
+
+      expect(settings.fechaFinAcreditacionTs, equals(pastSeconds.toString()));
+      expect(settings.fechaFinAcreditacion, isNotNull);
+      expect(settings.isAcreditacionFinalizada, isTrue);
+    });
+
+    test('returns true when FECHA_FIN_ACREDITACION_TS is in the past (milliseconds)', () {
+      final pastMillis = DateTime.now().millisecondsSinceEpoch - (3600 * 1000); // 1 hour ago
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'FECHA_FIN_ACREDITACION_TS', 'valor': pastMillis.toString()},
+        ],
+      });
+
+      expect(settings.fechaFinAcreditacionTs, equals(pastMillis.toString()));
+      expect(settings.fechaFinAcreditacion, isNotNull);
+      expect(settings.isAcreditacionFinalizada, isTrue);
+    });
+
+    test('returns false when FECHA_FIN_ACREDITACION_TS is in the future', () {
+      final futureSeconds = (DateTime.now().millisecondsSinceEpoch ~/ 1000) + 86400; // 1 day in future
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'FECHA_FIN_ACREDITACION_TS', 'valor': futureSeconds.toString()},
+        ],
+      });
+
+      expect(settings.fechaFinAcreditacionTs, equals(futureSeconds.toString()));
+      expect(settings.fechaFinAcreditacion, isNotNull);
+      expect(settings.isAcreditacionFinalizada, isFalse);
+    });
+
+    test('returns false when FECHA_FIN_ACREDITACION_TS is missing or empty', () {
+      final emptySettings = EventSettings({'settings': []});
+      expect(emptySettings.fechaFinAcreditacionTs, isEmpty);
+      expect(emptySettings.fechaFinAcreditacion, isNull);
+      expect(emptySettings.isAcreditacionFinalizada, isFalse);
+
+      final noSettings = EventSettings({});
+      expect(noSettings.fechaFinAcreditacionTs, isEmpty);
+      expect(noSettings.fechaFinAcreditacion, isNull);
+      expect(noSettings.isAcreditacionFinalizada, isFalse);
+
+      final blankValue = EventSettings({
+        'settings': [
+          {'clave': 'FECHA_FIN_ACREDITACION_TS', 'valor': '   '},
+        ],
+      });
+      expect(blankValue.fechaFinAcreditacion, isNull);
+      expect(blankValue.isAcreditacionFinalizada, isFalse);
+    });
+
+    test('returns false when FECHA_FIN_ACREDITACION_TS is invalid/non-numeric string', () {
+      final invalidSettings = EventSettings({
+        'settings': [
+          {'clave': 'FECHA_FIN_ACREDITACION_TS', 'valor': 'invalid_date'},
+        ],
+      });
+      expect(invalidSettings.fechaFinAcreditacion, isNull);
+      expect(invalidSettings.isAcreditacionFinalizada, isFalse);
+    });
+  });
 }

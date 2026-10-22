@@ -11,6 +11,7 @@ import '../../features/maps/presentation/screens/maps_screen.dart';
 import '../../features/live/presentation/screens/live_screen.dart';
 import '../../features/more/presentation/screens/more_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/runners/presentation/screens/runners_list_screen.dart';
 import '../../shared/presentation/screens/main_shell_screen.dart';
 import '../../shared/presentation/screens/splash_screen.dart';
 
@@ -91,6 +92,11 @@ class AppRouter {
             path: '/notificaciones',
             name: 'notificaciones',
             builder: (BuildContext context, GoRouterState state) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/corredores',
+            name: 'corredores',
+            builder: (BuildContext context, GoRouterState state) => const RunnersListScreen(),
           ),
         ],
       ),

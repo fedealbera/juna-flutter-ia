@@ -26,6 +26,22 @@ class EventSettings extends Equatable {
   String get tipoCarrera => getSetting('TIPO_CARRERA');
   String get fechaCarreraTs => getSetting('FECHA_CARRERA_TS');
   String get urlInscripciones => getSetting('URL_INSCRIPCIONES');
+  String get fechaFinAcreditacionTs => getSetting('FECHA_FIN_ACREDITACION_TS');
+
+  DateTime? get fechaFinAcreditacion {
+    final tsStr = fechaFinAcreditacionTs.trim();
+    if (tsStr.isEmpty) return null;
+    final parsed = int.tryParse(tsStr);
+    if (parsed == null) return null;
+    final millis = tsStr.length == 10 ? parsed * 1000 : parsed;
+    return DateTime.fromMillisecondsSinceEpoch(millis);
+  }
+
+  bool get isAcreditacionFinalizada {
+    final fin = fechaFinAcreditacion;
+    if (fin == null) return false;
+    return DateTime.now().isAfter(fin);
+  }
 
   bool get isEnabledReconocimiento => getSetting('ISENABLED_RECONOCIMIENTO').toUpperCase() == 'TRUE';
   bool get isEnabledSubirDoc {

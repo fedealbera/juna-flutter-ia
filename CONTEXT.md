@@ -216,6 +216,19 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
   * **SOS Emergency Button:** Integrates the `geolocator` package to fetch precise GPS coordinates on race day, showing a loading spinner.
   * **Weather & Gear Advisory Card:** Fetches current weather from Open-Meteo and displays a 3-column altitude-based layout for mountain races (Base, Summit, Arrival) or a 2-column layout for flat races, alongside custom gear and hydration warnings. The card header icon (`Icons.wb_sunny_outlined`) is rendered in solid white (`Colors.white`) across all tenants. For both `21kLG` and `DDLN` tenants, it renders using `AppCardStyle.gradient` with the tenant's primary brand color gradient and border.
   * **Floating Scroll-down Indicator:** A centered pill ("DESLIZA PARA VER MÁS") with a bouncing down-arrow animation that automatically fades out past `30` pixels of scroll. Tapping the indicator triggers a smooth auto-scroll down by `250` pixels. It uses a dynamic `IgnorePointer` state (`ignoring: !_showScrollIndicator`) so it only intercepts touch events when visible, avoiding blocking background clicks when faded out.
+  * **Listado de Corredores Card (Post-Acreditación):** Controlled strictly by `isAcreditacionFinalizada` from `settings.fechaFinAcreditacionTs` (`FECHA_FIN_ACREDITACION_TS`). If `FECHA_FIN_ACREDITACION_TS` is not configured, is empty, invalid, or its timestamp is in the future, this option is completely hidden from the UI. Once `DateTime.now().isAfter(fechaFinAcreditacion)`:
+    - Renders an exclusive, high-impact gradient card (`AppCardStyle.gradient`) positioned prominently between the countdown section and the Quick Actions Grid.
+    - Features a glowing circular icon (`Icons.groups_rounded`), an **"OFICIAL"** status chip, an **"ACREDITACIÓN CERRADA"** badge, title **"Listado de Corredores"**, and dynamic tenant-aware subtitle (*"Conoce a los participantes y circuitos"* for `21kLG` or *"Consulta los inscriptos por categoría"* for `DDLN`).
+    - Hides the "Inscribirme" button for unlinked participants since registration and kit accreditation are officially closed.
+    - Tapping the card routes to `/corredores` via `context.push('/corredores')`.
+* **`RunnersListScreen` (`/corredores`):** Displays the official list of confirmed runners ordered by Circuit, Category, and Alphabetically.
+  - **Back Navigation & Android PopScope:** Implements `_handleBack()` on the AppBar leading arrow (`IconButton`) and wraps the entire view with `PopScope(canPop: false, onPopInvokedWithResult: ...)` to safely pop (`context.pop()`) when `context.canPop()` is true or fall back to `context.go('/home')`, ensuring back navigation works reliably across both in-app buttons and native Android back gestures/buttons.
+  - **Live Search Bar:** Instant filtering by runner name, surname, or bib/plate number.
+  - **Circuit Filter Chips:** Dynamically populated horizontal chips (`TODOS`, `21K`, `10K`, `5K`) with participant counters.
+  - **Categorized Sections:** Runners are organized in category section headers with count badges and sorted alphabetically within each category.
+  - **Runner Card (`RunnerCard`):** Displays the prominent bib number (labeled **DORSAL** for `21kLG` or **PLACA** for `DDLN`), full name, circuit chip, category label, city/province, and running team.
+  - **Linked Participant Highlight:** If the active device has a linked participant in local Hive storage, their card is automatically highlighted with a brand border, subtle background tint, and a **"TÚ"** badge, alongside a quick-filter *"Mi Circuito"* button.
+  - **Clean Architecture & Resilient Data Layer:** Connects to `/api/eventos/{eventId}/corredores?idOrg={idOrg}` via `RunnersRemoteDataSourceImpl` with automatic fallback to `MockRunnersDataSource` while backend deployment is in progress.
 * **`RegistrationScreen`:** Employs tab bars for new coupon validations and lookup options. The search text field has a character limit of 8 (default DNI length) with its label set as "DNI". The subtitle text `'Verifica tu estado de inscripción o vincula tu cuenta.'` is removed to streamline the UI.
   * **Keyboard Dismissal & iOS Accessory Bar:** Tapping outside input fields dismisses the soft keyboard via `GestureDetector(onTap: () => FocusScope.of(context).unfocus())`. Switching tabs (e.g., from Iniciar Sesión to Nueva Inscripción) also automatically clears keyboard focus. For numeric fields (such as DNI), a platform-aware "Listo" (Done) accessory bar is displayed on iOS above the number pad to allow one-tap dismissal, while keeping it hidden on Android where native navigation arrows handle dismissal.
   * In the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1):
@@ -330,6 +343,7 @@ Participant update endpoints in `ParticipantApiService` are refactored to remove
 | Update Participant | N/A | `/api/participantes/{partiId}` | Path Parameter (`partiId`) & JSON Body containing new fields `cacreId`, `marcbId`, `marcbLabel`, and `grupoEntrenamiento` |
 | Get Training Groups | N/A | `/api/grupos-entrenamiento/{tipoCarrera}` | Path Parameter (`tipoCarrera`) |
 | Register Training Group | N/A | `/api/grupos-entrenamiento` | JSON Body: `{ "nombre": string, "tipo_carrera": string }` |
+| List Confirmed Runners | N/A | `/api/eventos/{eventId}/corredores` | Path Parameter (`eventId`) & Query Parameter (`idOrg`) |
 
 ---
 

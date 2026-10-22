@@ -121,6 +121,13 @@ import '../../features/registration/domain/usecases/validate_discount.dart'
     as _i279;
 import '../../features/registration/presentation/bloc/registration_bloc.dart'
     as _i616;
+import '../../features/runners/data/datasources/runners_remote_data_source.dart'
+    as _i305;
+import '../../features/runners/data/repositories/runners_repository_impl.dart'
+    as _i581;
+import '../../features/runners/domain/repositories/runners_repository.dart'
+    as _i202;
+import '../../features/runners/presentation/bloc/runners_bloc.dart' as _i728;
 import '../../features/settings/data/api/events_api_service.dart' as _i998;
 import '../../features/settings/data/api/settings_api_service.dart' as _i417;
 import '../../features/settings/data/api/tracks_api_service.dart' as _i337;
@@ -285,6 +292,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i14.CatalogRemoteDataSourceImpl(gh<_i636.CatalogApiService>()));
     gh.lazySingleton<_i361.DocumentsRemoteDataSource>(() =>
         _i361.DocumentsRemoteDataSourceImpl(gh<_i792.DocumentsApiService>()));
+    gh.lazySingleton<_i305.RunnersRemoteDataSource>(
+        () => _i305.RunnersRemoteDataSourceImpl(gh<_i667.DioClient>()));
     gh.lazySingleton<_i345.DocumentsRepository>(() =>
         _i270.DocumentsRepositoryImpl(gh<_i361.DocumentsRemoteDataSource>()));
     gh.lazySingleton<_i488.CategoriesRepository>(() =>
@@ -333,6 +342,8 @@ extension GetItInjectableX on _i174.GetIt {
         _i706.EmergencyRemoteDataSourceImpl(gh<_i467.EmergencyApiService>()));
     gh.lazySingleton<_i474.GetCircuits>(
         () => _i474.GetCircuits(gh<_i660.EventRepository>()));
+    gh.lazySingleton<_i202.RunnersRepository>(
+        () => _i581.RunnersRepositoryImpl(gh<_i305.RunnersRemoteDataSource>()));
     gh.lazySingleton<_i237.GetDocuments>(
         () => _i237.GetDocuments(gh<_i345.DocumentsRepository>()));
     gh.lazySingleton<_i982.UploadDocument>(
@@ -381,6 +392,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i0.EnvConfig>(),
           gh<_i563.NotificationsRepository>(),
         ));
+    gh.factory<_i728.RunnersBloc>(
+        () => _i728.RunnersBloc(gh<_i202.RunnersRepository>()));
     gh.lazySingleton<_i587.SendSOSPosition>(
         () => _i587.SendSOSPosition(gh<_i978.EmergencyRepository>()));
     gh.lazySingleton<_i317.GetStates>(

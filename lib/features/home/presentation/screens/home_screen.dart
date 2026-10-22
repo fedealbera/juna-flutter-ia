@@ -328,6 +328,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   }
                 }
               }
+              final bool isAcreditacionFinalizada =
+                  settings?.isAcreditacionFinalizada ?? false;
 
               return Stack(
                 children: [
@@ -559,7 +561,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     ),
                                   ],
                                 ),
-                                if (_linkedParticipant == null) ...[
+                                if (_linkedParticipant == null && !isAcreditacionFinalizada) ...[
                                   const SizedBox(height: 24),
                                   if (activeTenant.tenantName == '21kLG')
                                     AppButton(
@@ -586,6 +588,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             ),
                     ),
                     const SizedBox(height: 20),
+
+                    // 2.1. Runners List Card (Option B: only visible when FECHA_FIN_ACREDITACION_TS has passed)
+                    if (isAcreditacionFinalizada) ...[
+                      _buildRunnersListCard(activeTenant),
+                      const SizedBox(height: 20),
+                    ],
 
                     // 2.2. Quick Actions Grid
                     _buildQuickActionsGrid(activeTenant),
@@ -1320,6 +1328,133 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   ),
 );
 }
+
+  Widget _buildRunnersListCard(TenantConfig activeTenant) {
+    final bool is21k = activeTenant.tenantName == '21kLG' ||
+        activeTenant.name.toLowerCase().contains('21k');
+
+    return AppCard(
+      style: AppCardStyle.gradient,
+      padding: EdgeInsets.zero,
+      customGradient: LinearGradient(
+        colors: [
+          activeTenant.primaryColorRef.withValues(alpha: 0.9),
+          (activeTenant.secondaryColorRef.computeLuminance() > 0.15)
+              ? const Color(0xFF1E1E1E)
+              : activeTenant.secondaryColorRef.withValues(alpha: 0.95),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      customBorder: Border.all(
+        color: activeTenant.primaryColorRef.withValues(alpha: 0.7),
+        width: 1.5,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => context.push('/corredores'),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.groups_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'OFICIAL',
+                            style: TextStyle(
+                              color: activeTenant.primaryColorRef,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'ACREDITACIÓN CERRADA',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Listado de Corredores',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      is21k
+                          ? 'Conoce a los participantes y circuitos'
+                          : 'Consulta los inscriptos por categoría',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildQuickActionsGrid(TenantConfig activeTenant) {
     final items = [
