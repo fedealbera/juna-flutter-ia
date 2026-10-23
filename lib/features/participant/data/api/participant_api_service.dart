@@ -32,9 +32,6 @@ abstract class ParticipantApiService {
   @GET('/api/participantes/{dni}/detalle')
   Future<ParticipantDetailResponseDto> getParticipantDetail(
     @Path('dni') String dni,
-    @Query('idOrg') String idOrg,
-    @Query('eventoId') String eventoId,
-    @Query('roundId') String? roundId,
   );
 
   @PUT('/api/participantes/emergencia')

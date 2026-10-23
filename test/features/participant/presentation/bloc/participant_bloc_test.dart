@@ -79,16 +79,11 @@ void main() {
       build: () {
         when(() => mockGetParticipantDetail(
               dni: '123',
-              idOrg: '1',
-              eventoId: '1',
-              roundId: null,
             )).thenAnswer((_) async => const ParticipantDetail({'id': 'parti_1'}));
         return bloc;
       },
       act: (bloc) => bloc.add(const ParticipantEvent.getDetail(
         dni: '123',
-        idOrg: '1',
-        eventoId: '1',
       )),
       expect: () => [
         const ParticipantState.loading(),

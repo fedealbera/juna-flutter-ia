@@ -164,4 +164,63 @@ void main() {
       expect(invalidSettings.isAcreditacionFinalizada, isFalse);
     });
   });
+
+  group('EventSettings - ACTIVAR_ENCUESTA & URL_ENCUESTA', () {
+    test('returns true when ACTIVAR_ENCUESTA is "TRUE"', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'ACTIVAR_ENCUESTA', 'valor': 'TRUE'},
+          {'clave': 'URL_ENCUESTA', 'valor': 'https://forms.gle/test'},
+        ],
+      });
+      expect(settings.isEnabledEncuesta, isTrue);
+      expect(settings.urlEncuesta, equals('https://forms.gle/test'));
+    });
+
+    test('returns true when ACTIVAR_ENCUESTA is "true" (lowercase)', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'ACTIVAR_ENCUESTA', 'valor': 'true'},
+        ],
+      });
+      expect(settings.isEnabledEncuesta, isTrue);
+    });
+
+    test('returns true when ACTIVAR_ENCUESTA is "1"', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'ACTIVAR_ENCUESTA', 'valor': '1'},
+        ],
+      });
+      expect(settings.isEnabledEncuesta, isTrue);
+    });
+
+    test('returns false when ACTIVAR_ENCUESTA is "FALSE"', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'ACTIVAR_ENCUESTA', 'valor': 'FALSE'},
+        ],
+      });
+      expect(settings.isEnabledEncuesta, isFalse);
+    });
+
+    test('returns false when ACTIVAR_ENCUESTA is "0"', () {
+      final settings = EventSettings({
+        'settings': [
+          {'clave': 'ACTIVAR_ENCUESTA', 'valor': '0'},
+        ],
+      });
+      expect(settings.isEnabledEncuesta, isFalse);
+    });
+
+    test('returns false when ACTIVAR_ENCUESTA is missing or empty', () {
+      final emptySettings = EventSettings({'settings': []});
+      expect(emptySettings.isEnabledEncuesta, isFalse);
+      expect(emptySettings.urlEncuesta, isEmpty);
+
+      final noSettings = EventSettings({});
+      expect(noSettings.isEnabledEncuesta, isFalse);
+      expect(noSettings.urlEncuesta, isEmpty);
+    });
+  });
 }

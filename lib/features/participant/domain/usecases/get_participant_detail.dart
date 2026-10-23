@@ -10,15 +10,9 @@ class GetParticipantDetail {
 
   Future<ParticipantDetail> call({
     required String dni,
-    required String idOrg,
-    required String eventoId,
-    String? roundId,
   }) {
     return _repository.getParticipantDetail(
       dni: dni,
-      idOrg: idOrg,
-      eventoId: eventoId,
-      roundId: roundId,
     );
   }
 }

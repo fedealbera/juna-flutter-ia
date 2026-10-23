@@ -22,7 +22,7 @@ mixin _$ParticipantEvent {
             String dni, String idEvento, String idOrg, String token)
         authenticate,
     required TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)
+            String dni, String? idOrg, String? eventoId, String? roundId)
         getDetail,
     required TResult Function(String partiId, String contNombre, String contTel)
         updateEmergency,
@@ -66,7 +66,7 @@ mixin _$ParticipantEvent {
     TResult? Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult? Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult? Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -110,7 +110,7 @@ mixin _$ParticipantEvent {
     TResult Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -305,7 +305,7 @@ class _$AuthenticateImpl implements Authenticate {
             String dni, String idEvento, String idOrg, String token)
         authenticate,
     required TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)
+            String dni, String? idOrg, String? eventoId, String? roundId)
         getDetail,
     required TResult Function(String partiId, String contNombre, String contTel)
         updateEmergency,
@@ -352,7 +352,7 @@ class _$AuthenticateImpl implements Authenticate {
     TResult? Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult? Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult? Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -399,7 +399,7 @@ class _$AuthenticateImpl implements Authenticate {
     TResult Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -513,7 +513,7 @@ abstract class _$$GetDetailImplCopyWith<$Res> {
           _$GetDetailImpl value, $Res Function(_$GetDetailImpl) then) =
       __$$GetDetailImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String dni, String idOrg, String eventoId, String? roundId});
+  $Res call({String dni, String? idOrg, String? eventoId, String? roundId});
 }
 
 /// @nodoc
@@ -530,8 +530,8 @@ class __$$GetDetailImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? dni = null,
-    Object? idOrg = null,
-    Object? eventoId = null,
+    Object? idOrg = freezed,
+    Object? eventoId = freezed,
     Object? roundId = freezed,
   }) {
     return _then(_$GetDetailImpl(
@@ -539,14 +539,14 @@ class __$$GetDetailImplCopyWithImpl<$Res>
           ? _value.dni
           : dni // ignore: cast_nullable_to_non_nullable
               as String,
-      idOrg: null == idOrg
+      idOrg: freezed == idOrg
           ? _value.idOrg
           : idOrg // ignore: cast_nullable_to_non_nullable
-              as String,
-      eventoId: null == eventoId
+              as String?,
+      eventoId: freezed == eventoId
           ? _value.eventoId
           : eventoId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       roundId: freezed == roundId
           ? _value.roundId
           : roundId // ignore: cast_nullable_to_non_nullable
@@ -559,17 +559,14 @@ class __$$GetDetailImplCopyWithImpl<$Res>
 
 class _$GetDetailImpl implements GetDetail {
   const _$GetDetailImpl(
-      {required this.dni,
-      required this.idOrg,
-      required this.eventoId,
-      this.roundId});
+      {required this.dni, this.idOrg, this.eventoId, this.roundId});
 
   @override
   final String dni;
   @override
-  final String idOrg;
+  final String? idOrg;
   @override
-  final String eventoId;
+  final String? eventoId;
   @override
   final String? roundId;
 
@@ -608,7 +605,7 @@ class _$GetDetailImpl implements GetDetail {
             String dni, String idEvento, String idOrg, String token)
         authenticate,
     required TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)
+            String dni, String? idOrg, String? eventoId, String? roundId)
         getDetail,
     required TResult Function(String partiId, String contNombre, String contTel)
         updateEmergency,
@@ -655,7 +652,7 @@ class _$GetDetailImpl implements GetDetail {
     TResult? Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult? Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult? Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -702,7 +699,7 @@ class _$GetDetailImpl implements GetDetail {
     TResult Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -794,13 +791,13 @@ class _$GetDetailImpl implements GetDetail {
 abstract class GetDetail implements ParticipantEvent {
   const factory GetDetail(
       {required final String dni,
-      required final String idOrg,
-      required final String eventoId,
+      final String? idOrg,
+      final String? eventoId,
       final String? roundId}) = _$GetDetailImpl;
 
   String get dni;
-  String get idOrg;
-  String get eventoId;
+  String? get idOrg;
+  String? get eventoId;
   String? get roundId;
 
   /// Create a copy of ParticipantEvent
@@ -902,7 +899,7 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
             String dni, String idEvento, String idOrg, String token)
         authenticate,
     required TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)
+            String dni, String? idOrg, String? eventoId, String? roundId)
         getDetail,
     required TResult Function(String partiId, String contNombre, String contTel)
         updateEmergency,
@@ -949,7 +946,7 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     TResult? Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult? Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult? Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -996,7 +993,7 @@ class _$UpdateEmergencyEventImpl implements UpdateEmergencyEvent {
     TResult Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -1262,7 +1259,7 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
             String dni, String idEvento, String idOrg, String token)
         authenticate,
     required TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)
+            String dni, String? idOrg, String? eventoId, String? roundId)
         getDetail,
     required TResult Function(String partiId, String contNombre, String contTel)
         updateEmergency,
@@ -1310,7 +1307,7 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     TResult? Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult? Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult? Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -1358,7 +1355,7 @@ class _$UpdateContactEventImpl implements UpdateContactEvent {
     TResult Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -1593,7 +1590,7 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
             String dni, String idEvento, String idOrg, String token)
         authenticate,
     required TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)
+            String dni, String? idOrg, String? eventoId, String? roundId)
         getDetail,
     required TResult Function(String partiId, String contNombre, String contTel)
         updateEmergency,
@@ -1640,7 +1637,7 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     TResult? Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult? Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult? Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -1688,7 +1685,7 @@ class _$UpdateCircuitoEventImpl implements UpdateCircuitoEvent {
     TResult Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -2075,7 +2072,7 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
             String dni, String idEvento, String idOrg, String token)
         authenticate,
     required TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)
+            String dni, String? idOrg, String? eventoId, String? roundId)
         getDetail,
     required TResult Function(String partiId, String contNombre, String contTel)
         updateEmergency,
@@ -2140,7 +2137,7 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
     TResult? Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult? Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult? Function(String partiId, String contNombre, String contTel)?
         updateEmergency,
@@ -2205,7 +2202,7 @@ class _$UpdateParticipantEventImpl implements UpdateParticipantEvent {
     TResult Function(String dni, String idEvento, String idOrg, String token)?
         authenticate,
     TResult Function(
-            String dni, String idOrg, String eventoId, String? roundId)?
+            String dni, String? idOrg, String? eventoId, String? roundId)?
         getDetail,
     TResult Function(String partiId, String contNombre, String contTel)?
         updateEmergency,

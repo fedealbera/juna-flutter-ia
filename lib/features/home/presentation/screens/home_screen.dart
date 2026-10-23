@@ -11,6 +11,7 @@ import '../../../../core/theme/tenant_manager.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../shared/design_system/buttons/app_button.dart';
 import '../../../../shared/design_system/cards/app_card.dart';
+import '../../../../shared/design_system/dialogs/app_dialog.dart';
 import '../../../content/presentation/bloc/content_bloc.dart';
 import '../../../content/presentation/bloc/content_event.dart';
 import '../../../emergency/presentation/bloc/emergency_bloc.dart';
@@ -22,6 +23,8 @@ import '../../../settings/presentation/bloc/settings_state.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../../../settings/domain/entities/event_settings.dart';
 import '../../../participant/domain/entities/participant_detail.dart';
+import '../../../participant/domain/usecases/get_participant_detail.dart';
+import '../../../maps/presentation/screens/maps_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -330,6 +333,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               }
               final bool isAcreditacionFinalizada =
                   settings?.isAcreditacionFinalizada ?? false;
+              final bool isEncuestaVisible =
+                  (settings?.isEnabledEncuesta ?? false) &&
+                      _linkedParticipant != null &&
+                      _linkedParticipant!.isAcreditado &&
+                      _linkedParticipant!.linkEncuesta.trim().isNotEmpty;
 
               return Stack(
                 children: [
@@ -355,6 +363,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
                     if (_linkedParticipant != null) ...[
                       _buildRunnerPassCard(activeTenant),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Encuesta de Satisfacción (solo visible si corredor vinculado, AC, ACTIVAR_ENCUESTA y con linkEncuesta)
+                    if (isEncuestaVisible) ...[
+                      _buildSurveyCard(activeTenant, settings, _linkedParticipant!),
                       const SizedBox(height: 20),
                     ],
 
@@ -1454,6 +1468,208 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ),
       ),
     );
+  }
+
+  Widget _buildSurveyCard(
+    TenantConfig activeTenant,
+    EventSettings? settings,
+    ParticipantDetail detail,
+  ) {
+    const amberAccent = Color(0xFFFFB300);
+    const greenAccent = Color(0xFF4CAF50);
+    final bool yaRespondida = detail.encuestaRespondida;
+    final accentColor = yaRespondida ? greenAccent : amberAccent;
+
+    return AppCard(
+      style: AppCardStyle.gradient,
+      padding: EdgeInsets.zero,
+      customGradient: LinearGradient(
+        colors: [
+          activeTenant.primaryColorRef.withValues(alpha: yaRespondida ? 0.45 : 0.65),
+          const Color(0xFF1E1E1E),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      customBorder: Border.all(
+        color: accentColor.withValues(alpha: 0.5),
+        width: 1.5,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _onSurveyTap(activeTenant, detail),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.4),
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(
+                  yaRespondida
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.rate_review_rounded,
+                  color: accentColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: accentColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            yaRespondida ? 'RESPONDIDA' : 'FEEDBACK',
+                            style: TextStyle(
+                              color: yaRespondida ? Colors.white : Colors.black,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          yaRespondida
+                              ? '¡GRACIAS POR PARTICIPAR!'
+                              : 'TU OPINIÓN IMPORTA',
+                          style: TextStyle(
+                            color: accentColor.withValues(alpha: 0.9),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Encuesta de Satisfacción',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      yaRespondida
+                          ? 'Ya has respondido esta encuesta. ¡Muchas gracias!'
+                          : 'Ayúdanos a mejorar contándonos tu experiencia',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  yaRespondida
+                      ? Icons.check_rounded
+                      : Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onSurveyTap(TenantConfig activeTenant, ParticipantDetail detail) async {
+    if (detail.encuestaRespondida) {
+      AppAlertDialog.show(
+        context: context,
+        type: AppDialogType.info,
+        title: '¡Muchas gracias!',
+        message:
+            'Ya has respondido la encuesta de satisfacción. Te agradecemos por tu participación en el evento y por completar la encuesta.',
+        primaryButtonText: 'Entendido',
+        customIcon: Icons.check_circle_outline_rounded,
+        customAccentColor: const Color(0xFF4CAF50),
+        primaryButtonColor: activeTenant.primaryColorRef,
+      );
+      return;
+    }
+
+    final targetUrl = detail.linkEncuestaUrl.trim();
+    if (targetUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay link de encuesta disponible.'),
+        ),
+      );
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CircuitWebViewScreen(
+          title: 'Encuesta de Satisfacción',
+          url: targetUrl,
+        ),
+      ),
+    );
+
+    if (mounted) {
+      await _refreshParticipantDetail();
+    }
+  }
+
+  Future<void> _refreshParticipantDetail() async {
+    if (_linkedParticipant == null || _linkedParticipant!.dni.isEmpty) return;
+    try {
+      final getDetail = getIt<GetParticipantDetail>();
+      final freshDetail = await getDetail(
+        dni: _linkedParticipant!.dni,
+      );
+      final hiveService = getIt<HiveService>();
+      final activeTenant = _tenantManager.value;
+      await hiveService.put<Map>(
+        'participant_box',
+        'cached_participant_${activeTenant.tenantId}',
+        freshDetail.rawJson,
+      );
+      if (mounted) {
+        setState(() {
+          _linkedParticipant = freshDetail;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error refreshing participant detail: $e');
+      await _loadLinkedParticipant();
+    }
   }
 
   Widget _buildQuickActionsGrid(TenantConfig activeTenant) {

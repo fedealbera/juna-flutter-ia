@@ -14,8 +14,39 @@ class ParticipantDetail extends Equatable {
   String get dni => _data['dni']?.toString() ?? _data['documento']?.toString() ?? '';
   String get status => _data['estado']?.toString() ?? _data['status']?.toString() ?? '';
   bool get isAcreditado => status.trim().toUpperCase() == 'AC';
+  static String resolveUrl(String link) {
+    final trimmed = link.trim();
+    if (trimmed.isEmpty) return '';
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    const prefix = '/website/juna.net.ar/site/public_html';
+    if (trimmed.startsWith(prefix)) {
+      return 'https://juna.net.ar${trimmed.substring(prefix.length)}';
+    }
+    if (trimmed.startsWith('/')) {
+      return 'https://juna.net.ar$trimmed';
+    }
+    return 'https://juna.net.ar/$trimmed';
+  }
+
   String get nroPlaca => _data['nroPlaca']?.toString() ?? '';
-  String get linkPago => _data['linkPago']?.toString() ?? '';
+  String get linkPago => resolveUrl(_data['linkPago']?.toString() ?? '');
+  String get linkEncuesta =>
+      _data['linkEncuesta']?.toString() ??
+      _data['link_encuesta']?.toString() ??
+      rawJson['linkEncuesta']?.toString() ??
+      rawJson['link_encuesta']?.toString() ??
+      '';
+  String get linkEncuestaUrl => resolveUrl(linkEncuesta);
+  bool get encuestaRespondida {
+    final val = _data['encuestaRespondida'] ??
+        _data['encuesta_respondida'] ??
+        rawJson['encuestaRespondida'] ??
+        rawJson['encuesta_respondida'];
+    if (val == null) return false;
+    if (val is bool) return val;
+    final str = val.toString().trim().toLowerCase();
+    return str == 'true' || str == '1';
+  }
   String get lastName => _data['apellido']?.toString() ?? '';
   String get fullName => '$name $lastName'.trim();
   String get circuito => _data['idCircuitoNombre']?.toString() ?? '';

@@ -18,12 +18,7 @@ import '../dto/response/update_push_token_response_dto.dart';
 
 abstract class ParticipantRemoteDataSource {
   Future<AuthParticipantResponseDto> authParticipant(AuthParticipantRequestDto body);
-  Future<ParticipantDetailResponseDto> getParticipantDetail(
-    String dni,
-    String idOrg,
-    String eventoId,
-    String? roundId,
-  );
+  Future<ParticipantDetailResponseDto> getParticipantDetail(String dni);
   Future<UpdateEmergencyResponseDto> updateEmergency(String partiId, UpdateEmergencyRequestDto body);
   Future<UpdateContactResponseDto> updateContact(String partiId, UpdateContactRequestDto body);
   Future<UpdateCircuitoResponseDto> updateCircuito(String partiId, UpdateCircuitoRequestDto body);
@@ -50,13 +45,8 @@ class ParticipantRemoteDataSourceImpl implements ParticipantRemoteDataSource {
   }
 
   @override
-  Future<ParticipantDetailResponseDto> getParticipantDetail(
-    String dni,
-    String idOrg,
-    String eventoId,
-    String? roundId,
-  ) {
-    return _apiService.getParticipantDetail(dni, idOrg, eventoId, roundId);
+  Future<ParticipantDetailResponseDto> getParticipantDetail(String dni) {
+    return _apiService.getParticipantDetail(dni);
   }
 
   @override

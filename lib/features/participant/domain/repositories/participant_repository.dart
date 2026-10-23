@@ -15,9 +15,6 @@ abstract class ParticipantRepository {
 
   Future<ParticipantDetail> getParticipantDetail({
     required String dni,
-    required String idOrg,
-    required String eventoId,
-    String? roundId,
   });
 
   Future<UpdateEmergencyEntity> updateEmergency({

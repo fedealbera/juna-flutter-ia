@@ -56,19 +56,9 @@ class _ParticipantApiService implements ParticipantApiService {
   }
 
   @override
-  Future<ParticipantDetailResponseDto> getParticipantDetail(
-    String dni,
-    String idOrg,
-    String eventoId,
-    String? roundId,
-  ) async {
+  Future<ParticipantDetailResponseDto> getParticipantDetail(String dni) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{
-      r'idOrg': idOrg,
-      r'eventoId': eventoId,
-      r'roundId': roundId,
-    };
-    queryParameters.removeWhere((k, v) => v == null);
+    final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<ParticipantDetailResponseDto>(Options(

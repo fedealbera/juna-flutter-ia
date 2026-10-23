@@ -42,16 +42,8 @@ class ParticipantRepositoryImpl implements ParticipantRepository {
   @override
   Future<ParticipantDetail> getParticipantDetail({
     required String dni,
-    required String idOrg,
-    required String eventoId,
-    String? roundId,
   }) async {
-    final response = await _remoteDataSource.getParticipantDetail(
-      dni,
-      idOrg,
-      eventoId,
-      roundId,
-    );
+    final response = await _remoteDataSource.getParticipantDetail(dni);
     return ParticipantMapper.toDetailEntity(response);
   }
 

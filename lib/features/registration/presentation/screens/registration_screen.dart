@@ -267,9 +267,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     _participantBloc.add(
       ParticipantEvent.getDetail(
         dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-        idOrg: '1',
-        eventoId: '1',
-        roundId: '1',
       ),
     );
   }
@@ -309,9 +306,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
     _participantBloc.add(
       ParticipantEvent.getDetail(
         dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-        idOrg: '1',
-        eventoId: '1',
-        roundId: '1',
       ),
     );
   }
@@ -984,9 +978,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                                     detail.dni.isNotEmpty
                                         ? detail.dni
                                         : _dniController.text,
-                                idOrg: '1',
-                                eventoId: '1',
-                                roundId: '1',
                               ),
                             );
                           }
@@ -1144,9 +1135,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       _participantBloc.add(
                         ParticipantEvent.getDetail(
                           dni: _dniController.text,
-                          idOrg: '1',
-                          eventoId: '1',
-                          roundId: '1',
                         ),
                       );
                     }
@@ -1170,9 +1158,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
                       _participantBloc.add(
                         ParticipantEvent.getDetail(
                           dni: _dniController.text,
-                          idOrg: '1',
-                          eventoId: '1',
-                          roundId: '1',
                         ),
                       );
                     }
@@ -1741,9 +1726,6 @@ class _RegistrationScreenState extends State<RegistrationScreen>
       _participantBloc.add(
         ParticipantEvent.getDetail(
           dni: detail.dni.isNotEmpty ? detail.dni : _dniController.text,
-          idOrg: '1',
-          eventoId: '1',
-          roundId: '1',
         ),
       );
     }

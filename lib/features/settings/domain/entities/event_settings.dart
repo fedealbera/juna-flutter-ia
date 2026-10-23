@@ -60,6 +60,11 @@ class EventSettings extends Equatable {
     final val = getSetting('ISENABLED_CODDESC').toUpperCase();
     return val == 'TRUE' || val == '1';
   }
+  bool get isEnabledEncuesta {
+    final val = getSetting('ACTIVAR_ENCUESTA').toUpperCase().trim();
+    return val == 'TRUE' || val == '1';
+  }
+  String get urlEncuesta => getSetting('URL_ENCUESTA');
   double? get latReconocimiento => double.tryParse(getSetting('LAT_RECONOCIMIENTO'));
   double? get lonReconocimiento => double.tryParse(getSetting('LON_RECONOCIMIENTO'));
 

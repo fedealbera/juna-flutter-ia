@@ -47,9 +47,6 @@ class ParticipantBloc extends Bloc<ParticipantEvent, ParticipantState> {
       try {
         final result = await _getParticipantDetail(
           dni: event.dni,
-          idOrg: event.idOrg,
-          eventoId: event.eventoId,
-          roundId: event.roundId,
         );
         emit(ParticipantState.detailLoaded(result));
       } catch (e) {

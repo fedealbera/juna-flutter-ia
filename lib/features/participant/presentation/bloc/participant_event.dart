@@ -13,8 +13,8 @@ class ParticipantEvent with _$ParticipantEvent {
 
   const factory ParticipantEvent.getDetail({
     required String dni,
-    required String idOrg,
-    required String eventoId,
+    String? idOrg,
+    String? eventoId,
     String? roundId,
   }) = GetDetail;
 

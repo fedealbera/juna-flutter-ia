@@ -86,7 +86,7 @@ The application is engineered to support true White Label dynamic brand configur
 To properly link runners with their corresponding push tokens, the token registration endpoint `/api/participantes/token` is called only under specific user actions:
 
 * **Search & Link:** The runner inputs their DNI and searches for their registration inside the "VER PARTICIPANTE" tab on `RegistrationScreen`. Initiating the search and receiving `detailLoaded` triggers `_fetchSettings()` to ensure all remote feature flags (like `ISENABLED_CODDESC`) are immediately synchronized with the backend.
-* **Token POST Action:** When the API `GET /api/participantes/{dni}/detalle` returns successfully, the participant is linked (stored in local secure cache via `HiveService`). Only at this point is the `POST /api/participantes/token` endpoint triggered with the runner's DNI, event details, and FCM token. It does not run at application startup.
+* **Token POST Action:** When the API `GET /api/participantes/{dni}/detalle` (invoked strictly without query parameters like `idOrg`, `eventoId`, or `roundId`) returns successfully, the participant is linked (stored in local secure cache via `HiveService`). Only at this point is the `POST /api/participantes/token` endpoint triggered with the runner's DNI, event details, and FCM token. It does not run at application startup.
 * **Inscription ID (insId) Resolution:** For registration updates via the PUT endpoint, the parameter `insId` takes the value of the `ins` field returned by the GET detail endpoint.
 
 ### Pre-Inscripto vs. Pago Confirmado UI Logic
@@ -211,6 +211,22 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
     * **Dorsal/Plate Visibility:** If the participant has a valid plate (`nroPlaca != "0"` and not empty), it shows their bib number in a highly contrasted box and marks the status as `INSCRIPCIÓN ACTIVA` (green). The box header dynamically displays **DORSAL** for the `21kLG` tenant (when tenant name contains `'21k'`) and **PLACA** for other tenants like `DDLN`. If they don't have a plate (`nroPlaca == "0"` or empty), it hides the box and shows `PAGO PENDIENTE` (amber).
     * **Direct Payment Redirect:** If they are pending payment and have a `linkPago` link, it shows an interactive warning bar that launches their payment link in the external browser using a robust try-catch wrapper (avoiding query permission checks).
     * **Pass Card Tap Target:** Tapping the main body of the card routes to `/inscripciones` and automatically focuses the dynamic **INICIAR SESIÓN** / **VER MI PERFIL** tab (index 1).
+  * **Encuesta de Satisfacción Card:** Controlled dynamically by `settings.isEnabledEncuesta` (`ACTIVAR_ENCUESTA == "TRUE"` or `"1"`), runner accreditation status, and survey link availability.
+    - **Positioning:** Placed exclusively on `HomeScreen`, positioned prominently directly below the runner's pass card (`_buildRunnerPassCard`).
+    - **Visibility Rules (Strict Gating):** The section is displayed **only if all 4 conditions are met**:
+      1. The event configuration `ACTIVAR_ENCUESTA` is active (`"TRUE"` or `"1"` via `EventSettings.isEnabledEncuesta`).
+      2. The user has linked their runner profile via DNI (`_linkedParticipant != null`).
+      3. The participant has accredited status (`detail.isAcreditado` / `estado == "AC"`).
+      4. The participant's detail contains a non-empty survey URL (`detail.linkEncuesta.trim().isNotEmpty`).
+      *If `ACTIVAR_ENCUESTA` is `"FALSE"`, `"0"`, or missing/empty, or if any of the above conditions is not met, the survey card is completely hidden from the UI.*
+    - **Behavior According to `encuestaRespondida`:**
+      - **Survey Not Answered (`detail.encuestaRespondida == false`):**
+        - **Visual Design:** Styled with `AppCardStyle.gradient` combining tenant primary color (`alpha: 0.65`) with charcoal surface (`0xFF1E1E1E`), golden amber border (`Color(0xFFFFB300)` al 50%), rating icon (`Icons.rate_review_rounded`), **"FEEDBACK"** badge, and header *"TU OPINIÓN IMPORTA"*.
+        - **Action on Tap:** Launches the survey inside an in-app `WebView` (`CircuitWebViewScreen`) loading the resolved URL (`detail.linkEncuestaUrl`). When the webview closes, it automatically queries the `/detalle` endpoint (`_refreshParticipantDetail()`) to synchronize and update the participant's state in Hive and memory.
+      - **Survey Answered (`detail.encuestaRespondida == true`):**
+        - **Visual Design:** Styled with a subtle completed state using a green accent border (`Color(0xFF4CAF50)` al 50%), checkmark icon (`Icons.check_circle_outline_rounded`), solid green **"RESPONDIDA"** badge, and header *"¡GRACIAS POR PARTICIPAR!"*.
+        - **Action on Tap:** Displays an informative `AppAlertDialog` (`AppDialogType.info`) with custom green accent informing the runner: *"Ya has respondido la encuesta de satisfacción. Te agradecemos por tu participación en el evento y por completar la encuesta."* with primary button *"Entendido"*.
+    - **URL Resolution (`ParticipantDetail.resolveUrl`):** Converts server-relative paths (e.g. `/website/juna.net.ar/site/public_html/...`) to absolute public HTTPS URLs (`https://juna.net.ar/...`), ensuring robust loading in webviews and external launchers.
   * **Next Event & Countdown Card:** Employs dynamic gradients and luminance-aware button text. On race day (`isRaceDay`), it hides the countdown block and button, displaying a compact glassmorphic live status badge ("¡EL EVENTO ESTÁ EN MARCHA!") with a pulsing red status indicator.
   * **Quick Actions Grid:** A 2x2 interactive grid using tenant color accents to route directly using GoRouter to: "Iniciar Sesión" or "Mi Perfil" (`/inscripciones`) depending on whether a runner is linked, "Circuitos" (`/mapas`), "En Vivo" (`/vivo`), and "Más" (`/mas`).
   * **SOS Emergency Button:** Integrates the `geolocator` package to fetch precise GPS coordinates on race day, showing a loading spinner.
