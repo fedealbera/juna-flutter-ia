@@ -16,14 +16,6 @@
             "preLaunchTask": "configure-ddln"
         },
         {
-            "name": "DDLN - DEV - PROD",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "debug",
-            "program": "lib/main_production.dart",
-            "preLaunchTask": "configure-ddln"
-        },
-        {
             "name": "🔨 BUILD APK - DDLN (DEV)",
             "request": "launch",
             "type": "dart",
@@ -62,14 +54,6 @@
             "name": "21kLG - PROD",
             "request": "launch",
             "type": "dart",
-            "program": "lib/main_production.dart",
-            "preLaunchTask": "configure-21klg"
-        },
-        {
-            "name": "21kLG - DEV - PROD",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "debug",
             "program": "lib/main_production.dart",
             "preLaunchTask": "configure-21klg"
         },
