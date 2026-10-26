@@ -37,7 +37,12 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
     _loadLinkedParticipant();
     _runnersBloc.add(const RunnersEvent.getRunners(eventId: '1', orgId: '1'));
     _searchController.addListener(_onSearchChanged);
+    _searchFocusNode.addListener(_onFocusChanged);
     _tenantManager.addListener(_onTenantChanged);
+  }
+
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onTenantChanged() {
@@ -64,6 +69,7 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
   @override
   void dispose() {
     _tenantManager.removeListener(_onTenantChanged);
+    _searchFocusNode.removeListener(_onFocusChanged);
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -71,13 +77,20 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
   }
 
   List<String> _extractCircuits(List<RunnerItem> allRunners) {
-    final circuits = <String>{'TODOS'};
+    final circuitSet = <String>{};
     for (final runner in allRunners) {
       if (runner.circuito.trim().isNotEmpty) {
-        circuits.add(runner.circuito.trim().toUpperCase());
+        circuitSet.add(runner.circuito.trim().toUpperCase());
       }
     }
-    return circuits.toList();
+    final sorted = circuitSet.toList()
+      ..sort((a, b) {
+        final aNum = int.tryParse(a.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        final bNum = int.tryParse(b.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+        if (aNum != 0 && bNum != 0) return bNum.compareTo(aNum);
+        return a.compareTo(b);
+      });
+    return ['TODOS', ...sorted];
   }
 
   List<RunnerItem> _filterRunners(List<RunnerItem> allRunners) {
@@ -96,8 +109,9 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
         final categoryMatch = runner.categoria.toLowerCase().contains(_searchQuery);
         final teamMatch = runner.grupoEntrenamiento?.toLowerCase().contains(_searchQuery) ?? false;
         final cityMatch = runner.ciudad?.toLowerCase().contains(_searchQuery) ?? false;
+        final provMatch = runner.provincia?.toLowerCase().contains(_searchQuery) ?? false;
 
-        return nameMatch || dorsalMatch || categoryMatch || teamMatch || cityMatch;
+        return nameMatch || dorsalMatch || categoryMatch || teamMatch || cityMatch || provMatch;
       }
 
       return true;
@@ -143,48 +157,48 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
               onPressed: _handleBack,
             ),
             centerTitle: true,
-          title: const Column(
-            children: [
-              Text(
-                'Listado de Corredores',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                'Nómina oficial de inscriptos',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-        ),
-        body: SafeArea(
-          child: BlocBuilder<RunnersBloc, RunnersState>(
-            builder: (context, state) {
-              return state.when(
-                initial: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                loading: () => Center(
-                  child: CircularProgressIndicator(
-                    color: activeTenant.primaryColorRef,
+            title: const Column(
+              children: [
+                Text(
+                  'Listado de Corredores',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                error: (message) => _buildErrorState(activeTenant, message),
-                loaded: (allRunners) => _buildLoadedContent(activeTenant, allRunners),
-              );
-            },
+                Text(
+                  'Nómina oficial de inscriptos',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          body: SafeArea(
+            child: BlocBuilder<RunnersBloc, RunnersState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  loading: () => Center(
+                    child: CircularProgressIndicator(
+                      color: activeTenant.primaryColorRef,
+                    ),
+                  ),
+                  error: (message) => _buildErrorState(activeTenant, message),
+                  loaded: (allRunners) => _buildLoadedContent(activeTenant, allRunners),
+                );
+              },
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildErrorState(TenantConfig activeTenant, String message) {
     return Center(
@@ -243,35 +257,50 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
 
     return Column(
       children: [
-        // 1. Search Box
+        // 1. Sleek Glassmorphic Search Box
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              color: const Color(0xFF141414),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: _searchFocusNode.hasFocus
                     ? activeTenant.primaryColorRef
-                    : Colors.white.withValues(alpha: 0.1),
-                width: 1,
+                    : Colors.white.withValues(alpha: 0.08),
+                width: _searchFocusNode.hasFocus ? 1.4 : 1.0,
               ),
+              boxShadow: [
+                if (_searchFocusNode.hasFocus)
+                  BoxShadow(
+                    color: activeTenant.primaryColorRef.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 2),
+                  )
+                else
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+              ],
             ),
             child: TextField(
               controller: _searchController,
               focusNode: _searchFocusNode,
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Buscar por nombre, apellido o dorsal...',
+                hintText: 'Buscar por corredor, dorsal o provincia...',
                 hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: Colors.white.withValues(alpha: 0.38),
                   fontSize: 13,
                 ),
                 prefixIcon: Icon(
                   Icons.search_rounded,
                   color: _searchFocusNode.hasFocus
                       ? activeTenant.primaryColorRef
-                      : Colors.white54,
+                      : Colors.white38,
                   size: 20,
                 ),
                 suffixIcon: _searchController.text.isNotEmpty
@@ -283,16 +312,17 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
               ),
             ),
           ),
         ),
 
-        // 2. Circuit Filters Chips
+        // 2. Segmented Circuit Selector Pills
         if (circuits.length > 2)
-          SizedBox(
-            height: 38,
+          Container(
+            height: 40,
+            margin: const EdgeInsets.only(bottom: 6),
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
@@ -315,16 +345,32 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? activeTenant.primaryColorRef
-                          : const Color(0xFF1E1E1E),
-                      borderRadius: BorderRadius.circular(20),
+                      gradient: isSelected
+                          ? LinearGradient(
+                              colors: [
+                                activeTenant.primaryColorRef,
+                                activeTenant.secondaryColorRef,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: isSelected ? null : const Color(0xFF141414),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? activeTenant.primaryColorRef
-                            : Colors.white.withValues(alpha: 0.1),
+                            : Colors.white.withValues(alpha: 0.08),
                         width: 1,
                       ),
+                      boxShadow: [
+                        if (isSelected)
+                          BoxShadow(
+                            color: activeTenant.primaryColorRef.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -332,19 +378,24 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
                         Text(
                           circuit,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white70,
+                            color: isSelected
+                                ? (activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                    ? Colors.white
+                                    : Colors.white)
+                                : Colors.white70,
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                            letterSpacing: 0.3,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.black.withValues(alpha: 0.25)
-                                : Colors.white.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(10),
+                                ? Colors.black.withValues(alpha: 0.28)
+                                : Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             '$count',
@@ -363,21 +414,45 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
             ),
           ),
 
-        const SizedBox(height: 10),
-
-        // 3. Status Count Indicator & My Category Shortcut
+        // 3. Stats & Quick Shortcut Bar
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${filteredRunners.length} ${filteredRunners.length == 1 ? "corredor encontrado" : "corredores encontrados"}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.how_to_reg_rounded,
+                    size: 14,
+                    color: activeTenant.primaryColorRef,
+                  ),
+                  const SizedBox(width: 6),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '${filteredRunners.length} ',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextSpan(
+                          text: filteredRunners.length == 1
+                              ? 'corredor acreditado'
+                              : 'corredores acreditados',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               if (_linkedParticipant != null && _linkedParticipant!.circuito.isNotEmpty)
                 GestureDetector(
@@ -387,20 +462,39 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
                       _searchController.text = _linkedParticipant!.name;
                     });
                   },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.person_pin_circle_rounded, size: 14, color: activeTenant.primaryColorRef),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Mi Circuito',
-                        style: TextStyle(
-                          color: activeTenant.primaryColorRef,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: activeTenant.primaryColorRef.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: activeTenant.primaryColorRef.withValues(alpha: 0.35),
+                        width: 1,
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.person_pin_circle_rounded,
+                          size: 13,
+                          color: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                              ? Colors.white
+                              : activeTenant.primaryColorRef,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Mi Circuito',
+                          style: TextStyle(
+                            color: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                ? Colors.white
+                                : activeTenant.primaryColorRef,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -413,7 +507,7 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
               ? _buildEmptyResultsState(activeTenant)
               : RefreshIndicator(
                   color: activeTenant.primaryColorRef,
-                  backgroundColor: const Color(0xFF1E1E1E),
+                  backgroundColor: const Color(0xFF141414),
                   onRefresh: () async {
                     _runnersBloc.add(const RunnersEvent.refresh(eventId: '1', orgId: '1'));
                   },
@@ -423,22 +517,34 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
                     itemBuilder: (context, index) {
                       final categoryName = groupedByCategory.keys.elementAt(index);
                       final runnersInCategory = groupedByCategory[categoryName]!;
+                      final lowerCat = categoryName.toLowerCase();
+                      final IconData categoryIcon = lowerCat.contains('mujer') || lowerCat.contains('femenin')
+                          ? Icons.female_rounded
+                          : (lowerCat.contains('hombre') || lowerCat.contains('masculin')
+                              ? Icons.male_rounded
+                              : Icons.emoji_events_rounded);
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Category Header
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+                          // Sleek Category Header Capsule
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF181818),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                width: 1,
+                              ),
+                            ),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 3,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: activeTenant.primaryColorRef,
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
+                                Icon(
+                                  categoryIcon,
+                                  size: 15,
+                                  color: activeTenant.primaryColorRef,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -447,7 +553,7 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.w800,
                                       letterSpacing: 0.8,
                                     ),
                                     maxLines: 1,
@@ -457,15 +563,17 @@ class _RunnersListScreenState extends State<RunnersListScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: activeTenant.primaryColorRef.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    '${runnersInCategory.length}',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
+                                    '${runnersInCategory.length} ${runnersInCategory.length == 1 ? "inscripto" : "inscriptos"}',
+                                    style: TextStyle(
+                                      color: activeTenant.primaryColorRef.computeLuminance() < 0.15
+                                          ? Colors.white
+                                          : activeTenant.primaryColorRef,
                                       fontSize: 10,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),

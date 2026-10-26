@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/tenant_manager.dart';
@@ -173,6 +174,19 @@ class _LiveScreenState extends State<LiveScreen> {
                         );
                       }
                     },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (_settings?.isAcreditacionFinalizada == true) ...[
+                  _buildMenuItem(
+                    title: 'Listado de Corredores',
+                    subtitle: (activeTenant.tenantName == '21kLG' ||
+                            activeTenant.name.toLowerCase().contains('21k'))
+                        ? 'Conoce a los participantes y circuitos'
+                        : 'Consulta los inscriptos por categoría',
+                    icon: Icons.groups_rounded,
+                    badgeColor: const Color(0xFF00B0FF),
+                    onTap: () => context.push('/corredores'),
                   ),
                   const SizedBox(height: 12),
                 ],

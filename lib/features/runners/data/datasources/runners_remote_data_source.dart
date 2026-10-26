@@ -17,11 +17,20 @@ class RunnersRemoteDataSourceImpl implements RunnersRemoteDataSource {
   Future<List<RunnerDto>> getRunnersList(String eventId, String idOrg) async {
     try {
       final response = await _dioClient.dio.get(
-        '/eventos/$eventId/corredores',
-        queryParameters: {'idOrg': idOrg},
+        '/participantes/acreditados',
       );
 
       final data = response.data;
+      if (data is Map<String, dynamic> || data is Map) {
+        final map = (data as Map).cast<String, dynamic>();
+        if (map.containsKey('participantes')) {
+          final runners = RunnerDto.fromAcreditadosResponse(map);
+          if (runners.isNotEmpty) {
+            return runners;
+          }
+        }
+      }
+
       List<dynamic> items = [];
       if (data is List) {
         items = data;
@@ -38,7 +47,7 @@ class RunnersRemoteDataSourceImpl implements RunnersRemoteDataSource {
           .map((json) => RunnerDto.fromJson(json))
           .toList();
     } catch (_) {
-      // Graceful fallback to realistic mock data while the backend endpoint is pending deployment
+      // Graceful fallback to realistic mock data in case of unexpected network failure
       return MockRunnersDataSource.getMockRunners();
     }
   }

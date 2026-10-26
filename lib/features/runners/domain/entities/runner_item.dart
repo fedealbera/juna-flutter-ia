@@ -12,6 +12,7 @@ class RunnerItem extends Equatable {
   final String? ciudad;
   final String? provincia;
   final String? grupoEntrenamiento;
+  final String? sexo;
 
   const RunnerItem({
     required this.id,
@@ -25,10 +26,35 @@ class RunnerItem extends Equatable {
     this.ciudad,
     this.provincia,
     this.grupoEntrenamiento,
+    this.sexo,
   });
 
   String get fullName => '$nombre $apellido'.trim();
   bool get hasDorsal => dorsal.isNotEmpty && dorsal != '0';
+
+  String get location {
+    final hasCiudad = ciudad != null && ciudad!.trim().isNotEmpty;
+    final hasProvincia = provincia != null && provincia!.trim().isNotEmpty;
+    if (hasCiudad && hasProvincia) return '$ciudad, $provincia';
+    if (hasCiudad) return ciudad!;
+    if (hasProvincia) return provincia!;
+    return '';
+  }
+
+  String get initials {
+    final n = nombre.trim();
+    final a = apellido.trim();
+    if (n.isNotEmpty && a.isNotEmpty) {
+      return '${n[0]}${a[0]}'.toUpperCase();
+    }
+    if (n.isNotEmpty) {
+      return n.length >= 2 ? n.substring(0, 2).toUpperCase() : n.toUpperCase();
+    }
+    if (a.isNotEmpty) {
+      return a.length >= 2 ? a.substring(0, 2).toUpperCase() : a.toUpperCase();
+    }
+    return 'CO';
+  }
 
   @override
   List<Object?> get props => [
@@ -43,5 +69,6 @@ class RunnerItem extends Equatable {
         ciudad,
         provincia,
         grupoEntrenamiento,
+        sexo,
       ];
 }
