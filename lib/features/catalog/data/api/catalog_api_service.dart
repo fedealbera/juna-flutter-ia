@@ -18,6 +18,11 @@ abstract class CatalogApiService {
     @Query('dni') String dni,
   );
 
+  @GET('/api/circuitos/{circuitoId}/coordenadas')
+  Future<dynamic> getCircuitoCoordenadas(
+    @Path('circuitoId') String circuitoId,
+  );
+
   @GET('/api/talles')
   Future<dynamic> getTalles();
 

@@ -3,10 +3,12 @@ import '../api/catalog_api_service.dart';
 import '../dto/response/circuito_response_dto.dart';
 import '../dto/response/categoria_response_dto.dart';
 import '../dto/response/talle_response_dto.dart';
+import '../dto/response/circuito_coordenadas_dto.dart';
 
 abstract class CatalogRemoteDataSource {
   Future<List<CircuitoResponseDto>> getCircuitos();
   Future<List<CategoriaResponseDto>> getCategorias(String circuitoId, String dni);
+  Future<CircuitoCoordenadasDto> getCircuitoCoordenadas(String circuitoId);
   Future<List<TalleResponseDto>> getTalles();
   Future<List<Map<String, dynamic>>> getCentrosAcreditacion();
   Future<List<Map<String, dynamic>>> getMarcas(String? tipoCarrera);
@@ -32,6 +34,12 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
     final response = await _apiService.getCategorias(circuitoId, dni) as Map<String, dynamic>;
     final list = response['categorias'] as List<dynamic>? ?? [];
     return list.map((item) => CategoriaResponseDto.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  @override
+  Future<CircuitoCoordenadasDto> getCircuitoCoordenadas(String circuitoId) async {
+    final response = await _apiService.getCircuitoCoordenadas(circuitoId) as Map<String, dynamic>;
+    return CircuitoCoordenadasDto.fromJson(response);
   }
 
   @override

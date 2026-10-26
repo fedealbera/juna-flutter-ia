@@ -285,10 +285,15 @@ The visual theme complies with **Material Design 3** styled as a high-end dark s
     * Renders location cards for each date entry in `settings.acreditacionesMap`.
     * Supports enriched location fields: displays `lugar` (or `nombre`) with storefront icon (`Icons.storefront_rounded`) and `direccion` (or `address`) with pin icon (`Icons.location_on_outlined`) alongside the date and "CÓMO LLEGAR" button.
     * Tapping "CÓMO LLEGAR" launches navigation passing place name and address query parameters (`query=$lugar, $direccion`) to Google Maps and Apple Maps so the business profile is identified automatically. If not provided, it falls back smoothly to exact GPS coordinates (`$lat,$lon`).
-  * **Circuit List & Availability Checking:**
-    * In the "Circuitos" tab, each circuit entry from `settings.circuitosMap` is evaluated for availability (`url.trim().isNotEmpty`).
-    * **Available Circuit:** Tapping opens `CircuitWebViewScreen` to show web-based track details (e.g., Garmin web or raw images). For image-based tracks (e.g. 21kLG), JavaScript scales the image to fit the screen viewport with a dark background (`#121212`) and pinch-to-zoom enabled.
-    * **Unavailable / Pending Circuit:** If the URL/image is empty, tapping the circuit card prompts an `AppAlertDialog` with title *"Pronto podrás conocer el circuito."*, no subtitle message, and primary button *"Volver"* (using icon `Icons.alt_route_rounded` and tenant accent colors).
+  * **Circuit List & Interactive Map Feature:**
+    * In the "Circuitos" tab, each circuit entry (e.g. 5K, 10K, 21K) is rendered in an `AppCard` displaying:
+      * Circle route badge (`Icons.alt_route_rounded`) with tenant primary color tint.
+      * Circuit name and subtitle (*"Ver altimetría y recorrido"* or *"Disponible próximamente"*).
+      * **Button 1 ("Ver Mapa"):** Square action button with `Icons.map_rounded` and tenant primary accent. Shows an inline loading spinner while fetching data. Consumes `GET /api/circuitos/{circuitoId}/coordenadas` via `GetCircuitCoordinates` case.
+        * **When coordinates are available (`hasPoints == true`):** Navigates via `Navigator.push` to `CircuitMapScreen`. Renders `FlutterMap` with OpenStreetMap tiles, the polyline track fully painted in tenant primary color with high-contrast border, green start marker ("LARGADA"), red/accent finish marker ("LLEGADA"), automatic camera bounds fitting (`fitCamera`), recenter action button, and a bottom glassmorphic info card with total distance, elevation range (min-max) and point count.
+        * **When coordinates are empty / unavailable:** Displays a design system `AppAlertDialog` (`AppDialogType.warning`) titled *"Circuito no disponible"* with message *"El trazado del circuito aún no está disponible para su visualización. Por favor, intenta nuevamente más tarde."*, amber warning icon `Icons.map_outlined`, and button *"Entendido"*.
+      * **Button 2 ("Ver Altimetría / Web"):** Square action button with `Icons.open_in_full_rounded` (or `Icons.info_rounded`). Tapping opens `CircuitWebViewScreen` for web-based altimetry or displays an informative dialog if the URL is not yet configured.
+      * Tapping the card body also triggers the "Ver Mapa" flow for enhanced usability.
 * **`LiveScreen`:** Displays real-time event coverage and quick social links. Subtitle reads *"Sigue la carrera en tiempo real"*. It organizes choices under "COBERTURA" and "SOCIAL & WEB" headers.
   * **Real-time Settings Syncing & On-Tap Verification:** Automatically triggers an asynchronous refresh (`getEventSettings('1', '1')`) upon screen mounting (`initState`) and tenant change (`_onTenantChanged`). Additionally, tapping the "Resultados" card immediately queries `getEventSettings('1', '1')` to evaluate the freshest `URL_TIMES` value directly from the backend before navigating.
   * **Resultados (Resultados Portal) Availability Checking:** The "Resultados" card is dynamically highlighted as the primary live feature without secondary classifications text, styled with a brand-aligned gradient background and a pulsing red status indicator ("VIVO").
@@ -361,6 +366,7 @@ Participant update endpoints in `ParticipantApiService` are refactored to remove
 | Get Training Groups | N/A | `/api/grupos-entrenamiento/{tipoCarrera}` | Path Parameter (`tipoCarrera`) |
 | Register Training Group | N/A | `/api/grupos-entrenamiento` | JSON Body: `{ "nombre": string, "tipo_carrera": string }` |
 | List Confirmed Runners | N/A | `/api/participantes/acreditados` | Returns nested `{ "participantes": { [sexo]: { [circuito]: { [categoria]: [ { nombre, apellido, provincia } ] } } }, "total": N }` |
+| Get Circuit Coordinates | N/A | `/api/circuitos/{circuitoId}/coordenadas` | Path Parameter (`circuitoId`). Returns `{ "circuito_id": int, "circuito_nombre": string, "circuito_nombre_corto": string, "total_puntos": int, "coordenadas": [ { "id": int, "lat": double, "lng": double, "ele": double, "dist": double } ] }`. Deserialized to `CircuitoCoordenadasDto` and mapped to domain entity `CircuitoCoordenadas`. Exposed via `GetCircuitCoordinates` usecase. |
 
 ---
 

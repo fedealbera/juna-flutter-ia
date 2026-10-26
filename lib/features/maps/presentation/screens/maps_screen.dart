@@ -15,6 +15,10 @@ import '../../../tracks/presentation/bloc/tracks_bloc.dart';
 import '../../../tracks/presentation/bloc/tracks_event.dart';
 import '../../../settings/domain/repositories/settings_repository.dart';
 import '../../../settings/domain/entities/event_settings.dart';
+import '../../../event/domain/entities/circuit.dart';
+import '../../../event/domain/usecases/get_circuits.dart';
+import '../../../event/domain/usecases/get_circuit_coordinates.dart';
+import 'circuit_map_screen.dart';
 
 
 class MapsScreen extends StatefulWidget {
@@ -31,6 +35,10 @@ class _MapsScreenState extends State<MapsScreen> {
 
   // Selected layer
   String _selectedLayer = 'Largada';
+
+  // Backend circuits cache and loading tracker
+  List<Circuit> _backendCircuits = [];
+  String? _loadingCircuitName;
 
   // Map controller
   final MapController _mapController = MapController();
@@ -82,7 +90,118 @@ class _MapsScreenState extends State<MapsScreen> {
     }
 
     _fetchSettings();
+    _loadBackendCircuits();
     _tenantManager.addListener(_onTenantChanged);
+  }
+
+  Future<void> _loadBackendCircuits() async {
+    try {
+      final circuits = await getIt<GetCircuits>()();
+      if (mounted) {
+        setState(() {
+          _backendCircuits = circuits;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading backend circuits in MapsScreen: $e');
+    }
+  }
+
+  Future<void> _onViewCircuitMap(String circuitName) async {
+    if (_loadingCircuitName != null) return;
+    setState(() {
+      _loadingCircuitName = circuitName;
+    });
+
+    final activeTenant = _tenantManager.value;
+
+    try {
+      // 1. Resolve circuit ID from backend circuits or fallback mapping
+      String? circuitId;
+
+      if (_backendCircuits.isNotEmpty) {
+        final normalizedTarget = circuitName.toLowerCase().trim();
+        for (final c in _backendCircuits) {
+          final cName = c.name.toLowerCase().trim();
+          if (cName == normalizedTarget ||
+              normalizedTarget.contains(cName) ||
+              cName.contains(normalizedTarget)) {
+            if (c.id.isNotEmpty) {
+              circuitId = c.id;
+              break;
+            }
+          }
+        }
+      }
+
+      // Fallback matching by standard circuit naming if not found
+      if (circuitId == null || circuitId.isEmpty) {
+        final upper = circuitName.toUpperCase();
+        if (upper.contains('21K')) {
+          circuitId = '2';
+        } else if (upper.contains('10K')) {
+          circuitId = '4';
+        } else if (upper.contains('5K')) {
+          circuitId = '5';
+        } else if (upper.contains('30K')) {
+          circuitId = '1';
+        } else if (upper.contains('35K')) {
+          circuitId = '2';
+        } else if (upper.contains('50K')) {
+          circuitId = '3';
+        } else if (upper.contains('80K')) {
+          circuitId = '4';
+        }
+      }
+
+      if (circuitId == null || circuitId.isEmpty) {
+        _showNoCoordinatesDialog(activeTenant);
+        return;
+      }
+
+      final coords = await getIt<GetCircuitCoordinates>()(circuitId);
+
+      if (!mounted) return;
+
+      if (!coords.hasPoints || coords.totalPuntos == 0) {
+        _showNoCoordinatesDialog(activeTenant);
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CircuitMapScreen(
+              circuitName: circuitName,
+              circuitoCoordenadas: coords,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error fetching circuit coordinates: $e');
+      if (mounted) {
+        _showNoCoordinatesDialog(activeTenant);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingCircuitName = null;
+        });
+      }
+    }
+  }
+
+  void _showNoCoordinatesDialog(dynamic activeTenant) {
+    AppAlertDialog.show(
+      context: context,
+      type: AppDialogType.warning,
+      title: 'Circuito no disponible',
+      message:
+          'El trazado del circuito aún no está disponible para su visualización. Por favor, intenta nuevamente más tarde.',
+      primaryButtonText: 'Entendido',
+      customIcon: Icons.map_outlined,
+      customAccentColor: Colors.amber.shade600,
+      primaryButtonColor: activeTenant.primaryColorRef,
+    );
   }
 
   Future<void> _fetchSettings() async {
@@ -119,6 +238,7 @@ class _MapsScreenState extends State<MapsScreen> {
   void _onTenantChanged() {
     _loadTracks();
     _fetchSettings();
+    _loadBackendCircuits();
   }
 
   @override
@@ -535,30 +655,7 @@ class _MapsScreenState extends State<MapsScreen> {
                   padding: EdgeInsets.zero,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
-                    onTap: () {
-                      if (isAvailable) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CircuitWebViewScreen(
-                              title: name,
-                              url: url,
-                            ),
-                          ),
-                        );
-                      } else {
-                        AppAlertDialog.show(
-                          context: context,
-                          type: AppDialogType.info,
-                          title: 'Pronto podrás conocer el circuito.',
-                          message: '',
-                          primaryButtonText: 'Volver',
-                          customIcon: Icons.alt_route_rounded,
-                          customAccentColor: activeTenant.primaryColorRef,
-                          primaryButtonColor: activeTenant.primaryColorRef,
-                        );
-                      }
-                    },
+                    onTap: () => _onViewCircuitMap(name),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
@@ -605,32 +702,106 @@ class _MapsScreenState extends State<MapsScreen> {
                               ],
                             ),
                           ),
-                          // Right Square Action Icon
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: isAvailable
-                                  ? Colors.white.withValues(alpha: 0.08)
-                                  : activeTenant.primaryColorRef.withValues(alpha: 0.22),
+                          const SizedBox(width: 8),
+                          // Action Button 1: Ver Mapa
+                          Tooltip(
+                            message: 'Ver mapa del circuito',
+                            child: InkWell(
+                              onTap: () => _onViewCircuitMap(name),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: isAvailable
-                                    ? Colors.white.withValues(alpha: 0.12)
-                                    : activeTenant.primaryColorRef.withValues(alpha: 0.6),
-                                width: 1.2,
+                              child: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: activeTenant.primaryColorRef.withValues(alpha: 0.22),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: activeTenant.primaryColorRef.withValues(alpha: 0.55),
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: _loadingCircuitName == name
+                                    ? Center(
+                                        child: SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(
+                                              activeTenant.primaryColorRef.computeLuminance() < 0.2
+                                                  ? Colors.white
+                                                  : activeTenant.primaryColorRef,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : Icon(
+                                        Icons.map_rounded,
+                                        color: activeTenant.primaryColorRef.computeLuminance() < 0.2
+                                            ? Colors.white
+                                            : activeTenant.primaryColorRef,
+                                        size: 20,
+                                      ),
                               ),
                             ),
-                            child: Icon(
-                              isAvailable
-                                  ? Icons.open_in_full_rounded
-                                  : Icons.info_rounded,
-                              color: isAvailable
-                                  ? Colors.white.withValues(alpha: 0.7)
-                                  : (activeTenant.primaryColorRef.computeLuminance() < 0.2
-                                      ? Colors.white
-                                      : activeTenant.primaryColorRef),
-                              size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          // Action Button 2: Ver Altimetría / Web
+                          Tooltip(
+                            message: 'Ver altimetría',
+                            child: InkWell(
+                              onTap: () {
+                                if (isAvailable) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CircuitWebViewScreen(
+                                        title: name,
+                                        url: url,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  AppAlertDialog.show(
+                                    context: context,
+                                    type: AppDialogType.info,
+                                    title: 'Pronto podrás conocer el circuito.',
+                                    message: 'La altimetría web estará disponible próximamente.',
+                                    primaryButtonText: 'Volver',
+                                    customIcon: Icons.alt_route_rounded,
+                                    customAccentColor: activeTenant.primaryColorRef,
+                                    primaryButtonColor: activeTenant.primaryColorRef,
+                                  );
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: isAvailable
+                                      ? Colors.white.withValues(alpha: 0.08)
+                                      : activeTenant.primaryColorRef.withValues(alpha: 0.22),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isAvailable
+                                        ? Colors.white.withValues(alpha: 0.12)
+                                        : activeTenant.primaryColorRef.withValues(alpha: 0.6),
+                                    width: 1.2,
+                                  ),
+                                ),
+                                child: Icon(
+                                  isAvailable
+                                      ? Icons.open_in_full_rounded
+                                      : Icons.info_rounded,
+                                  color: isAvailable
+                                      ? Colors.white.withValues(alpha: 0.7)
+                                      : (activeTenant.primaryColorRef.computeLuminance() < 0.2
+                                          ? Colors.white
+                                          : activeTenant.primaryColorRef),
+                                  size: 20,
+                                ),
+                              ),
                             ),
                           ),
                         ],

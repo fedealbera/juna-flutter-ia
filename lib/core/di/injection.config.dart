@@ -60,6 +60,8 @@ import '../../features/event/data/repositories/event_repository_impl.dart'
     as _i429;
 import '../../features/event/domain/repositories/event_repository.dart'
     as _i660;
+import '../../features/event/domain/usecases/get_circuit_coordinates.dart'
+    as _i147;
 import '../../features/event/domain/usecases/get_circuits.dart' as _i474;
 import '../../features/event/presentation/bloc/event_bloc.dart' as _i92;
 import '../../features/geography/data/api/geography_api_service.dart' as _i304;
@@ -342,6 +344,8 @@ extension GetItInjectableX on _i174.GetIt {
         _i706.EmergencyRemoteDataSourceImpl(gh<_i467.EmergencyApiService>()));
     gh.lazySingleton<_i474.GetCircuits>(
         () => _i474.GetCircuits(gh<_i660.EventRepository>()));
+    gh.lazySingleton<_i147.GetCircuitCoordinates>(
+        () => _i147.GetCircuitCoordinates(gh<_i660.EventRepository>()));
     gh.lazySingleton<_i202.RunnersRepository>(
         () => _i581.RunnersRepositoryImpl(gh<_i305.RunnersRemoteDataSource>()));
     gh.lazySingleton<_i237.GetDocuments>(
