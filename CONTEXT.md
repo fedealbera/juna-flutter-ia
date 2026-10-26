@@ -457,6 +457,11 @@ To comply with Apple App Store Connect Transporter validation rules (avoiding er
 - `<key>UIRequiresFullScreen</key><true/>`: Disables iPad split-screen multitasking requirement.
 - `<key>UISupportedInterfaceOrientations~ipad</key>`: Includes all 4 orientations (`UIInterfaceOrientationPortrait`, `UIInterfaceOrientationPortraitUpsideDown`, `UIInterfaceOrientationLandscapeLeft`, `UIInterfaceOrientationLandscapeRight`) required when targeting iPad OS builds.
 
+### Android Google Play Store & Play Protect Compliance (`build.gradle.kts`)
+To comply with Google Play Console and Play Protect automatic integrity requirements when uploading Android App Bundles (AABs):
+- **Minimum SDK (`minSdk = 24`):** Google Play automatic app protection mandates a minimum SDK of 24 (Android 7.0 Nougat) or higher. All tenant Gradle templates (`tenants/21klg/build.gradle.kts`, `tenants/ddln/build.gradle.kts`) and the active Android app build configuration (`android/app/build.gradle.kts`) are configured with `minSdk = 24` and `targetSdk = 36`.
+- **Tenant Synchronization:** Any modifications to native Android build configurations must be reflected in `tenants/<tenant>/build.gradle.kts` so that executing `make config-<tenant>` propagates the setting consistently across all tenants.
+
 ---
 
 ## 11. Spec-Driven Development (SDD) Methodology & Workflow
