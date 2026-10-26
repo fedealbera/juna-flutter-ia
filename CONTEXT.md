@@ -434,10 +434,15 @@ The `Makefile` exposes simple targets to easily configure, run, and compile the 
 * **Configure Tenants:**
   - `make config-ddln` - Configures the workspace for the DDLN tenant.
   - `make config-21klg` - Configures the workspace for the 21kLG tenant.
-* **Run App:**
+* **Run App (Global):**
   - `make run-dev` - Runs the application targeting the Development environment.
   - `make run-qa` - Runs the application targeting the QA environment.
   - `make run-prod` - Runs the application targeting the Production environment.
+* **Combined Tenant Run & Debug Targets:**
+  - `make run-ddln-dev` - Configures DDLN and runs `main_development.dart` in Debug mode.
+  - `make run-ddln-prod` - Configures DDLN and runs `main_production.dart` in Debug mode (connected to PROD backend with full live logs).
+  - `make run-21klg-dev` - Configures 21kLG and runs `main_development.dart` in Debug mode.
+  - `make run-21klg-prod` - Configures 21kLG and runs `main_production.dart` in Debug mode (connected to PROD backend with full live logs).
 * **Build Targets (Stand-alone):**
   - **APK:** `make build-apk-dev` / `make build-apk-qa` / `make build-apk-prod`
   - **AAB:** `make build-aab-dev` / `make build-aab-qa` / `make build-aab-prod`
@@ -449,6 +454,10 @@ The `Makefile` exposes simple targets to easily configure, run, and compile the 
   - `make build-21klg-apk-prod` - Automatically switches configuration to 21kLG and builds production APK.
   - `make build-21klg-aab-prod` - Automatically switches configuration to 21kLG and builds production AAB.
   - `make build-21klg-ipa-prod` - Automatically switches configuration to 21kLG and builds production IPA.
+* **IDE Run & Debug Configurations (`.vscode/launch.json`):**
+  - **`DDLN - DEV` / `21kLG - DEV`:** Configures tenant and runs in Debug mode targeting the Development API.
+  - **`DDLN - DEV - PROD` / `21kLG - DEV - PROD`:** Configures tenant and runs `lib/main_production.dart` with explicit `"flutterMode": "debug"`. This enables active debugging, breakpoints, hot reload, and full console logging (`LoggerInterceptor`) against the live **PRODUCTION** backend.
+  - **`🔨 BUILD [APK/AAB/IPA]`:** Triggers the respective release packaging tasks.
 * **Helpers:**
   - `make clean` - Cleans build caches.
   - `make get` - Installs packages via `flutter pub get`.

@@ -1,6 +1,6 @@
 export ANDROID_HOME ?= $(HOME)/Library/Android/sdk
 
-.PHONY: config-ddln config-21klg run-dev run-qa run-prod build-apk-dev build-apk-qa build-apk-prod build-aab-dev build-aab-qa build-aab-prod build-ipa-dev build-ipa-qa build-ipa-prod build-ddln-apk-dev build-ddln-apk-prod build-ddln-aab-prod build-ddln-ipa-prod build-21klg-apk-dev build-21klg-apk-prod build-21klg-aab-prod build-21klg-ipa-prod clean get help
+.PHONY: config-ddln config-21klg run-dev run-qa run-prod run-ddln-dev run-ddln-prod run-21klg-dev run-21klg-prod build-apk-dev build-apk-qa build-apk-prod build-aab-dev build-aab-qa build-aab-prod build-ipa-dev build-ipa-qa build-ipa-prod build-ddln-apk-dev build-ddln-apk-prod build-ddln-aab-prod build-ddln-ipa-prod build-21klg-apk-dev build-21klg-apk-prod build-21klg-aab-prod build-21klg-ipa-prod clean get help
 
 help:
 	@echo "Available commands:"
@@ -9,6 +9,13 @@ help:
 	@echo "  make run-dev               - Run the application in DEVELOPMENT environment"
 	@echo "  make run-qa                - Run the application in QA environment"
 	@echo "  make run-prod              - Run the application in PRODUCTION environment"
+	@echo ""
+	@echo "Combined Run / Debug (Tenant + Env):"
+	@echo "  make run-ddln-dev          - Configure DDLN and run in DEVELOPMENT"
+	@echo "  make run-ddln-prod         - Configure DDLN and run in PRODUCTION (Debug mode)"
+	@echo "  make run-21klg-dev         - Configure 21kLG and run in DEVELOPMENT"
+	@echo "  make run-21klg-prod        - Configure 21kLG and run in PRODUCTION (Debug mode)"
+	@echo ""
 	@echo "  make build-apk-dev         - Build Android APK in DEVELOPMENT environment"
 	@echo "  make build-apk-qa          - Build Android APK in QA environment"
 	@echo "  make build-apk-prod        - Build Android APK in PRODUCTION environment"
@@ -76,6 +83,14 @@ build-ipa-qa:
 
 build-ipa-prod:
 	flutter build ipa -t lib/main_production.dart
+
+# DDLN Combined Run / Debug
+run-ddln-dev: config-ddln run-dev
+run-ddln-prod: config-ddln run-prod
+
+# 21kLG Combined Run / Debug
+run-21klg-dev: config-21klg run-dev
+run-21klg-prod: config-21klg run-prod
 
 # DDLN Combined DEV Builds
 build-ddln-apk-dev: config-ddln build-apk-dev
